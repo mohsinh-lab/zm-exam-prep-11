@@ -65,6 +65,11 @@ export const ISLAMIC_QUOTES = [
         text: "Establish prayer at the two ends of the day and in the early part of the night.",
         source: "The Holy Quran",
         category: "Worship"
+    },
+    {
+        text: "My son, your character and knowledge are your true wealth. Stay consistent, stay humble, and always aim for the best.",
+        source: "AbuG",
+        category: "Father's Advice"
     }
 ];
 

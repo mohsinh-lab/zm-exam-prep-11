@@ -23,10 +23,11 @@ const defaultProgress = () => ({
     weeklySnapshots: [],
     monthlySnapshots: [],
     // Student name
-    studentName: 'Student',
-    parentEmail: '',
+    studentName: 'Zayyan Mohsin',
+    parentEmail: 'emailmohsinh@gmail.com, ashbaig19@gmail.com',
     // Gems (hint currency)
     gems: 5,
+    setupDone: true // Auto-complete setup for this custom build
 });
 
 export function getProgress() {
