@@ -3,7 +3,7 @@
 import { SUBJECT_LABELS, SUBJECT_ICONS, SUBJECT_COLORS } from '../engine/questionBank.js';
 import { getWeakTopics } from '../engine/adaptiveEngine.js';
 import { BADGE_DEFINITIONS, getProgress } from '../engine/progressStore.js';
-import { navigate } from '../app.js';
+
 import { spawnConfetti } from '../components/confetti.js';
 import { audio } from '../engine/audioEngine.js';
 
@@ -129,11 +129,11 @@ export function renderResults(dataStr) {
 
   <!-- Actions -->
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
-    <button class="btn btn-primary btn-lg" onclick="navigate('quiz','${session.subject}')">
+    <button class="btn btn-primary btn-lg" onclick="window.router.navigate('#/student/quiz/${session.subject}')">
       🔄 Practice Again
     </button>
-    <button class="btn btn-outline" onclick="navigate('home')">🏠 Home</button>
-    <button class="btn btn-outline" onclick="navigate('achievements')">🏅 Badges</button>
+    <button class="btn btn-outline" onclick="window.router.navigate('#/student/home')">🏠 Home</button>
+    <button class="btn btn-outline" onclick="window.router.navigate('#/student/badges')">🏅 Badges</button>
   </div>
 
 </div>

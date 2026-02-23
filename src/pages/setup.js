@@ -1,7 +1,7 @@
 // pages/setup.js — First-run setup for student name & parent email
 
 import { setStudentName, setParentEmail, getProgress } from '../engine/progressStore.js';
-import { navigate } from '../app.js';
+
 
 export function renderSetup() {
   return `
@@ -46,7 +46,7 @@ export function mountSetup() {
     p.setupDone = true;
     localStorage.setItem('11plus_progress', JSON.stringify(p));
 
-    navigate('home');
+    window.router.navigate('#/student/home');
   };
 
   nameInput?.addEventListener('keydown', e => {
