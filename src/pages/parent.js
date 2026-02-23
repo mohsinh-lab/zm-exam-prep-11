@@ -75,59 +75,64 @@ export function renderParent() {
       <button class="btn btn-outline btn-sm" onclick="copyReport()">📋 Copy to Clipboard</button>
       <button class="btn btn-primary btn-sm" onclick="mailReport()">📧 Open in Mail</button>
     </div>
-  </div>
-</div>
+    </div>
+</div>`;
+}
 
 export function mountParent() {
-    window.switchParentTab = function (tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if (event) event.target.classList.add('active');
-        const progress = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-        const root = document.getElementById('parent-tab-content');
-        if (root) root.innerHTML = renderParentTab(tab, progress);
-    };
+  window.switchParentTab = function (tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (event) event.target.classList.add('active');
+    const progress = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+    const root = document.getElementById('parent-tab-content');
+    if (root) root.innerHTML = renderParentTab(tab, progress);
+  };
 
-    window.saveParentEmail = function () {
-        const email = document.getElementById('parent-email-input').value;
-        const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-        p.parentEmail = email;
-        localStorage.setItem('11plus_progress', JSON.stringify(p));
-        alert('✅ Email saved! You can now preview reports.');
-    };
+  window.saveParentEmail = function () {
+    const email = document.getElementById('parent-email-input').value;
+    const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+    p.parentEmail = email;
+    localStorage.setItem('11plus_progress', JSON.stringify(p));
+    alert('✅ Email saved! You can now preview reports.');
+  };
 
-    window.previewReport = function (type) {
-        const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-        const name = p.studentName || 'Student';
-        const titles = { daily: 'Daily Report', weekly: 'Weekly Report', monthly: 'Monthly Report' };
-        document.getElementById('email-modal-title').textContent = '📧 ' + titles[type];
-        // These functions are globally defined via app.js boot or progressStore
-        const reports = {
-            daily: window._genDaily ? window._genDaily(name) : 'No data yet.',
-            weekly: window._genWeekly ? window._genWeekly(name) : 'No data yet.',
-            monthly: window._genMonthly ? window._genMonthly(name) : 'No data yet.',
-        };
-        document.getElementById('email-modal-body').textContent = reports[type];
-        document.getElementById('email-modal').classList.remove('hidden');
-        window._currentReportText = reports[type];
-        window._currentReportType = type;
-    };
+  window.previewReport = function (type) {
+    const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+    const name = p.studentName || 'Student';
+    const titles = { daily: 'Daily Report', weekly: 'Weekly Report', monthly: 'Monthly Report' };
+    const modalTitle = document.getElementById('email-modal-title');
+    if (modalTitle) modalTitle.textContent = '📧 ' + titles[type];
 
-    window.copyReport = function () {
-        if (window._currentReportText) navigator.clipboard.writeText(window._currentReportText);
-        alert('✅ Report copied to clipboard!');
+    const reports = {
+      daily: window._genDaily ? window._genDaily(name) : 'No data yet.',
+      weekly: window._genWeekly ? window._genWeekly(name) : 'No data yet.',
+      monthly: window._genMonthly ? window._genMonthly(name) : 'No data yet.',
     };
+    const modalBody = document.getElementById('email-modal-body');
+    if (modalBody) modalBody.textContent = reports[type];
 
-    window.mailReport = function () {
-        const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-        const email = p.parentEmail || '';
-        const titles = { daily: 'Daily 11+ Progress Update', weekly: 'Weekly 11+ Progress Report', monthly: 'Monthly 11+ Progress Overview' };
-        const subject = encodeURIComponent(titles[window._currentReportType] || '11+ Progress Report');
-        const body = encodeURIComponent(window._currentReportText || '');
-        window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
-    };
+    const modal = document.getElementById('email-modal');
+    if (modal) modal.classList.remove('hidden');
+
+    window._currentReportText = reports[type];
+    window._currentReportType = type;
+  };
+
+  window.copyReport = function () {
+    if (window._currentReportText) navigator.clipboard.writeText(window._currentReportText);
+    alert('✅ Report copied to clipboard!');
+  };
+
+  window.mailReport = function () {
+    const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+    const email = p.parentEmail || '';
+    const titles = { daily: 'Daily 11+ Progress Update', weekly: 'Weekly 11+ Progress Report', monthly: 'Monthly 11+ Progress Overview' };
+    const subject = encodeURIComponent(titles[window._currentReportType] || '11+ Progress Report');
+    const body = encodeURIComponent(window._currentReportText || '');
+    window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+  };
 }
-`;
-}
+
 
 function renderParentStats(p) {
   const sessions = p.sessions || [];
