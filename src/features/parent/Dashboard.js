@@ -1,5 +1,5 @@
 
-import { getProgress, generateDailyReport, generateWeeklyReport, generateMonthlyReport } from '../../engine/progressStore.js';
+import { getProgress, generateDailyReport, generateWeeklyReport, generateMonthlyReport, forceSyncFromCloud, updateProgress } from '../../engine/progressStore.js';
 import { getSubjectMastery, getWeakTopics } from '../../engine/adaptiveEngine.js';
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS } from '../../engine/questionBank.js';
 
@@ -24,7 +24,10 @@ export function renderParentDashboard() {
       <h1 class="page-title" style="color: var(--c-text); font-family: var(--font-heading); font-size: 36px; margin-bottom: 4px;">📊 Parent Portal</h1>
       <p class="page-subtitle" style="color: var(--c-primary); font-weight: 700;">Monitoring ${name}'s 11+ Journey</p>
     </div>
-    <img src="transformer-plan.png" alt="Mission Control" class="desktop-only" style="width: 100px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+    <div style="display:flex; gap:12px; align-items:center">
+      <button onclick="window._syncCloud()" class="btn btn-primary btn-sm" style="border-radius: 8px;">🔄 LIVE SYNC</button>
+      <img src="transformer-plan.png" alt="Mission Control" class="desktop-only" style="width: 100px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+    </div>
   </div>
 
   <!-- Stats row -->
@@ -194,13 +197,40 @@ export function mountParentDashboard() {
     progress.studentName = name;
     progress.parentEmail = email;
 
-    localStorage.setItem('11plus_progress', JSON.stringify(progress));
-    alert('✅ Student profile updated!');
+    updateProgress(progress);
+    alert('✅ Student profile updated & synced!');
     window.router.handleRoute(); // Refresh
+  };
+
+  window._syncCloud = async (silent = false) => {
+    let btn = null;
+    let ogText = '';
+
+    // Only mess with the button if we clicked it manually
+    if (!silent && event && event.currentTarget) {
+      btn = event.currentTarget;
+      ogText = btn.innerText;
+      btn.innerText = '🔄 SYNCING...';
+    }
+
+    const success = await forceSyncFromCloud();
+
+    if (success) {
+      window.router.handleRoute(); // Refresh dashboard with new data
+      if (!silent) alert("✅ Dashboard successfully synced with Zayyan's iPad!");
+    } else {
+      if (!silent) {
+        if (btn) btn.innerText = ogText;
+        alert("⚠️ No new data found in the cloud or sync failed.");
+      }
+    }
   };
 
   window._handleAuthLogout = () => {
     window._handleLogout(); // use the global logout in app.js
   };
+
+  // Perform a silent auto-sync every time the dashboard is loaded
+  setTimeout(() => window._syncCloud(true), 500);
 }
 

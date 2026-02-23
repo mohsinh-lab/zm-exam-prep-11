@@ -6,7 +6,7 @@ const SYNC_ID = STUDENT_EMAIL.replace(/[@.]/g, '_'); // zayyanmohsin16_gmail_com
 
 // TODO: To enable live sync between iPad and Parent Dashboard, you need a free Firebase project.
 // Replace this URL with your Firebase Realtime Database URL once created.
-const FIREBASE_RTDB_URL = 'https://YOUR-PROJECT-ID-default-rtdb.europe-west1.firebasedatabase.app';
+const FIREBASE_RTDB_URL = 'https://aceprep-db-default-rtdb.europe-west1.firebasedatabase.app';
 
 export async function syncProgressToCloud(progress) {
     if (FIREBASE_RTDB_URL.includes('YOUR-PROJECT-ID')) {

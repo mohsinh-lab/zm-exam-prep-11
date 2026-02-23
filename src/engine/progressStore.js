@@ -83,6 +83,25 @@ export function updateProgress(data) {
     }
 }
 
+export async function forceSyncFromCloud() {
+    try {
+        const cloudData = await loadProgressFromCloud();
+        if (cloudData) {
+            const currentDataStr = localStorage.getItem(STORAGE_KEY);
+            const newDataStr = JSON.stringify(cloudData);
+
+            if (currentDataStr !== newDataStr) {
+                // Only write and trigger refresh if data is actually different
+                localStorage.setItem(STORAGE_KEY, newDataStr);
+                return true;
+            }
+        }
+    } catch (e) {
+        console.error('Manual sync failed:', e);
+    }
+    return false;
+}
+
 export function recordSession(subject, questions, answers, timeTaken) {
     const progress = getProgress();
 
