@@ -27,8 +27,39 @@ const defaultProgress = () => ({
     parentEmail: 'emailmohsinh@gmail.com, ashbaig19@gmail.com',
     // Gems (hint currency)
     gems: 5,
-    setupDone: true // Auto-complete setup for this custom build
+    setupDone: true, // Auto-complete setup for this custom build
+    // Auth state
+    auth: {
+        currentUser: null, // 'student', 'parent', or null
+        studentPass: '2016',
+        parentPass: '0786'
+    }
 });
+
+export function login(passcode) {
+    const progress = getProgress();
+    if (passcode === progress.auth.studentPass) {
+        progress.auth.currentUser = 'student';
+        updateProgress(progress);
+        return 'student';
+    }
+    if (passcode === progress.auth.parentPass) {
+        progress.auth.currentUser = 'parent';
+        updateProgress(progress);
+        return 'parent';
+    }
+    return null;
+}
+
+export function logout() {
+    const progress = getProgress();
+    progress.auth.currentUser = null;
+    updateProgress(progress);
+}
+
+export function getAuth() {
+    return getProgress().auth;
+}
 
 export function getProgress() {
     try {

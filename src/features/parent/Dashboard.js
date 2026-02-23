@@ -77,7 +77,7 @@ export function renderParentDashboard() {
 
   <!-- Recent sessions -->
   <h2 class="section-title" style="margin-top:32px">📋 Recent Sessions</h2>
-  <div class="card" style="padding:0;overflow:hidden">
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:32px">
     ${sessions.length === 0
       ? '<div style="padding:24px;text-align:center;color:var(--c-text-muted)">No sessions yet. Encourage ' + name + ' to start practising!</div>'
       : [...sessions].reverse().slice(0, 8).map(s => {
@@ -98,9 +98,26 @@ export function renderParentDashboard() {
       }).join('')}
   </div>
 
+  <!-- Profile Management -->
+  <h2 class="section-title">👤 Student Profile</h2>
+  <div class="card" style="margin-bottom:32px">
+    <div class="input-group">
+      <label class="input-label">Student Name</label>
+      <input type="text" id="parent-student-name" class="input-field" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Parent Emails (comma separated)</label>
+      <input type="text" id="parent-emails" class="input-field" value="${progress.parentEmail}" placeholder="email@example.com">
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="window._saveProfile()">Save Changes</button>
+    <p style="margin-top:12px;font-size:12px;color:var(--c-text-muted)">
+      💡 <strong>Note on Emails:</strong> Clicking "Open in Mail" will open your device's email app (Outlook, Gmail, Apple Mail) with the report pre-filled. You must then press <strong>"Send"</strong> in that app to deliver it. 
+    </p>
+  </div>
+
   <!-- Go back -->
-  <div style="margin-top:32px;text-align:center">
-    <button class="btn btn-outline" onclick="window.router.navigate('#/student/home')">← Back to Student View</button>
+  <div style="margin-top:16px;text-align:center">
+    <button class="btn btn-outline" onclick="window._handleAuthLogout()">🚪 Logout from Portal</button>
   </div>
 </div>
 
@@ -161,4 +178,22 @@ export function mountParentDashboard() {
     const body = encodeURIComponent(window._currentReport || '');
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   };
+
+  window._saveProfile = () => {
+    const name = document.getElementById('parent-student-name').value;
+    const email = document.getElementById('parent-emails').value;
+    const progress = getProgress();
+
+    progress.studentName = name;
+    progress.parentEmail = email;
+
+    localStorage.setItem('11plus_progress', JSON.stringify(progress));
+    alert('✅ Student profile updated!');
+    window.router.handleRoute(); // Refresh
+  };
+
+  window._handleAuthLogout = () => {
+    window._handleLogout(); // use the global logout in app.js
+  };
 }
+

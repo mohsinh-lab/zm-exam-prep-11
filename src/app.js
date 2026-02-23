@@ -7,10 +7,12 @@ import { renderStudentResults, mountStudentResults } from './features/student/Re
 import { renderActionPlan } from './pages/actionplan.js';
 import { renderAchievements } from './pages/achievements.js';
 import { renderSetup, mountSetup } from './pages/setup.js';
-import { getProgress } from './engine/progressStore.js';
+import { getProgress, getAuth, logout } from './engine/progressStore.js';
+import { renderLogin, mountLogin } from './features/auth/Login.js';
 
 const routes = [
   { path: '#/setup', render: renderSetup, mount: mountSetup },
+  { path: '#/login', render: renderLogin, mount: mountLogin },
   { path: '#/student/home', render: renderStudentHome, mount: mountStudentHome },
   { path: '#/student/quiz/:subject', render: renderStudentQuiz, mount: mountStudentQuiz },
   { path: '#/student/plan', render: renderActionPlan },
@@ -31,14 +33,24 @@ function boot() {
 
   window.router = new Router(routes, 'router-view');
 
-  // Initial redirect if setup not done
-  if (!progress.setupDone && window.location.hash !== '#/setup') {
+  // Initial redirect logic
+  const auth = getAuth();
+  if (!auth.currentUser && window.location.hash !== '#/login') {
+    window.router.navigate('#/login');
+  } else if (!progress.setupDone && window.location.hash !== '#/setup') {
     window.router.navigate('#/setup');
   }
 
   renderNav(window.location.hash);
-  window.addEventListener('hashchange', () => renderNav(window.location.hash));
+  window.addEventListener('hashchange', () => {
+    const auth = getAuth();
+    if (!auth.currentUser && window.location.hash !== '#/login') {
+      window.router.navigate('#/login');
+    }
+    renderNav(window.location.hash);
+  });
 }
+
 
 // Mount function for student home — wires countdown timer & quote refresh
 function mountStudentHome() {
@@ -69,8 +81,9 @@ function renderNav(hash) {
   const isQuiz = hash.includes('/quiz/');
   const isParent = hash.includes('/parent/');
   const isSetup = hash === '#/setup';
+  const isLogin = hash === '#/login';
 
-  if (isQuiz || isSetup) {
+  if (isQuiz || isSetup || isLogin) {
     navAnchor.innerHTML = '';
     tabAnchor.innerHTML = '';
     return;
@@ -93,6 +106,14 @@ function renderNav(hash) {
     tabAnchor.innerHTML = '';
   } else {
     const progress = getProgress();
+    const auth = getAuth();
+    const isStudent = auth.currentUser === 'student';
+
+    window._handleLogout = () => {
+      logout();
+      window.router.navigate('#/login');
+    };
+
     navAnchor.innerHTML = `
             <nav class="navbar student-nav">
                 <div class="nav-logo">🎓 AcePrep</div>
@@ -100,7 +121,8 @@ function renderNav(hash) {
                     ${navBtn('🏠 Home', '#/student/home', isHome)}
                     ${navBtn('📅 Plan', '#/student/plan', isPlan)}
                     ${navBtn('🏅 Badges', '#/student/badges', isBadges)}
-                    <button class="nav-btn btn-parent" onclick="window.router.navigate('#/parent/home')">👪 Parents</button>
+                    ${isStudent ? '' : `<button class="nav-btn btn-parent${isParent ? ' active' : ''}" onclick="window.router.navigate('#/parent/home')">👪 Parents</button>`}
+                    <button class="nav-btn" onclick="window._handleLogout()">🚪 Logout</button>
                 </div>
                 <div class="nav-xp">⚡ ${progress.xp || 0} XP</div>
                 <div class="nav-gems">💎 ${progress.gems || 0}</div>
@@ -120,10 +142,17 @@ function renderNav(hash) {
                     <span class="tab-icon">🏅</span>
                     <span>Badges</span>
                 </button>
-                <button class="mobile-tab" onclick="window.router.navigate('#/parent/home')">
+                ${isStudent ? `
+                <button class="mobile-tab" onclick="window._handleLogout()">
+                    <span class="tab-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+                ` : `
+                <button class="mobile-tab${isParent ? ' active' : ''}" onclick="window.router.navigate('#/parent/home')">
                     <span class="tab-icon">👪</span>
                     <span>Parents</span>
                 </button>
+                `}
             </div>
         `;
   }
