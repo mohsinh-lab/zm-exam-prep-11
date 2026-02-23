@@ -8,47 +8,47 @@ import { spawnConfetti } from '../components/confetti.js';
 import { audio } from '../engine/audioEngine.js';
 
 export function renderResults(dataStr) {
-    let session, answers, timings;
-    try {
-        const parsed = JSON.parse(dataStr);
-        session = parsed.session;
-        answers = parsed.answers;
-        timings = parsed.timings || [];
-    } catch {
-        navigate('home');
-        return '';
-    }
+  let session, answers, timings;
+  try {
+    const parsed = JSON.parse(dataStr);
+    session = parsed.session;
+    answers = parsed.answers;
+    timings = parsed.timings || [];
+  } catch {
+    navigate('home');
+    return '';
+  }
 
-    const progress = getProgress();
-    const colors = SUBJECT_COLORS[session.subject];
-    const score = session.score;
-    const scoreColor = score >= 80 ? 'var(--c-success)' : score >= 60 ? 'var(--c-accent)' : 'var(--c-danger)';
-    const scoreEmoji = score >= 80 ? '🌟' : score >= 60 ? '📈' : '💪';
-    const label = score >= 80 ? 'Excellent!' : score >= 60 ? 'Good effort!' : 'Keep practising!';
+  const progress = getProgress();
+  const colors = SUBJECT_COLORS[session.subject];
+  const score = session.score;
+  const scoreColor = score >= 80 ? 'var(--c-success)' : score >= 60 ? 'var(--c-accent)' : 'var(--c-danger)';
+  const scoreEmoji = score >= 80 ? '🌟' : score >= 60 ? '📈' : '💪';
+  const label = score >= 80 ? 'Excellent!' : score >= 60 ? 'Good effort!' : 'Keep practising!';
 
-    // Time analytics summary
-    const avgTime = timings.length ? Math.round(timings.reduce((s, t) => s + t.timeTaken, 0) / timings.length) : 0;
-    const guessed = timings.filter(t => t.responseType === 'guessed').length;
-    const stuck = timings.filter(t => t.responseType === 'stuck').length;
-    const confident = timings.filter(t => t.responseType === 'confident').length;
+  // Time analytics summary
+  const avgTime = timings.length ? Math.round(timings.reduce((s, t) => s + t.timeTaken, 0) / timings.length) : 0;
+  const guessed = timings.filter(t => t.responseType === 'guessed').length;
+  const stuck = timings.filter(t => t.responseType === 'stuck').length;
+  const confident = timings.filter(t => t.responseType === 'confident').length;
 
-    // Adaptive recommendation
-    let recommendation = '';
-    if (guessed >= 3) recommendation = '⚡ You answered several questions very quickly without getting them right. Try reading each question fully before selecting — rushing costs marks!';
-    else if (stuck >= 3) recommendation = '🧠 You spent a long time on several hard questions. Practice elimination strategies: cross out clearly wrong options, then choose between the remaining ones.';
-    else if (score >= 80 && confident >= 3) recommendation = '🚀 You\'re flying! Ready to tackle harder difficulty questions next session.';
-    else if (score >= 60) recommendation = '📚 Solid performance! Focus on the specific topics you got wrong below.';
-    else recommendation = '💪 Every Pokémon trainer loses battles before winning! Come back tomorrow and those questions will feel easier.';
+  // Adaptive recommendation
+  let recommendation = '';
+  if (guessed >= 3) recommendation = '⚡ You answered several questions very quickly without getting them right. Try reading each question fully before selecting — rushing costs marks!';
+  else if (stuck >= 3) recommendation = '🧠 You spent a long time on several hard questions. Practice elimination strategies: cross out clearly wrong options, then choose between the remaining ones.';
+  else if (score >= 80 && confident >= 3) recommendation = '🚀 You\'re flying! Ready to tackle harder difficulty questions next session.';
+  else if (score >= 60) recommendation = '📚 Solid performance! Focus on the specific topics you got wrong below.';
+  else recommendation = '💪 Every Pokémon trainer loses battles before winning! Come back tomorrow and those questions will feel easier.';
 
-    // New badges earned this session
-    const allBadgeIds = BADGE_DEFINITIONS.map(b => b.id);
-    const earnedBadges = progress.badges || [];
-    const newBadges = BADGE_DEFINITIONS.filter(b => earnedBadges.includes(b.id)).slice(-2);
+  // New badges earned this session
+  const allBadgeIds = BADGE_DEFINITIONS.map(b => b.id);
+  const earnedBadges = progress.badges || [];
+  const newBadges = BADGE_DEFINITIONS.filter(b => earnedBadges.includes(b.id)).slice(-2);
 
-    // Weak topics
-    const weakTopics = getWeakTopics(session.subject).slice(0, 3);
+  // Weak topics
+  const weakTopics = getWeakTopics(session.subject).slice(0, 3);
 
-    return `
+  return `
 <div class="page page-enter" style="max-width:760px;margin:0 auto">
 
   <!-- Score hero -->
@@ -111,10 +111,10 @@ export function renderResults(dataStr) {
   <div class="card" style="margin-bottom:20px">
     <h3 style="font-family:var(--font-heading);font-weight:800;margin-bottom:16px">📋 Question Review</h3>
     ${answers.map((a, i) => {
-        const q = a.question;
-        const timing = timings[i] || {};
-        const typeIcon = { guessed: '⚡', stuck: '🤔', confident: '✅', struggled: '📈', normal: '⏱' }[timing.responseType] || '⏱';
-        return `
+    const q = a.question;
+    const timing = timings[i] || {};
+    const typeIcon = { guessed: '⚡', stuck: '🤔', confident: '✅', struggled: '📈', normal: '⏱' }[timing.responseType] || '⏱';
+    return `
       <div class="review-item ${a.isCorrect ? 'correct-item' : 'wrong-item'}" style="margin-bottom:10px">
         <div class="review-icon">${a.isCorrect ? '✅' : '❌'}</div>
         <div style="flex:1">
@@ -124,7 +124,7 @@ export function renderResults(dataStr) {
           <div style="font-size:11px;color:var(--c-text-dim);margin-top:4px">${typeIcon} ${Math.round(timing.timeTaken || 0)}s · ${timing.responseType || ''}</div>
         </div>
       </div>`;
-    }).join('')}
+  }).join('')}
   </div>
 
   <!-- Actions -->
@@ -138,33 +138,30 @@ export function renderResults(dataStr) {
 
 </div>
 ${newBadges.length ? renderBadgePopup(newBadges[newBadges.length - 1]) : ''}
-<script>
-  (function(){
-    // Initialise audio if not already
-    audio.init();
+`;
+}
 
-    const score = ${score};
-    const badgeEarned = ${newBadges.length > 0};
-    
-    if (badgeEarned) {
-      audio.play('badge');
-    } else if (score >= 80) {
-      audio.play('levelUp');
-    }
+export function mountResults(score, badgeEarned) {
+  // Initialise audio if not already
+  audio.init();
 
-    if(score >= 80 && typeof spawnConfetti === "function") {
-      spawnConfetti();
-    }
-    
-    // Auto-close badge popup
-    const popup = document.getElementById('badge-popup');
-    if (popup) setTimeout(() => popup.style.display='none', 4000);
-  })();
-<\/script>`;
+  if (badgeEarned) {
+    audio.play('badge');
+  } else if (score >= 80) {
+    audio.play('levelUp');
+  }
+
+  if (score >= 80 && typeof spawnConfetti === "function") {
+    spawnConfetti();
+  }
+
+  // Auto-close badge popup
+  const popup = document.getElementById('badge-popup');
+  if (popup) setTimeout(() => popup.style.display = 'none', 4000);
 }
 
 function renderBadgePopup(badge) {
-    return `
+  return `
   <div class="badge-overlay" id="badge-popup" onclick="this.style.display='none'">
     <div class="badge-pop">
       <div class="badge-pop-icon">${badge.icon}</div>

@@ -4,7 +4,7 @@ import { setStudentName, setParentEmail, getProgress } from '../engine/progressS
 import { navigate } from '../app.js';
 
 export function renderSetup() {
-    return `
+  return `
 <div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 50% 30%,#1a1060,#0f0f1a)">
   <div class="setup-screen">
     <div class="setup-icon">🎓</div>
@@ -28,22 +28,28 @@ export function renderSetup() {
       🔒 All data stays on this device. No account required.
     </div>
   </div>
-</div>
-<script>
-  window._setupSubmit = function() {
-    const name = document.getElementById('setup-name').value.trim();
-    const email = document.getElementById('setup-email').value.trim();
-    if (!name) { document.getElementById('setup-name').focus(); return; }
-    // Save to localStorage directly (progressStore not imported in script tag)
+</div>`;
+}
+
+export function mountSetup() {
+  const nameInput = document.getElementById('setup-name');
+  const emailInput = document.getElementById('setup-email');
+
+  window._setupSubmit = function () {
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+
     const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
     p.studentName = name;
     p.parentEmail = email;
     p.setupDone = true;
     localStorage.setItem('11plus_progress', JSON.stringify(p));
+
     navigate('home');
   };
-  document.getElementById('setup-name')?.addEventListener('keydown', e => {
-    if(e.key === 'Enter') document.getElementById('setup-email')?.focus();
+
+  nameInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') emailInput?.focus();
   });
-<\/script>`;
 }

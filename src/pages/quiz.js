@@ -81,73 +81,7 @@ function buildQuizHTML(s) {
   <!-- Focus tracker (invisible) -->
   <div id="focus-overlay" style="display:none"></div>
 
-</div>
-
-<script>
-(function(){
-  // ── Timer ──────────────────────────────────────────────────────────
-  const SECS = 90;
-  let timeLeft = SECS, timerInterval;
-  const arc    = document.getElementById('timer-arc');
-  const txt    = document.getElementById('timer-text');
-  const circ   = 2 * Math.PI * 28;
-  let _questionOpenTime = Date.now();
-
-  window._quizRecordReadTime = function() {
-    // Called on first option hover — tracks reading time
-    if (!window._readTimeRecorded) {
-      window._readTimeRecorded = true;
-      window._readMs = Date.now() - _questionOpenTime;
-    }
-  };
-
-  function startTimer() {
-    clearInterval(timerInterval);
-    timeLeft = SECS;
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      if (txt) txt.textContent = timeLeft;
-      const offset = circ * (1 - timeLeft / SECS);
-      if (arc) arc.style.strokeDashoffset = offset;
-      if (timeLeft <= 10 && arc) arc.style.stroke = '#ef4444';
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        if (!window._quizAnswered) window._autoSubmit();
-      }
-    }, 1000);
-  }
-
-  window._autoSubmit = function() {
-    // Time ran out — treat as wrong, move on
-    window._recordQuizAnswer(null, false);
-  };
-
-  window._quizTimerStart = startTimer;
-
-  // ── Visibility / Focus tracking ────────────────────────────────────
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      window._focusLostTime = Date.now();
-    } else if (window._focusLostTime) {
-      const away = Date.now() - window._focusLostTime;
-      if (away > 5000) {
-        window._focusWarnings = (window._focusWarnings || 0) + 1;
-        showFocusAlert();
-      }
-    }
-  });
-
-  function showFocusAlert() {
-    const overlay = document.getElementById('focus-overlay');
-    if (!overlay) return;
-    overlay.innerHTML = '<div class="focus-alert">👀 Welcome back! Stay focused — the exam won\'t wait! 💪</div>';
-    overlay.style.display = 'block';
-    setTimeout(() => { overlay.style.display = 'none'; }, 3000);
-  }
-
-  startTimer();
-})();
-<\/script>`;
+</div>`;
 }
 
 function renderQuestion(q, s, colors) {
@@ -188,13 +122,81 @@ export function mountQuizHandlers(subject) {
   window._quizAnswered = false;
   window._readTimeRecorded = false;
   window._focusWarnings = 0;
-  window._questionStart = Date.now();
+  const _questionOpenTime = Date.now();
+  window._questionStart = _questionOpenTime;
+
+  const SECS = 90;
+  let timeLeft = SECS;
+  let timerInterval;
+  const arc = document.getElementById('timer-arc');
+  const txt = document.getElementById('timer-text');
+  const circ = 2 * Math.PI * 28;
+
+  window._quizRecordReadTime = function () {
+    // Called on first option hover — tracks reading time
+    if (!window._readTimeRecorded) {
+      window._readTimeRecorded = true;
+      window._readMs = Date.now() - _questionOpenTime;
+    }
+  };
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = SECS;
+    timerInterval = setInterval(() => {
+      if (window._currentPage !== 'quiz') {
+        clearInterval(timerInterval);
+        return;
+      }
+      timeLeft--;
+      if (txt) txt.textContent = timeLeft;
+      const offset = circ * (1 - timeLeft / SECS);
+      if (arc) arc.style.strokeDashoffset = offset;
+      if (timeLeft <= 10 && arc) arc.style.stroke = '#ef4444';
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!window._quizAnswered) window._autoSubmit();
+      }
+    }, 1000);
+  }
+
+  window._autoSubmit = function () {
+    // Time ran out — treat as wrong, move on
+    window._submitAnswer(); // Using _submitAnswer instead of recordQuizAnswer for consistency
+  };
 
   window._quizTimerStart = startTimer;
-  window._streak = 0;
+  window._streak = window._streak || 0;
 
   if (window._quizTimerStart) window._quizTimerStart();
   audio.init(); // Initialize audio context on first user interaction 
+
+  // Visibility / Focus tracking
+  const handleVisibilityChange = () => {
+    if (window._currentPage !== 'quiz') {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      return;
+    }
+    if (document.hidden) {
+      window._focusLostTime = Date.now();
+    } else if (window._focusLostTime) {
+      const away = Date.now() - window._focusLostTime;
+      if (away > 5000) {
+        window._focusWarnings = (window._focusWarnings || 0) + 1;
+        showFocusAlert();
+      }
+      window._focusLostTime = null;
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  function showFocusAlert() {
+    const overlay = document.getElementById('focus-overlay');
+    if (!overlay) return;
+    overlay.innerHTML = '<div class="focus-alert">👀 Welcome back! Stay focused — the exam won\'t wait! 💪</div>';
+    overlay.style.display = 'block';
+    setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 3000);
+  }
 
   window._selectOption = function (index) {
     if (state.answered) return;

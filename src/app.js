@@ -2,11 +2,11 @@
 
 import { renderHome } from './pages/home.js';
 import { renderQuiz, mountQuizHandlers } from './pages/quiz.js';
-import { renderResults } from './pages/results.js';
-import { renderParent } from './pages/parent.js';
+import { renderResults, mountResults } from './pages/results.js';
+import { renderParent, mountParent } from './pages/parent.js';
 import { renderActionPlan } from './pages/actionplan.js';
 import { renderAchievements } from './pages/achievements.js';
-import { renderSetup } from './pages/setup.js';
+import { renderSetup, mountSetup } from './pages/setup.js';
 import { getProgress, generateDailyReport, generateWeeklyReport, generateMonthlyReport } from './engine/progressStore.js';
 import { SUBJECT_LABELS } from './engine/questionBank.js';
 
@@ -44,10 +44,20 @@ function renderPage(page, data) {
   updateNavbar(page);
   updateMobileTabbar(page);
 
-  // Mount quiz handlers after DOM update
-  if (page === 'quiz') {
-    requestAnimationFrame(() => mountQuizHandlers(data));
-  }
+  // Mount logic after DOM update
+  requestAnimationFrame(() => {
+    switch (page) {
+      case 'setup': mountSetup(); break;
+      case 'quiz': mountQuizHandlers(data); break;
+      case 'parent': mountParent(); break;
+      case 'results':
+        try {
+          const d = JSON.parse(data);
+          mountResults(d.session.score, d.session.badgeEarned || d.session.newBadges?.length > 0);
+        } catch (e) { mountResults(0, false); }
+        break;
+    }
+  });
 
   // Scroll to top
   window.scrollTo(0, 0);

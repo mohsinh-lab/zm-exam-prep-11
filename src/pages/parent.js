@@ -7,10 +7,10 @@ import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS } from '../engine/questionBank
 let activeTab = 'daily';
 
 export function renderParent() {
-    const progress = getProgress();
-    const name = progress.studentName || 'Student';
+  const progress = getProgress();
+  const name = progress.studentName || 'Student';
 
-    return `
+  return `
 <div class="page page-enter">
   <h1 class="page-title">📊 Parent Dashboard</h1>
   <p class="page-subtitle">Track ${name}'s 11+ preparation for Dream School</p>
@@ -78,63 +78,65 @@ export function renderParent() {
   </div>
 </div>
 
-<script>
-  window.switchParentTab = function(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    const progress = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-    document.getElementById('parent-tab-content').innerHTML = renderParentTabClient(tab, progress);
-  };
-
-  window.saveParentEmail = function() {
-    const email = document.getElementById('parent-email-input').value;
-    const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-    p.parentEmail = email;
-    localStorage.setItem('11plus_progress', JSON.stringify(p));
-    alert('✅ Email saved! You can now preview reports.');
-  };
-
-  window.previewReport = function(type) {
-    const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-    const name = p.studentName || 'Student';
-    const titles = { daily: 'Daily Report', weekly: 'Weekly Report', monthly: 'Monthly Report' };
-    document.getElementById('email-modal-title').textContent = '📧 ' + titles[type];
-    // These functions are globally defined via progressStore
-    const reports = {
-      daily: window._genDaily ? window._genDaily(name) : 'No data yet.',
-      weekly: window._genWeekly ? window._genWeekly(name) : 'No data yet.',
-      monthly: window._genMonthly ? window._genMonthly(name) : 'No data yet.',
+export function mountParent() {
+    window.switchParentTab = function (tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        if (event) event.target.classList.add('active');
+        const progress = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+        const root = document.getElementById('parent-tab-content');
+        if (root) root.innerHTML = renderParentTab(tab, progress);
     };
-    document.getElementById('email-modal-body').textContent = reports[type];
-    document.getElementById('email-modal').classList.remove('hidden');
-    window._currentReportText = reports[type];
-    window._currentReportType = type;
-  };
 
-  window.copyReport = function() {
-    if (window._currentReportText) navigator.clipboard.writeText(window._currentReportText);
-    alert('✅ Report copied to clipboard!');
-  };
+    window.saveParentEmail = function () {
+        const email = document.getElementById('parent-email-input').value;
+        const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+        p.parentEmail = email;
+        localStorage.setItem('11plus_progress', JSON.stringify(p));
+        alert('✅ Email saved! You can now preview reports.');
+    };
 
-  window.mailReport = function() {
-    const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
-    const email = p.parentEmail || '';
-    const titles = { daily: 'Daily 11+ Progress Update', weekly: 'Weekly 11+ Progress Report', monthly: 'Monthly 11+ Progress Overview' };
-    const subject = encodeURIComponent(titles[window._currentReportType] || '11+ Progress Report');
-    const body = encodeURIComponent(window._currentReportText || '');
-    window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
-  };
-<\/script>`;
+    window.previewReport = function (type) {
+        const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+        const name = p.studentName || 'Student';
+        const titles = { daily: 'Daily Report', weekly: 'Weekly Report', monthly: 'Monthly Report' };
+        document.getElementById('email-modal-title').textContent = '📧 ' + titles[type];
+        // These functions are globally defined via app.js boot or progressStore
+        const reports = {
+            daily: window._genDaily ? window._genDaily(name) : 'No data yet.',
+            weekly: window._genWeekly ? window._genWeekly(name) : 'No data yet.',
+            monthly: window._genMonthly ? window._genMonthly(name) : 'No data yet.',
+        };
+        document.getElementById('email-modal-body').textContent = reports[type];
+        document.getElementById('email-modal').classList.remove('hidden');
+        window._currentReportText = reports[type];
+        window._currentReportType = type;
+    };
+
+    window.copyReport = function () {
+        if (window._currentReportText) navigator.clipboard.writeText(window._currentReportText);
+        alert('✅ Report copied to clipboard!');
+    };
+
+    window.mailReport = function () {
+        const p = JSON.parse(localStorage.getItem('11plus_progress') || '{}');
+        const email = p.parentEmail || '';
+        const titles = { daily: 'Daily 11+ Progress Update', weekly: 'Weekly 11+ Progress Report', monthly: 'Monthly 11+ Progress Overview' };
+        const subject = encodeURIComponent(titles[window._currentReportType] || '11+ Progress Report');
+        const body = encodeURIComponent(window._currentReportText || '');
+        window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+    };
+}
+`;
 }
 
 function renderParentStats(p) {
-    const sessions = p.sessions || [];
-    const today = sessions.filter(s => new Date(s.date).toDateString() === new Date().toDateString());
-    const week = sessions.filter(s => Date.now() - new Date(s.date) < 7 * 86400000);
-    const avgScore = week.length
-        ? Math.round(week.reduce((s, x) => s + x.score, 0) / week.length)
-        : 0;
-    return `
+  const sessions = p.sessions || [];
+  const today = sessions.filter(s => new Date(s.date).toDateString() === new Date().toDateString());
+  const week = sessions.filter(s => Date.now() - new Date(s.date) < 7 * 86400000);
+  const avgScore = week.length
+    ? Math.round(week.reduce((s, x) => s + x.score, 0) / week.length)
+    : 0;
+  return `
     <div class="stat-card"><div class="stat-value" style="color:#a78bfa">${today.length}</div><div class="stat-label">Today's Sessions</div></div>
     <div class="stat-card"><div class="stat-value" style="color:#34d399">${p.streak || 0}🔥</div><div class="stat-label">Day Streak</div></div>
     <div class="stat-card"><div class="stat-value" style="color:#f59e0b">${avgScore}%</div><div class="stat-label">Weekly Avg Score</div></div>
@@ -143,24 +145,24 @@ function renderParentStats(p) {
 }
 
 function renderParentTab(tab, p) {
-    const sessions = p.sessions || [];
-    const now = Date.now();
-    const rangeMs = tab === 'daily' ? 86400000 : tab === 'weekly' ? 7 * 86400000 : 30 * 86400000;
-    const filtered = sessions.filter(s => now - new Date(s.date) < rangeMs);
+  const sessions = p.sessions || [];
+  const now = Date.now();
+  const rangeMs = tab === 'daily' ? 86400000 : tab === 'weekly' ? 7 * 86400000 : 30 * 86400000;
+  const filtered = sessions.filter(s => now - new Date(s.date) < rangeMs);
 
-    if (!filtered.length) {
-        return `<div class="card" style="text-align:center;padding:40px;color:var(--c-text-muted)">
+  if (!filtered.length) {
+    return `<div class="card" style="text-align:center;padding:40px;color:var(--c-text-muted)">
       No sessions recorded in this period yet. Encourage ${p.studentName || 'the student'} to start practising!
     </div>`;
-    }
+  }
 
-    const totalQ = filtered.reduce((s, x) => s + x.total, 0);
-    const correct = filtered.reduce((s, x) => s + x.correct, 0);
-    const avgScore = Math.round((correct / totalQ) * 100);
-    const subjects = [...new Set(filtered.map(s => s.subject))];
-    const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Mathematics' };
+  const totalQ = filtered.reduce((s, x) => s + x.total, 0);
+  const correct = filtered.reduce((s, x) => s + x.correct, 0);
+  const avgScore = Math.round((correct / totalQ) * 100);
+  const subjects = [...new Set(filtered.map(s => s.subject))];
+  const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Mathematics' };
 
-    return `
+  return `
   <div class="report-card">
     <div class="report-row"><span class="report-label">Sessions</span><span class="report-value">${filtered.length}</span></div>
     <div class="report-row"><span class="report-label">Questions Answered</span><span class="report-value">${totalQ}</span></div>
@@ -174,11 +176,11 @@ function renderParentTab(tab, p) {
 }
 
 function renderSubjectBreakdown(p) {
-    return `<div class="subject-grid">${Object.values(SUBJECTS).map(sub => {
-        const mastery = getSubjectMastery(sub);
-        const weak = getWeakTopics(sub);
-        const c = SUBJECT_COLORS[sub];
-        return `
+  return `<div class="subject-grid">${Object.values(SUBJECTS).map(sub => {
+    const mastery = getSubjectMastery(sub);
+    const weak = getWeakTopics(sub);
+    const c = SUBJECT_COLORS[sub];
+    return `
     <div class="card">
       <div style="font-size:28px;margin-bottom:8px">${{ vr: '🔤', nvr: '🔷', en: '📖', maths: '🔢' }[sub]}</div>
       <div style="font-weight:800;font-family:var(--font-heading);margin-bottom:4px">${SUBJECT_LABELS[sub]}</div>
@@ -188,21 +190,21 @@ function renderSubjectBreakdown(p) {
       <div style="font-weight:700;color:${c.end}">${mastery}% mastery</div>
       ${weak.length ? `<div style="font-size:12px;color:var(--c-text-muted);margin-top:6px">⚠️ Weak: ${weak[0].topic} (${weak[0].mastery}%)</div>` : '<div style="font-size:12px;color:var(--c-success);margin-top:6px">✅ All topics progressing</div>'}
     </div>`;
-    }).join('')}</div>`;
+  }).join('')}</div>`;
 }
 
 function renderBehaviourAnalytics(p) {
-    const sessions = p.sessions || [];
-    if (!sessions.length) return '<div class="card" style="color:var(--c-text-muted);text-align:center;padding:30px">Complete some sessions to see learning behaviour data.</div>';
+  const sessions = p.sessions || [];
+  if (!sessions.length) return '<div class="card" style="color:var(--c-text-muted);text-align:center;padding:30px">Complete some sessions to see learning behaviour data.</div>';
 
-    const avgTime = Math.round(sessions.reduce((s, x) => s + (x.timeTaken || 0), 0) / sessions.length / 10);
-    const subSess = { vr: 0, nvr: 0, en: 0, maths: 0 };
-    sessions.forEach(s => { if (subSess[s.subject] !== undefined) subSess[s.subject]++; });
-    const preferred = Object.entries(subSess).sort((a, b) => b[1] - a[1])[0]?.[0];
-    const avoided = Object.entries(subSess).sort((a, b) => a[1] - b[1])[0]?.[0];
-    const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Mathematics' };
+  const avgTime = Math.round(sessions.reduce((s, x) => s + (x.timeTaken || 0), 0) / sessions.length / 10);
+  const subSess = { vr: 0, nvr: 0, en: 0, maths: 0 };
+  sessions.forEach(s => { if (subSess[s.subject] !== undefined) subSess[s.subject]++; });
+  const preferred = Object.entries(subSess).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const avoided = Object.entries(subSess).sort((a, b) => a[1] - b[1])[0]?.[0];
+  const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Mathematics' };
 
-    return `
+  return `
   <div class="card">
     <div class="report-row"><span class="report-label">Avg Session Length</span><span class="report-value">${avgTime} min</span></div>
     <div class="report-row"><span class="report-label">Most Practised Subject</span><span class="report-value" style="color:var(--c-success)">${subLabels[preferred] || '—'}</span></div>
