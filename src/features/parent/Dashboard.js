@@ -18,128 +18,131 @@ export function renderParentDashboard() {
   const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
 
   return `
-<div class="page page-enter parent-dashboard">
-  <h1 class="page-title">📊 Parent Dashboard</h1>
-  <p class="page-subtitle">Monitoring ${name}'s 11+ Journey</p>
+<div class="page page-enter parent-dashboard" style="color: var(--c-text-light)">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+    <div>
+      <h1 class="page-title" style="color: white; font-family: var(--font-heading); font-size: 36px; margin-bottom: 4px;">📊 Parent Portal</h1>
+      <p class="page-subtitle" style="color: var(--c-primary-light); font-weight: 700;">Monitoring ${name}'s 11+ Journey</p>
+    </div>
+    <img src="transformer-plan.png" alt="Mission Control" class="desktop-only" style="width: 100px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+  </div>
 
   <!-- Stats row -->
-  <div class="stats-row" style="margin-bottom:28px">
-    <div class="stat-card">
-      <div class="stat-value" style="color:#a78bfa">${today.length}</div>
-      <div class="stat-label">Today's Sessions</div>
+  <div class="stats-row" style="margin-bottom:32px">
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #818cf8;">
+      <div class="stat-value" style="color:#4f46e5">${today.length}</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">TODAY</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:#34d399">${progress.streak || 0}🔥</div>
-      <div class="stat-label">Day Streak</div>
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #4ade80;">
+      <div class="stat-value" style="color:#16a34a">${progress.streak || 0}🔥</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">STREAK</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:#f59e0b">${avgScore}%</div>
-      <div class="stat-label">Weekly Avg</div>
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #fb923c;">
+      <div class="stat-value" style="color:#ea580c">${avgScore}%</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">AVG SCORE</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:#67e8f9">${progress.xp || 0}</div>
-      <div class="stat-label">Total XP</div>
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #22d3ee;">
+      <div class="stat-value" style="color:#0891b2">${progress.xp || 0}</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">XP</div>
     </div>
   </div>
 
   <!-- Reports card -->
-  <div class="card" style="margin-bottom:24px;border-color:rgba(108,99,255,0.35)">
-    <h3 style="font-family:var(--font-heading);font-weight:800;margin-bottom:12px">📧 Progress Reports</h3>
-    <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:16px">Generate a report to review or share with teachers.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-outline btn-sm" onclick="window._previewParentReport('daily')">👁 Daily Report</button>
-      <button class="btn btn-outline btn-sm" onclick="window._previewParentReport('weekly')">📅 Weekly Report</button>
-      <button class="btn btn-outline btn-sm" onclick="window._previewParentReport('monthly')">📆 Monthly Report</button>
+  <div class="card" style="margin-bottom:32px; background: white; border: none; border-left: 8px solid var(--c-primary); box-shadow: var(--shadow-md);">
+    <h3 style="color: var(--c-text); font-family: var(--font-heading); font-weight: 900; margin-bottom:12px">📧 PROGRESS REPORTS</h3>
+    <p style="color: var(--c-text-muted); font-size: 14px; font-weight: 600; margin-bottom: 20px;">Send a detailed snapshot of ${name}'s progress to your email.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" style="border-width: 2px;" onclick="window._previewParentReport('daily')">👁 DAILY</button>
+      <button class="btn btn-outline btn-sm" style="border-width: 2px;" onclick="window._previewParentReport('weekly')">📅 WEEKLY</button>
+      <button class="btn btn-outline btn-sm" style="border-width: 2px;" onclick="window._previewParentReport('monthly')">📆 MONTHLY</button>
     </div>
   </div>
 
   <!-- Subject Mastery -->
-  <h2 class="section-title">📚 Subject Mastery</h2>
+  <h2 class="section-title" style="color: white; margin-bottom: 20px; font-family: var(--font-heading);">📚 SUBJECT MASTERY</h2>
   <div class="subject-grid">
     ${Object.values(SUBJECTS).map(sub => {
     const mastery = getSubjectMastery(sub);
     const color = SUBJECT_COLORS[sub].start;
-    const colorEnd = SUBJECT_COLORS[sub].end;
     const weak = getWeakTopics(sub);
     return `
-      <div class="card">
-        <div style="font-size:28px;margin-bottom:8px">${{ vr: '🔤', nvr: '🔷', en: '📖', maths: '🔢' }[sub]}</div>
-        <strong style="font-family:var(--font-heading)">${SUBJECT_LABELS[sub]}</strong>
-        <div class="accuracy-bar" style="margin:10px 0">
-          <div class="accuracy-fill" style="width:${mastery}%;background:linear-gradient(90deg,${color},${colorEnd})"></div>
+      <div class="card" style="background: white; border: none; border-bottom: 6px solid ${color};">
+        <div style="font-size:32px; margin-bottom:12px;">${{ vr: '🔤', nvr: '🔷', en: '📖', maths: '🔢' }[sub]}</div>
+        <div style="color: var(--c-text); font-weight: 900; font-family: var(--font-heading);">${SUBJECT_LABELS[sub].toUpperCase()}</div>
+        <div class="accuracy-bar" style="margin:12px 0; background: #eee; height: 10px; border-radius: 5px;">
+          <div class="accuracy-fill" style="width:${mastery}%; background:${color}; border-radius: 5px;"></div>
         </div>
-        <div style="font-size:13px;font-weight:700;color:${colorEnd}">${mastery}% mastery</div>
-        ${weak.length ? `<div style="font-size:12px;color:var(--c-text-muted);margin-top:4px">⚠️ Weak: ${weak[0].topic}</div>`
-        : `<div style="font-size:12px;color:var(--c-success);margin-top:4px">✅ Progressing well</div>`}
+        <div style="font-size:13px; font-weight: 800; color:${color}">${mastery}% MASTERY</div>
+        ${weak.length ? `<div style="font-size:11px; color: var(--c-danger); font-weight: 700; margin-top:6px;">⚠️ WEAK: ${weak[0].topic.toUpperCase()}</div>`
+        : `<div style="font-size:11px; color: var(--c-success); font-weight: 700; margin-top:6px;">✅ ON TRACK</div>`}
       </div>`;
   }).join('')}
   </div>
 
   <!-- Recent sessions -->
-  <h2 class="section-title" style="margin-top:32px">📋 Recent Sessions</h2>
-  <div class="card" style="padding:0;overflow:hidden;margin-bottom:32px">
+  <h2 class="section-title" style="color: white; margin-top:40px; margin-bottom: 20px; font-family: var(--font-heading);">📋 LOG BOOK</h2>
+  <div class="card" style="padding:0; overflow:hidden; margin-bottom:40px; background: white; border: none; box-shadow: var(--shadow-md);">
     ${sessions.length === 0
-      ? '<div style="padding:24px;text-align:center;color:var(--c-text-muted)">No sessions yet. Encourage ' + name + ' to start practising!</div>'
+      ? '<div style="padding:32px; text-align:center; color: var(--c-text-muted); font-weight: 700;">No sessions recorded yet!</div>'
       : [...sessions].reverse().slice(0, 8).map(s => {
         const d = new Date(s.date);
         const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
         const scoreC = s.score >= 80 ? 'var(--c-success)' : s.score >= 60 ? 'var(--c-accent)' : 'var(--c-danger)';
         return `
-        <div class="report-row" style="padding:14px 20px">
+        <div class="report-row" style="padding:16px 24px; border-bottom: 1px solid #f0f0f0;">
           <div>
-            <div style="font-weight:700;font-size:14px">${SUBJECT_LABELS[s.subject] || s.subject}</div>
-            <div style="font-size:12px;color:var(--c-text-muted)">${dateStr} · ${s.total} questions</div>
+            <div style="font-weight:900; font-size:14px; color: var(--c-text);">${SUBJECT_LABELS[s.subject]?.toUpperCase() || s.subject.toUpperCase()}</div>
+            <div style="font-size:12px; color: var(--c-text-muted); font-weight: 600;">${dateStr} · ${s.total} Qs</div>
           </div>
           <div style="text-align:right">
-            <div style="font-weight:900;font-size:17px;color:${scoreC}">${s.score}%</div>
-            <div style="font-size:12px;color:var(--c-text-muted)">+${s.xpGained || 0} XP</div>
+            <div style="font-weight:900; font-size:18px; color:${scoreC}">${s.score}%</div>
+            <div style="font-size:12px; color: var(--c-text-muted); font-weight: 700;">+${s.xpGained || 0} XP</div>
           </div>
         </div>`;
       }).join('')}
   </div>
 
   <!-- Profile Management -->
-  <h2 class="section-title">👤 Student Profile</h2>
-  <div class="card" style="margin-bottom:32px; display: flex; align-items: center; gap: 24px;">
+  <h2 class="section-title" style="color: white; margin-bottom: 20px; font-family: var(--font-heading);">👤 SETTINGS</h2>
+  <div class="card" style="margin-bottom:40px; display: flex; align-items: center; gap: 32px; background: white; border: none; box-shadow: var(--shadow-md);">
     <div style="flex: 1;">
       <div class="input-group">
-        <label class="input-label">Student Name</label>
-        <input type="text" id="parent-student-name" class="input-field" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
+        <label class="input-label" style="color: var(--c-text); font-weight: 900;">STUDENT NAME</label>
+        <input type="text" id="parent-student-name" class="input-field" style="border-width: 2px;" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
       </div>
       <div class="input-group">
-        <label class="input-label">Parent Emails (comma separated)</label>
-        <input type="text" id="parent-emails" class="input-field" value="${progress.parentEmail}" placeholder="email@example.com">
+        <label class="input-label" style="color: var(--c-text); font-weight: 900;">RECIPIENT EMAILS</label>
+        <input type="text" id="parent-emails" class="input-field" style="border-width: 2px;" value="${progress.parentEmail}" placeholder="email@example.com">
       </div>
-      <button class="btn btn-primary btn-sm" onclick="window._saveProfile()">Save Changes</button>
-      <p style="margin-top:12px;font-size:12px;color:var(--c-text-muted)">
-        💡 <strong>Note on Emails:</strong> Clicking "Open in Mail" will open your device's email app (Outlook, Gmail, Apple Mail) with the report pre-filled. You must then press <strong>"Send"</strong> in that app to deliver it. 
+      <button class="btn btn-primary" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._saveProfile()">SAVE PROFILE</button>
+      <p style="margin-top:16px; font-size:12px; color: var(--c-text-muted); font-weight: 600; line-height: 1.5;">
+        💡 <strong>Automation Note:</strong> To automate daily emails, we recommend upgrading to a Pro backend. Currently, use "Open in Mail" to send reports manually.
       </p>
     </div>
-    <div style="width: 140px; flex-shrink: 0; display: none; display: block;" class="desktop-only">
-      <img src="thinking-pokemon.png" alt="Thinking Pokemon" style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
+    <div style="width: 180px; flex-shrink: 0;" class="desktop-only">
+      <img src="thinking-pokemon.png" alt="Thinking Pokemon" style="width: 100%; height: auto; border-radius: var(--r-md); box-shadow: var(--shadow-md);">
     </div>
   </div>
 
-  <!-- Go back -->
-  <div style="margin-top:16px;text-align:center">
-    <button class="btn btn-outline" onclick="window._handleAuthLogout()">🚪 Logout from Portal</button>
+  <!-- Logout -->
+  <div style="padding-bottom:100px; text-align:center">
+    <button class="btn btn-outline" style="border-color: rgba(255,255,255,0.3); color: white;" onclick="window._handleAuthLogout()">🚪 LOGOUT FROM PORTAL</button>
   </div>
 </div>
-
-<!-- Report preview modal -->
-<div id="report-modal" class="email-modal hidden">
-  <div class="email-box">
-    <div class="email-header">
-      <h3 id="report-modal-title">Report Preview</h3>
-      <button class="close-btn" onclick="document.getElementById('report-modal').classList.add('hidden')">✕</button>
-    </div>
-    <div class="email-body" id="report-modal-body"></div>
-    <div class="email-footer">
-      <button class="btn btn-outline btn-sm" onclick="window._copyReport()">📋 Copy Text</button>
-      <button class="btn btn-primary btn-sm" onclick="window._mailReport()">📧 Open in Mail</button>
+  <!-- Report preview modal -->
+  <div id="report-modal" class="email-modal hidden">
+    <div class="email-box">
+      <div class="email-header">
+        <h3 id="report-modal-title">Report Preview</h3>
+        <button class="close-btn" onclick="document.getElementById('report-modal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="email-body" id="report-modal-body" style="white-space: pre-wrap; font-family: monospace; font-size: 13px; color: #333; height: 300px; overflow-y: auto; padding: 16px; background: #f9f9f9; border-radius: 8px;"></div>
+      <div class="email-footer">
+        <button class="btn btn-outline btn-sm" onclick="window._copyReport()">📋 Copy Text</button>
+        <button class="btn btn-primary btn-sm" onclick="window._mailReport()">📧 Open in Mail</button>
+      </div>
     </div>
   </div>
-</div>
 `;
 }
 

@@ -1,0 +1,33 @@
+name: Daily Parent Report
+
+on:
+  schedule:
+    - cron: '0 20 * * *' # 8 PM UTC every day
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Daily Summary
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "📊 Zayyan's Daily 11+ Progress Report"
+          to: ${{ secrets.PARENT_EMAIL }}
+          from: "AcePrep Automation <aceprep-bot@github.com>"
+          body: |
+            Hi Parent,
+
+            This is your automated daily summary for Zayyan's 11+ preparation.
+
+            Zayyan has been practicing hard on AcePrep! 
+            Log in to the Parent Portal at https://mohsinh-lab.github.io/zm-exam-prep-11/#/parent/home to see the full list of today's scores and weak topics.
+
+            Keep up the great work, Zayyan!
+
+            Best regards,
+            AcePrep Bot

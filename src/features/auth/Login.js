@@ -3,30 +3,32 @@ import { login } from '../../engine/progressStore.js';
 
 export function renderLogin() {
     return `
-    <div class="page page-enter auth-page">
-        <div class="auth-card">
-            <div class="auth-icon">🔐</div>
-            <h1 class="auth-title">Welcome to AcePrep</h1>
-            <p class="auth-subtitle">Enter your 4-digit passcode to continue</p>
+    <div class="page page-enter auth-page" style="background: var(--c-bg); display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 20px;">
+        <div class="auth-card" style="background: white; border-radius: var(--r-xl); padding: 40px; box-shadow: var(--shadow-lg); max-width: 400px; width: 100%; text-align: center; position: relative;">
             
-            <div class="passcode-display">
-                <div class="dot" id="dot-0"></div>
-                <div class="dot" id="dot-1"></div>
-                <div class="dot" id="dot-2"></div>
-                <div class="dot" id="dot-3"></div>
+            <img src="pokemon-hero.png" alt="Guardian" style="width: 120px; margin-bottom: 20px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));">
+            
+            <h1 class="auth-title" style="color: var(--c-text); font-family: var(--font-heading); font-weight: 900; font-size: 28px; margin-bottom: 8px;">ACEPREP</h1>
+            <p class="auth-subtitle" style="color: var(--c-text-muted); font-weight: 700; font-size: 14px; margin-bottom: 32px;">ENTER PASSCODE TO START STUDYING</p>
+            
+            <div class="passcode-display" style="display: flex; gap: 16px; justify-content: center; margin-bottom: 40px;">
+                <div class="dot" id="dot-0" style="width: 20px; height: 20px; border: 3px solid #eee; border-radius: 50%;"></div>
+                <div class="dot" id="dot-1" style="width: 20px; height: 20px; border: 3px solid #eee; border-radius: 50%;"></div>
+                <div class="dot" id="dot-2" style="width: 20px; height: 20px; border: 3px solid #eee; border-radius: 50%;"></div>
+                <div class="dot" id="dot-3" style="width: 20px; height: 20px; border: 3px solid #eee; border-radius: 50%;"></div>
             </div>
 
-            <div class="keypad">
-                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="key" onclick="window._pressKey('${n}')">${n}</button>`).join('')}
-                <button class="key key-clear" onclick="window._clearKeys()">C</button>
-                <button class="key" onclick="window._pressKey('0')">0</button>
-                <button class="key key-delete" onclick="window._deleteKey()">⌫</button>
+            <div class="keypad" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="key" style="background: #f8fafc; color: var(--c-text); font-weight: 900; font-size: 20px; padding: 16px; border-radius: 16px; border-bottom: 4px solid #e2e8f0; transition: all 0.1s;" onclick="window._pressKey('${n}')">${n}</button>`).join('')}
+                <button class="key key-clear" style="background: #fee2e2; color: #ef4444;" onclick="window._clearKeys()">C</button>
+                <button class="key" style="background: #f8fafc; color: var(--c-text);" onclick="window._pressKey('0')">0</button>
+                <button class="key key-delete" style="background: #f1f5f9; color: var(--c-text-muted);" onclick="window._deleteKey()">⌫</button>
             </div>
 
-            <div id="auth-error" class="auth-error hidden">❌ Invalid passcode. Try again.</div>
+            <div id="auth-error" class="auth-error hidden" style="color: var(--c-danger); font-weight: 800; margin-top: 24px; font-size: 14px;">❌ WRONG PASSCODE</div>
             
-            <div class="auth-footer">
-                <p>Passcodes: 2016 (Student) or 0786 (Parent)</p>
+            <div class="auth-footer" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                <p style="color: var(--c-text-muted); font-size: 12px; font-weight: 700;">HINT: 2016 (STUDENT) · 0786 (PARENT)</p>
             </div>
         </div>
     </div>

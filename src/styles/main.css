@@ -6,52 +6,63 @@
 /* ── Google Fonts already loaded in HTML ── */
 
 :root {
-  /* Colours */
-  --c-bg: #0f0f1a;
-  --c-surface: #1a1a2e;
-  --c-surface2: #16213e;
-  --c-card: #1e1e35;
-  --c-border: rgba(255, 255, 255, 0.08);
+  /* Colours - Vibrant Clash-of-Clans Inspired Palette */
+  --c-bg: #1a4d2e;
+  /* Dark grass green base */
+  --c-surface: #1e3a2b;
+  --c-surface2: #244b36;
+  --c-card: #ffffff;
+  /* Light cards for that 'clay' look */
+  --c-border: rgba(0, 0, 0, 0.1);
 
-  --c-vr: #6C63FF;
-  --c-vr-light: #a78bfa;
-  --c-nvr: #06b6d4;
-  --c-nvr-light: #67e8f9;
-  --c-en: #f59e0b;
-  --c-en-light: #fde68a;
-  --c-maths: #10b981;
-  --c-maths-light: #6ee7b7;
+  --c-vr: #4f46e5;
+  /* Royal Blue */
+  --c-vr-light: #818cf8;
+  --c-nvr: #0891b2;
+  /* Deep Cyan */
+  --c-nvr-light: #22d3ee;
+  --c-en: #ea580c;
+  /* Bright Orange */
+  --c-en-light: #fb923c;
+  --c-maths: #16a34a;
+  /* Vibrant Forest Green */
+  --c-maths-light: #4ade80;
 
-  --c-primary: #6C63FF;
-  --c-primary-light: #a78bfa;
-  --c-accent: #f59e0b;
+  --c-primary: #3b82f6;
+  /* Hero Blue */
+  --c-primary-light: #93c5fd;
+  --c-accent: #facc15;
+  /* Gold/Yellow */
   --c-danger: #ef4444;
-  --c-success: #10b981;
+  --c-success: #22c55e;
   --c-warn: #f59e0b;
 
-  --c-text: #f0f0ff;
-  --c-text-muted: rgba(240, 240, 255, 0.55);
-  --c-text-dim: rgba(240, 240, 255, 0.35);
+  --c-text: #064e3b;
+  /* Deep green for high contrast on light cards */
+  --c-text-light: #ffffff;
+  /* For when text is on dark bg */
+  --c-text-muted: rgba(6, 78, 59, 0.6);
+  --c-text-dim: rgba(6, 78, 59, 0.4);
 
   /* Spacing */
-  --space-xs: 6px;
-  --space-sm: 12px;
-  --space-md: 20px;
-  --space-lg: 32px;
-  --space-xl: 48px;
+  --space-xs: 8px;
+  --space-sm: 14px;
+  --space-md: 24px;
+  --space-lg: 36px;
+  --space-xl: 52px;
 
-  /* Border radius */
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 24px;
-  --r-xl: 32px;
+  /* Border radius - Extra rounded for 'clay' feel */
+  --r-sm: 14px;
+  --r-md: 24px;
+  --r-lg: 32px;
+  --r-xl: 40px;
   --r-full: 9999px;
 
-  /* Shadow */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 30px rgba(108, 99, 255, 0.3);
+  /* Shadow - Soft, deep shadows for depth */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 24px 72px rgba(0, 0, 0, 0.18);
+  --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.4);
 
   /* Animation */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -64,7 +75,7 @@
   --font-heading: 'Nunito', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  --nav-height: 72px;
+  --nav-height: 80px;
 }
 
 /* ── Reset ── */

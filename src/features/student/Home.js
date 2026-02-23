@@ -28,67 +28,94 @@ export function renderStudentHome() {
   const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
 
   return `
-<div class="page page-enter student-home" id="student-home">
+<div class="page page-enter student-home" id="student-home" style="color: var(--c-text-light)">
+
+  <!-- PWA Helper for iPad -->
+  <div id="pwa-helper" style="display:none; background: var(--c-accent); color: #000; padding: 14px; border-radius: 18px; margin-bottom: 24px; font-size: 14px; font-weight: 800; text-align: center; border: 3px solid #000;">
+    📲 iPad Prep: Tap Share <span style="font-size:20px">⎋</span> then "Add to Home Screen" for the full app experience!
+  </div>
+
+  <script>
+    // Show PWA helper only on iOS/iPadOS if not in standalone
+    if ((navigator.userAgent.match(/iPad|iPhone|iPod/g)) && !window.navigator.standalone) {
+      document.getElementById('pwa-helper').style.display = 'block';
+    }
+  </script>
 
   <!-- Hero section -->
-  <div class="home-hero">
-    <div class="hero-left">
-      <div class="greeting-small">👋 ${greeting}</div>
-      <h1 class="page-title">${name}!</h1>
-      <div class="level-badge">
+  <div class="home-hero" style="position: relative; overflow: hidden; background: linear-gradient(135deg, var(--c-primary), var(--c-vr)); border-radius: var(--r-xl); padding: var(--space-lg); border-bottom: 8px solid rgba(0,0,0,0.2);">
+    <div class="hero-left" style="position: relative; z-index: 2;">
+      <div class="greeting-small" style="color: var(--c-accent); font-weight: 900; letter-spacing: 0.05em;">👋 ${greeting.toUpperCase()}</div>
+      <h1 class="page-title" style="color: white; font-size: 48px; margin-bottom: 8px; font-family: var(--font-heading); text-shadow: 0 4px 0 rgba(0,0,0,0.2);">${name}!</h1>
+      <div class="level-badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 99px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.3);">
         <span class="level-icon">⚡</span>
-        <span>Level ${level} — <strong>${levelName}</strong></span>
+        <span style="font-weight: 800; font-size: 14px;">LEVEL ${level} — <strong>${levelName.toUpperCase()}</strong></span>
       </div>
-      <div class="xp-bar-wrap">
-        <div class="xp-bar">
-          <div class="xp-fill" style="width:${xpPercent}%"></div>
+      <div class="xp-bar-wrap" style="max-width: 300px; margin-bottom: 20px;">
+        <div class="xp-bar" style="background: rgba(255,255,255,0.15); height: 14px; border-radius: 7px;">
+          <div class="xp-fill" style="width:${xpPercent}%; background: var(--c-accent)"></div>
         </div>
-        <span class="xp-label">${xp} XP · ${xpToNext} to next level</span>
+        <span class="xp-label" style="color: white; font-weight: 700; font-size: 12px; margin-top: 8px; display: block; opacity: 0.9;">${xp} XP · ${xpToNext} TO NEXT LEVEL</span>
       </div>
-      <p class="motivation-quote">${motivation}</p>
+      
+      <button id="noti-btn" onclick="window._setupNotifications()" 
+              style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer;">
+        🔔 ENABLE STUDY NUDGES
+      </button>
+
+      <p class="motivation-quote" style="color: white; opacity: 0.9; font-style: italic; max-width: 80%; line-height: 1.4; margin-top: 20px;">${motivation}</p>
     </div>
-    <div class="hero-right">
-      <div class="profile-main">
-        <div class="profile-avatar">${rank.icon}</div>
+    
+    <!-- Character Companion -->
+    <img src="pokemon-hero.png" alt="Hero Pokemon" class="desktop-only" 
+         style="position: absolute; right: 0; bottom: -10px; width: 320px; z-index: 1; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));">
+    
+    <div class="hero-right" style="position: relative; z-index: 2;">
+      <div class="profile-main" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+        <div class="profile-avatar" style="background: var(--c-accent); color: #000; font-size: 28px;">${rank.icon}</div>
         <div class="profile-details">
-          <div class="profile-name">${name}</div>
-          <div class="profile-level" style="color:var(--c-accent)">${rank.label}</div>
+          <div class="profile-name" style="color: white; font-weight: 800;">${name}</div>
+          <div class="profile-level" style="color: var(--c-accent); letter-spacing: 0.5px;">${rank.label}</div>
         </div>
       </div>
-      <div class="streak-display">
-        <div class="streak-num">🔥 ${streak}</div>
-        <div class="streak-label">Day Streak</div>
-        <div class="streak-desc">${streak === 0 ? 'Start today!' : streak < 3 ? 'Keep it going!' : streak < 7 ? "You're on fire!" : '🏆 Amazing!'}</div>
+      <div class="streak-display" style="background: var(--c-accent); border: 2px solid white; color: #000; border-radius: var(--r-md);">
+        <div class="streak-num" style="color: #000;">🔥 ${streak}</div>
+        <div class="streak-label" style="color: #000; opacity: 0.7; font-weight: 800;">DAY STREAK</div>
+        <div class="streak-desc" style="color: #000; font-weight: 900;">${streak === 0 ? 'START TODAY!' : streak < 3 ? 'KEEP GOING!' : streak < 7 ? "ON FIRE!" : '🏆 AMAZING!'}</div>
       </div>
     </div>
   </div>
 
   <!-- Target banner -->
-  <div class="target-banner">
-    <div class="target-left">
-      <div class="target-school">🎯 Target: Dream School</div>
-      <div class="target-desc">GL Assessment · Paper 1: English + VR · Paper 2: Maths + NVR · 55 min each</div>
+  <div class="target-banner" style="display: flex; align-items: center; background: #fff; color: var(--c-text); border: 6px solid var(--c-accent); padding: 24px; border-radius: var(--r-lg); margin-top: 32px; box-shadow: var(--shadow-md); position: relative;">
+    <div class="target-left" style="flex: 1;">
+      <div class="target-school" style="color: var(--c-text); font-weight: 900; font-size: 20px; font-family: var(--font-heading);">🎯 TARGET: DREAM SCHOOL</div>
+      <div class="target-desc" style="color: var(--c-text-muted); font-size: 14px; font-weight: 600;">GL ASSESSMENT · PAPER 1 & 2 · 55 MINS</div>
     </div>
-    <div class="target-countdown" id="exam-countdown"></div>
+    <div class="target-countdown" id="exam-countdown" style="background: var(--c-text); color: white; padding: 12px 20px; border-radius: var(--r-md); font-weight: 900;"></div>
+    
+    <!-- Transformer Companion -->
+    <img src="transformer-plan.png" alt="Optimus" 
+         style="width: 140px; margin-left: 20px; border-radius: var(--r-md); box-shadow: var(--shadow-sm);">
   </div>
 
   <!-- Stats row -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-value" style="color:#a78bfa">${todaySessions}</div>
-      <div class="stat-label">Today</div>
+  <div class="stats-row" style="margin-top: 32px;">
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #818cf8; border-radius: var(--r-md);">
+      <div class="stat-value" style="color:#4f46e5">${todaySessions}</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">TODAY</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:#f59e0b">${progress.gems || 0} 💎</div>
-      <div class="stat-label">Gems</div>
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #fb923c; border-radius: var(--r-md);">
+      <div class="stat-value" style="color:#ea580c">${progress.gems || 0} 💎</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">GEMS</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:#67e8f9">${progress.badges?.length || 0}</div>
-      <div class="stat-label">Badges</div>
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #22d3ee; border-radius: var(--r-md);">
+      <div class="stat-value" style="color:#0891b2">${progress.badges?.length || 0}</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">BADGES</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:#34d399">${progress.sessions.length}</div>
-      <div class="stat-label">Total Sessions</div>
+    <div class="stat-card" style="background: white; border-bottom: 8px solid #4ade80; border-radius: var(--r-md);">
+      <div class="stat-value" style="color:#16a34a">${progress.sessions.length}</div>
+      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">TOTAL</div>
     </div>
   </div>
 
@@ -99,29 +126,28 @@ export function renderStudentHome() {
   ${renderWeekendWisdom()}
 
   <!-- Subject grid -->
-  <h2 class="section-title">Start Practice</h2>
+  <h2 class="section-title" style="color: white; margin-top: 48px; font-family: var(--font-heading); font-size: 28px;">Start Practice</h2>
   <div class="subject-grid">
     ${subjects.map(sub => {
     const mastery = getSubjectMastery(sub);
     const subLevel = getCurrentLevel(sub);
     const colors = SUBJECT_COLORS[sub];
     const weakTopics = getWeakTopics(sub);
-    const weakLabel = weakTopics.length > 0 ? `⚠️ Focus: ${weakTopics[0].topic}` : '✅ All topics covered';
+    const weakLabel = weakTopics.length > 0 ? `⚠️ FOCUS: ${weakTopics[0].topic.toUpperCase()}` : '✅ MASTERED';
     return `
       <div class="subject-card" onclick="window.router.navigate('#/student/quiz/${sub}')"
-           style="background: linear-gradient(135deg, ${colors.start}22 0%, ${colors.end}11 100%);
-                  border-color: ${colors.start}44">
-        <div class="subject-card-glow" style="background:${colors.start}"></div>
+           style="background: white; border: none; border-bottom: 8px solid ${colors.start}; border-radius: var(--r-lg);">
+        <div class="subject-card-glow" style="background:${colors.start}11"></div>
         <div>
-          <div class="subject-card-icon">${SUBJECT_ICONS[sub]}</div>
-          <div class="subject-card-name">${SUBJECT_LABELS[sub]}</div>
-          <div class="subject-card-meta" style="color:${colors.end}">${mastery}% mastery · Level ${subLevel}</div>
+          <div class="subject-card-icon" style="background: ${colors.start}11; color: ${colors.start}; border-radius: 12px; padding: 10px;">${SUBJECT_ICONS[sub]}</div>
+          <div class="subject-card-name" style="color: var(--c-text); font-weight: 900;">${SUBJECT_LABELS[sub].toUpperCase()}</div>
+          <div class="subject-card-meta" style="color:${colors.start}; font-weight: 700; font-size: 11px;">${mastery}% MASTERY · LVL ${subLevel}</div>
         </div>
         <div>
-          <div class="accuracy-bar" style="margin-top:10px">
-            <div class="accuracy-fill" style="width:${mastery}%;background:linear-gradient(90deg,${colors.start},${colors.end})"></div>
+          <div class="accuracy-bar" style="margin-top:14px; background: #eee; height: 10px; border-radius: 5px;">
+            <div class="accuracy-fill" style="width:${mastery}%; background:${colors.start}; border-radius: 5px;"></div>
           </div>
-          <div style="font-size:11px;margin-top:6px;opacity:0.7">${weakLabel}</div>
+          <div style="font-size:10px; margin-top:8px; font-weight: 800; color: var(--c-text-muted);">${weakLabel}</div>
         </div>
       </div>`;
   }).join('')}

@@ -39,33 +39,35 @@ function buildQuizHTML(s) {
   const circ = 2 * Math.PI * 28;
 
   return `
-<div id="quiz-page" style="min-height:100dvh;background:var(--c-bg);padding-top:var(--nav-height)">
-  <div class="quiz-header">
-    <button onclick="window.router.navigate('#/student/home')" class="btn-outline btn btn-sm">✕ Quit</button>
-    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="q-prog-fill" style="width:${progress}%"></div></div>
-    <div class="quiz-counter">${s.current + 1} / ${s.questions.length}</div>
-    <div class="quiz-timer-circle" id="timer-wrap">
+<div id="quiz-page" style="min-height:100dvh; background: var(--c-bg); padding-top:var(--nav-height)">
+  <div class="quiz-header" style="background: white; border-bottom: 6px solid ${colors.start}; box-shadow: var(--shadow-sm);">
+    <button onclick="window.router.navigate('#/student/home')" class="btn-outline btn btn-sm" style="color: var(--c-text); border-color: #ddd;">✕ QUIT</button>
+    <div class="quiz-progress-wrap" style="flex: 1; margin: 0 20px; height: 16px; background: #eee; border-radius: 8px; overflow: hidden;">
+      <div class="quiz-progress-fill" id="q-prog-fill" style="width:${progress}%; height: 100%; background: ${colors.start}; border-radius: 8px; transition: width 0.5s var(--ease-bounce);"></div>
+    </div>
+    <div class="quiz-counter" style="color: var(--c-text); font-weight: 900; margin-right: 20px;">${s.current + 1}/${s.questions.length}</div>
+    <div class="quiz-timer-circle" id="timer-wrap" style="background: var(--c-text); border-radius: 999px;">
       <svg width="64" height="64" viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="5"/>
+        <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="5"/>
         <circle id="timer-arc" cx="32" cy="32" r="28" fill="none"
           stroke="${colors.start}" stroke-width="5"
           stroke-linecap="round"
           stroke-dasharray="${circ}"
           stroke-dashoffset="0"/>
       </svg>
-      <div class="quiz-timer-text" id="timer-text">${TIMER_SECONDS}</div>
+      <div class="quiz-timer-text" id="timer-text" style="color: white; font-weight: 900;">${TIMER_SECONDS}</div>
     </div>
   </div>
 
-  <div class="quiz-body" id="quiz-body">
+  <div class="quiz-body" id="quiz-body" style="padding: 24px; max-width: 800px; margin: 0 auto;">
     ${renderQuestion(q, s, colors)}
   </div>
 
-  <div id="buddy-container" class="buddy-container">
-    <div class="buddy-bubble" id="buddy-bubble">${getBuddySpeech(s.subject)}</div>
+  <div id="buddy-container" class="buddy-container" style="background: white; border-top: 6px solid ${colors.start}; border-radius: var(--r-xl) var(--r-xl) 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.1);">
+    <div class="buddy-bubble" id="buddy-bubble" style="background: ${colors.start}11; color: var(--c-text); font-weight: 800; font-family: var(--font-heading); border: 3px solid ${colors.start}22;">${getBuddySpeech(s.subject)}</div>
     <div class="buddy-sprite-wrap">
-      <div class="buddy-name-tag">${getBuddyName(s.subject)}</div>
-      <div class="buddy-sprite" id="buddy-sprite">${getBuddyEmoji(s.subject)}</div>
+      <div class="buddy-name-tag" style="background: ${colors.start}; color: white; font-weight: 900;">${getBuddyName(s.subject).toUpperCase()}</div>
+      <div class="buddy-sprite" id="buddy-sprite" style="padding: 10px;">${getBuddyEmoji(s.subject)}</div>
     </div>
   </div>
 </div>`;
@@ -304,7 +306,12 @@ export function mountStudentQuiz() {
 }
 
 function getBuddyEmoji(subject) {
-  const map = { vr: '⚡🐿️', nvr: '🟦🤖', en: '📖🦉', maths: '🔢🧠' };
+  const map = {
+    vr: '<img src="pokemon-quiz.png" style="width: 100px; height: 100px; object-fit: contain;">',
+    nvr: '<img src="transformer-speed.png" style="width: 100px; height: 100px; object-fit: contain;">',
+    en: '<img src="pokemon-hero.png" style="width: 100px; height: 100px; object-fit: contain;">',
+    maths: '<img src="transformer-plan.png" style="width: 100px; height: 100px; object-fit: contain;">'
+  };
   return map[subject] || '🎓';
 }
 

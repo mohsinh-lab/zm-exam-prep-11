@@ -69,7 +69,34 @@ function mountStudentHome() {
 
   // Auto-refresh motivation quote every minute
   if (window._quoteInterval) clearInterval(window._quoteInterval);
-  window._quoteInterval = null; // will be set fresh
+  window._quoteInterval = null;
+
+  // Notification setup
+  window._setupNotifications = async () => {
+    if (!('Notification' in window)) {
+      alert("Oops! Your browser doesn't support notifications.");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const btn = document.getElementById('noti-btn');
+      if (btn) btn.innerHTML = '✅ NUDGES ACTIVE';
+
+      // Send test nudge via Service Worker
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SCHEDULE_REMINDER' });
+      }
+    } else {
+      alert("No problem! You can always enable them later in settings.");
+    }
+  };
+
+  // Check current status
+  if (Notification.permission === 'granted') {
+    const btn = document.getElementById('noti-btn');
+    if (btn) btn.innerHTML = '✅ NUDGES ACTIVE';
+  }
 }
 
 function renderNav(hash) {
@@ -159,3 +186,12 @@ function renderNav(hash) {
 }
 
 window.addEventListener('DOMContentLoaded', boot);
+
+// PWA: Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW Registered', reg))
+      .catch(err => console.log('SW Failed', err));
+  });
+}
