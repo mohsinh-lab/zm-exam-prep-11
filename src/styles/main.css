@@ -7,10 +7,10 @@
 
 :root {
   /* Colours - Fun, Readable "Sky & Cloud" Palette */
-  --c-bg: #fcfaf5;
-  /* Creamy soft off-white background */
+  --c-bg: #f5eedc;
+  /* Distinct beige/creamy background */
   --c-surface: #ffffff;
-  --c-surface2: #f2efe9;
+  --c-surface2: #eadfc5;
   --c-card: #ffffff;
   --c-border: rgba(0, 0, 0, 0.05);
 

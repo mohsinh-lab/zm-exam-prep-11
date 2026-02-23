@@ -39,26 +39,26 @@ const defaultProgress = () => ({
 export function login(passcode) {
     const progress = getProgress();
     if (passcode === progress.auth.studentPass) {
-        progress.auth.currentUser = 'student';
-        updateProgress(progress);
+        sessionStorage.setItem('ace_current_user', 'student');
         return 'student';
     }
     if (passcode === progress.auth.parentPass) {
-        progress.auth.currentUser = 'parent';
-        updateProgress(progress);
+        sessionStorage.setItem('ace_current_user', 'parent');
         return 'parent';
     }
     return null;
 }
 
 export function logout() {
-    const progress = getProgress();
-    progress.auth.currentUser = null;
-    updateProgress(progress);
+    sessionStorage.removeItem('ace_current_user');
 }
 
 export function getAuth() {
-    return getProgress().auth;
+    const progress = getProgress();
+    return {
+        ...progress.auth,
+        currentUser: sessionStorage.getItem('ace_current_user') || null
+    };
 }
 
 export function getProgress() {
