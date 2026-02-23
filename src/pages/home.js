@@ -5,35 +5,33 @@ import { getSubjectMastery, getCurrentLevel, getWeakTopics, checkBoosterRequired
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS, SUBJECT_ICONS } from '../engine/questionBank.js';
 import { navigate } from '../app.js';
 import { audio } from '../engine/audioEngine.js';
-import { navigate } from '../app.js';
-import { audio } from '../engine/audioEngine.js';
 import { getRandomWeekendQuote, getMinuteAwareQuote } from '../engine/quoteBank.js';
 
 export function renderHome() {
-    const progress = getProgress();
-    const name = progress.studentName || 'Student';
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const progress = getProgress();
+  const name = progress.studentName || 'Student';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-    const subjects = Object.values(SUBJECTS);
-    const totalSessions = progress.sessions.length;
-    const todaySessions = progress.sessions.filter(s =>
-        new Date(s.date).toDateString() === new Date().toDateString()
-    ).length;
-    const streak = progress.streak || 0;
+  const subjects = Object.values(SUBJECTS);
+  const totalSessions = progress.sessions.length;
+  const todaySessions = progress.sessions.filter(s =>
+    new Date(s.date).toDateString() === new Date().toDateString()
+  ).length;
+  const streak = progress.streak || 0;
 
-    const rank = getRankInfo(progress.xp || 0);
-    const xp = progress.xp || 0;
-    const level = Math.floor(xp / 200) + 1;
-    const xpToNext = 200 - (xp % 200);
+  const rank = getRankInfo(progress.xp || 0);
+  const xp = progress.xp || 0;
+  const level = Math.floor(xp / 200) + 1;
+  const xpToNext = 200 - (xp % 200);
 
-    const motivation = getMinuteAwareQuote();
+  const motivation = getMinuteAwareQuote();
 
-    // XP level theming
-    const levelNames = ['Rookie', 'Explorer', 'Challenger', 'Expert', 'Champion', 'Elite Scholar', 'Ilford Star'];
-    const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
+  // XP level theming
+  const levelNames = ['Rookie', 'Explorer', 'Challenger', 'Expert', 'Champion', 'Elite Scholar', 'Ilford Star'];
+  const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
 
-    return `
+  return `
 <div class="page page-enter" id="home-page">
 
   <!-- Hero greeting -->
@@ -112,12 +110,12 @@ export function renderHome() {
   <h2 class="section-title">Choose Your Subject</h2>
   <div class="subject-grid">
     ${subjects.map(sub => {
-        const mastery = getSubjectMastery(sub);
-        const level = getCurrentLevel(sub);
-        const colors = SUBJECT_COLORS[sub];
-        const weakTopics = getWeakTopics(sub);
-        const weakLabel = weakTopics.length > 0 ? `⚠️ Focus: ${weakTopics[0].topic}` : '✅ All topics covered';
-        return `
+    const mastery = getSubjectMastery(sub);
+    const level = getCurrentLevel(sub);
+    const colors = SUBJECT_COLORS[sub];
+    const weakTopics = getWeakTopics(sub);
+    const weakLabel = weakTopics.length > 0 ? `⚠️ Focus: ${weakTopics[0].topic}` : '✅ All topics covered';
+    return `
       <div class="subject-card" onclick="navigate('quiz','${sub}')"
            style="background: linear-gradient(135deg, ${colors.start}22 0%, ${colors.end}11 100%);
                   border-color: ${colors.start}44">
@@ -136,7 +134,7 @@ export function renderHome() {
           <div style="font-size:11px;margin-top:6px;opacity:0.7">${weakLabel}</div>
         </div>
       </div>`;
-    }).join('')}
+  }).join('')}
   </div>
 
   <!-- Recent activity -->
@@ -153,19 +151,19 @@ export function renderHome() {
 }
 
 function renderRecentActivity(progress) {
-    const recent = [...progress.sessions].reverse().slice(0, 5);
-    if (recent.length === 0) return '<div class="section-title" style="margin-top:32px">No sessions yet — pick a subject above to start! 🚀</div>';
-    const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Maths' };
-    const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
-    return `
+  const recent = [...progress.sessions].reverse().slice(0, 5);
+  if (recent.length === 0) return '<div class="section-title" style="margin-top:32px">No sessions yet — pick a subject above to start! 🚀</div>';
+  const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Maths' };
+  const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
+  return `
   <h2 class="section-title" style="margin-top:32px">Recent Activity</h2>
   <div class="card" style="padding:0;overflow:hidden">
     ${recent.map(s => {
-        const d = new Date(s.date);
-        const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-        const emoji = s.score >= 80 ? '🌟' : s.score >= 60 ? '📈' : '💪';
-        return `<div class="report-row" style="padding:14px 20px">
+    const d = new Date(s.date);
+    const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const emoji = s.score >= 80 ? '🌟' : s.score >= 60 ? '📈' : '💪';
+    return `<div class="report-row" style="padding:14px 20px">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="font-size:24px">${emoji}</div>
           <div>
@@ -178,16 +176,16 @@ function renderRecentActivity(progress) {
           <div style="font-size:12px;color:var(--c-text-muted)">${s.xpGained || 0} XP</div>
         </div>
       </div>`;
-    }).join('')}
+  }).join('')}
   </div>`;
 }
 
 function renderMissionCenter() {
-    const booster = checkBoosterRequired();
-    if (!booster) return '';
-    const colors = SUBJECT_COLORS[booster.subject];
+  const booster = checkBoosterRequired();
+  if (!booster) return '';
+  const colors = SUBJECT_COLORS[booster.subject];
 
-    return `
+  return `
   <div class="card mission-card" id="booster-mission" 
        onclick="navigate('quiz', '${booster.subject}')"
        style="background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(6,182,212,0.1));
@@ -216,10 +214,10 @@ function renderMissionCenter() {
 }
 
 function renderWeekendWisdom() {
-    if (!isWeekend()) return '';
-    const quote = getRandomWeekendQuote();
+  if (!isWeekend()) return '';
+  const quote = getRandomWeekendQuote();
 
-    return `
+  return `
   <div class="card wisdom-card" style="margin-bottom:28px; border-left:6px solid #b794f4; background:rgba(183,148,244,0.05)">
     <div style="display:flex; gap:16px; align-items:center">
       <div style="font-size:32px">🕌</div>
@@ -234,17 +232,17 @@ function renderWeekendWisdom() {
 
 // Add auto-refresh for quotes every minute if on home page
 if (!window._quoteInterval) {
-    window._quoteInterval = setInterval(() => {
-        const quoteEl = document.querySelector('.motivation-quote');
-        const homePage = document.getElementById('home-page');
-        if (quoteEl && homePage) {
-            quoteEl.style.opacity = '0';
-            setTimeout(() => {
-                quoteEl.textContent = getMinuteAwareQuote();
-                quoteEl.style.opacity = '1';
-            }, 500);
-        }
-    }, 60000);
+  window._quoteInterval = setInterval(() => {
+    const quoteEl = document.querySelector('.motivation-quote');
+    const homePage = document.getElementById('home-page');
+    if (quoteEl && homePage) {
+      quoteEl.style.opacity = '0';
+      setTimeout(() => {
+        quoteEl.textContent = getMinuteAwareQuote();
+        quoteEl.style.opacity = '1';
+      }, 500);
+    }
+  }, 60000);
 }
 
 

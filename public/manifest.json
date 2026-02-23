@@ -2,7 +2,7 @@
   "name": "AcePrep 11+ | Dream School",
   "short_name": "AcePrep",
   "description": "Smart 11+ GL Assessment preparation app.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
