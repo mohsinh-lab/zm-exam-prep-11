@@ -5,30 +5,32 @@ import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS, SUBJECT_ICONS } from '../../e
 import { getRandomWeekendQuote, getMinuteAwareQuote } from '../../engine/quoteBank.js';
 
 export function renderStudentHome() {
-    const progress = getProgress();
-    const name = progress.studentName || 'Student';
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const progress = getProgress();
+  const name = progress.studentName || 'Student';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-    const subjects = Object.values(SUBJECTS);
-    const totalSessions = progress.sessions.length;
-    const todaySessions = progress.sessions.filter(s =>
-        new Date(s.date).toDateString() === new Date().toDateString()
-    ).length;
-    const streak = progress.streak || 0;
+  const subjects = Object.values(SUBJECTS);
+  const todaySessions = progress.sessions.filter(s =>
+    new Date(s.date).toDateString() === new Date().toDateString()
+  ).length;
+  const streak = progress.streak || 0;
 
-    const rank = getRankInfo(progress.xp || 0);
-    const xp = progress.xp || 0;
-    const level = Math.floor(xp / 200) + 1;
-    const xpToNext = 200 - (xp % 200);
+  const rank = getRankInfo(progress.xp || 0);
+  const xp = progress.xp || 0;
+  const level = Math.floor(xp / 200) + 1;
+  const xpToNext = 200 - (xp % 200);
+  const xpPercent = ((xp % 200) / 200) * 100;
 
-    const motivation = getMinuteAwareQuote();
+  const motivation = getMinuteAwareQuote();
 
-    const levelNames = ['Rookie', 'Explorer', 'Challenger', 'Expert', 'Champion', 'Elite Scholar', 'Ilford Star'];
-    const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
+  const levelNames = ['Rookie', 'Explorer', 'Challenger', 'Expert', 'Champion', 'Elite Scholar', 'Ilford Star'];
+  const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
 
-    return `
+  return `
 <div class="page page-enter student-home" id="student-home">
+
+  <!-- Hero section -->
   <div class="home-hero">
     <div class="hero-left">
       <div class="greeting-small">👋 ${greeting}</div>
@@ -39,27 +41,38 @@ export function renderStudentHome() {
       </div>
       <div class="xp-bar-wrap">
         <div class="xp-bar">
-          <div class="xp-fill" style="width:${((xp % 200) / 200) * 100}%"></div>
+          <div class="xp-fill" style="width:${xpPercent}%"></div>
         </div>
         <span class="xp-label">${xp} XP · ${xpToNext} to next level</span>
       </div>
       <p class="motivation-quote">${motivation}</p>
     </div>
     <div class="hero-right">
-       <div class="profile-main">
-          <div class="profile-avatar">${rank.icon}</div>
-          <div class="profile-details">
-            <div class="profile-name">${name}</div>
-            <div class="profile-level" style="color:var(--c-accent)">${rank.label}</div>
-          </div>
+      <div class="profile-main">
+        <div class="profile-avatar">${rank.icon}</div>
+        <div class="profile-details">
+          <div class="profile-name">${name}</div>
+          <div class="profile-level" style="color:var(--c-accent)">${rank.label}</div>
         </div>
+      </div>
       <div class="streak-display">
         <div class="streak-num">🔥 ${streak}</div>
         <div class="streak-label">Day Streak</div>
+        <div class="streak-desc">${streak === 0 ? 'Start today!' : streak < 3 ? 'Keep it going!' : streak < 7 ? "You're on fire!" : '🏆 Amazing!'}</div>
       </div>
     </div>
   </div>
 
+  <!-- Target banner -->
+  <div class="target-banner">
+    <div class="target-left">
+      <div class="target-school">🎯 Target: Dream School</div>
+      <div class="target-desc">GL Assessment · Paper 1: English + VR · Paper 2: Maths + NVR · 55 min each</div>
+    </div>
+    <div class="target-countdown" id="exam-countdown"></div>
+  </div>
+
+  <!-- Stats row -->
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-value" style="color:#a78bfa">${todaySessions}</div>
@@ -73,48 +86,129 @@ export function renderStudentHome() {
       <div class="stat-value" style="color:#67e8f9">${progress.badges?.length || 0}</div>
       <div class="stat-label">Badges</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#34d399">${progress.sessions.length}</div>
+      <div class="stat-label">Total Sessions</div>
+    </div>
   </div>
 
+  <!-- Mission Center (Booster) -->
   ${renderMissionCenter()}
 
+  <!-- Weekend Wisdom -->
+  ${renderWeekendWisdom()}
+
+  <!-- Subject grid -->
   <h2 class="section-title">Start Practice</h2>
   <div class="subject-grid">
     ${subjects.map(sub => {
-        const mastery = getSubjectMastery(sub);
-        const colors = SUBJECT_COLORS[sub];
-        return `
+    const mastery = getSubjectMastery(sub);
+    const subLevel = getCurrentLevel(sub);
+    const colors = SUBJECT_COLORS[sub];
+    const weakTopics = getWeakTopics(sub);
+    const weakLabel = weakTopics.length > 0 ? `⚠️ Focus: ${weakTopics[0].topic}` : '✅ All topics covered';
+    return `
       <div class="subject-card" onclick="window.router.navigate('#/student/quiz/${sub}')"
-           style="background: linear-gradient(135deg, ${colors.start}22, ${colors.end}11); border-color: ${colors.start}44">
-        <div class="subject-card-icon">${SUBJECT_ICONS[sub]}</div>
-        <div class="subject-card-name">${SUBJECT_LABELS[sub]}</div>
-        <div class="accuracy-bar"><div class="accuracy-fill" style="width:${mastery}%; background:${colors.start}"></div></div>
+           style="background: linear-gradient(135deg, ${colors.start}22 0%, ${colors.end}11 100%);
+                  border-color: ${colors.start}44">
+        <div class="subject-card-glow" style="background:${colors.start}"></div>
+        <div>
+          <div class="subject-card-icon">${SUBJECT_ICONS[sub]}</div>
+          <div class="subject-card-name">${SUBJECT_LABELS[sub]}</div>
+          <div class="subject-card-meta" style="color:${colors.end}">${mastery}% mastery · Level ${subLevel}</div>
+        </div>
+        <div>
+          <div class="accuracy-bar" style="margin-top:10px">
+            <div class="accuracy-fill" style="width:${mastery}%;background:linear-gradient(90deg,${colors.start},${colors.end})"></div>
+          </div>
+          <div style="font-size:11px;margin-top:6px;opacity:0.7">${weakLabel}</div>
+        </div>
       </div>`;
-    }).join('')}
+  }).join('')}
   </div>
 
-  <h2 class="section-title" style="margin-top:32px">Recent Activity</h2>
+  <!-- Recent activity -->
   ${renderRecentActivity(progress)}
+
 </div>`;
 }
 
 function renderRecentActivity(progress) {
-    const recent = [...progress.sessions].reverse().slice(0, 3);
-    if (!recent.length) return '<p>No sessions yet.</p>';
-    return `<div class="card">${recent.map(s => `
-    <div class="report-row">
-      <span>${SUBJECT_LABELS[s.subject]}</span>
-      <strong>${s.score}%</strong>
-    </div>`).join('')}</div>`;
+  const recent = [...progress.sessions].reverse().slice(0, 5);
+  if (!recent.length) {
+    return '<div class="section-title" style="margin-top:32px;color:var(--c-text-muted)">No sessions yet — pick a subject above to start! 🚀</div>';
+  }
+  const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
+
+  return `
+  <h2 class="section-title" style="margin-top:32px">Recent Activity</h2>
+  <div class="card" style="padding:0;overflow:hidden">
+    ${recent.map(s => {
+    const d = new Date(s.date);
+    const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const emoji = s.score >= 80 ? '🌟' : s.score >= 60 ? '📈' : '💪';
+    return `<div class="report-row" style="padding:14px 20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px">${emoji}</div>
+          <div>
+            <div style="font-weight:700;font-size:14px">${SUBJECT_LABELS[s.subject] || s.subject}</div>
+            <div style="font-size:12px;color:var(--c-text-muted)">${dateStr} · ${timeStr} · ${s.total} Qs</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:900;font-size:17px;color:${subColors[s.subject]}">${s.score}%</div>
+          <div style="font-size:12px;color:var(--c-text-muted)">+${s.xpGained || 0} XP</div>
+        </div>
+      </div>`;
+  }).join('')}
+  </div>`;
 }
 
 function renderMissionCenter() {
-    const booster = checkBoosterRequired();
-    if (!booster) return '';
-    const colors = SUBJECT_COLORS[booster.subject];
-    return `
-    <div class="card mission-card" onclick="window.router.navigate('#/student/quiz/${booster.subject}')"
-         style="border: 2px solid ${colors.start}">
-      <h3>🚀 Mission: ${booster.title}</h3>
-      <p>${booster.desc}</p>
-    </div>`;
+  const booster = checkBoosterRequired();
+  if (!booster) return '';
+  const colors = SUBJECT_COLORS[booster.subject];
+
+  return `
+  <div class="card mission-card" onclick="window.router.navigate('#/student/quiz/${booster.subject}')"
+       style="background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(6,182,212,0.1));
+              border: 2px solid ${colors.start}66; margin-bottom:28px; cursor:pointer;
+              animation: missionPulse 2s infinite">
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="font-size:48px">🚀</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--c-accent);margin-bottom:4px">New Booster Unlocked!</div>
+        <h3 style="font-family:var(--font-heading);font-size:20px;font-weight:900;margin-bottom:6px">${booster.title}</h3>
+        <p style="color:var(--c-text-muted);font-size:14px;line-height:1.5">${booster.desc}</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:900;color:var(--c-success)">+${booster.rewardXP} XP</div>
+        <div style="font-size:12px;color:var(--c-text-muted)">Mastery Bonus</div>
+      </div>
+    </div>
+  </div>
+  <style>
+    @keyframes missionPulse {
+      0% { box-shadow: 0 0 0 0 ${colors.start}33; transform: scale(1); }
+      50% { box-shadow: 0 0 20px 5px ${colors.start}11; transform: scale(1.01); }
+      100% { box-shadow: 0 0 0 0 ${colors.start}33; transform: scale(1); }
+    }
+  </style>`;
+}
+
+function renderWeekendWisdom() {
+  if (!isWeekend()) return '';
+  const quote = getRandomWeekendQuote();
+  return `
+  <div class="card wisdom-card" style="margin-bottom:28px; border-left:6px solid #b794f4; background:rgba(183,148,244,0.05)">
+    <div style="display:flex; gap:16px; align-items:center">
+      <div style="font-size:32px">🕌</div>
+      <div style="flex:1">
+        <div style="font-size:11px; font-weight:800; color:#b794f4; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">Weekend Wisdom</div>
+        <p style="font-style:italic; font-size:14px; color:var(--c-text); line-height:1.5; margin-bottom:6px">"${quote.text}"</p>
+        <div style="font-size:12px; font-weight:700; color:var(--c-text-muted)">— ${quote.source}</div>
+      </div>
+    </div>
+  </div>`;
 }

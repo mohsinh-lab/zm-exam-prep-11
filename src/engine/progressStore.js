@@ -50,7 +50,7 @@ export function updateProgress(data) {
 export function recordSession(subject, questions, answers, timeTaken) {
     const progress = getProgress();
 
-    const correct = answers.filter(a => a.correct).length;
+    const correct = answers.filter(a => a.isCorrect).length;
     const score = Math.round((correct / questions.length) * 100);
 
     const session = {
