@@ -100,19 +100,24 @@ export function renderParentDashboard() {
 
   <!-- Profile Management -->
   <h2 class="section-title">👤 Student Profile</h2>
-  <div class="card" style="margin-bottom:32px">
-    <div class="input-group">
-      <label class="input-label">Student Name</label>
-      <input type="text" id="parent-student-name" class="input-field" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
+  <div class="card" style="margin-bottom:32px; display: flex; align-items: center; gap: 24px;">
+    <div style="flex: 1;">
+      <div class="input-group">
+        <label class="input-label">Student Name</label>
+        <input type="text" id="parent-student-name" class="input-field" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Parent Emails (comma separated)</label>
+        <input type="text" id="parent-emails" class="input-field" value="${progress.parentEmail}" placeholder="email@example.com">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="window._saveProfile()">Save Changes</button>
+      <p style="margin-top:12px;font-size:12px;color:var(--c-text-muted)">
+        💡 <strong>Note on Emails:</strong> Clicking "Open in Mail" will open your device's email app (Outlook, Gmail, Apple Mail) with the report pre-filled. You must then press <strong>"Send"</strong> in that app to deliver it. 
+      </p>
     </div>
-    <div class="input-group">
-      <label class="input-label">Parent Emails (comma separated)</label>
-      <input type="text" id="parent-emails" class="input-field" value="${progress.parentEmail}" placeholder="email@example.com">
+    <div style="width: 140px; flex-shrink: 0; display: none; display: block;" class="desktop-only">
+      <img src="thinking-pokemon.png" alt="Thinking Pokemon" style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
     </div>
-    <button class="btn btn-primary btn-sm" onclick="window._saveProfile()">Save Changes</button>
-    <p style="margin-top:12px;font-size:12px;color:var(--c-text-muted)">
-      💡 <strong>Note on Emails:</strong> Clicking "Open in Mail" will open your device's email app (Outlook, Gmail, Apple Mail) with the report pre-filled. You must then press <strong>"Send"</strong> in that app to deliver it. 
-    </p>
   </div>
 
   <!-- Go back -->
