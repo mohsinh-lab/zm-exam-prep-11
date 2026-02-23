@@ -1,4 +1,5 @@
 // Progress Store — localStorage-backed persistence
+import { syncProgressToCloud, loadProgressFromCloud } from './cloudSync.js';
 
 const STORAGE_KEY = '11plus_progress';
 
@@ -74,6 +75,9 @@ export function getProgress() {
 export function updateProgress(data) {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+        // Auto-sync to the cloud in the background using Zayyan's email identifier
+        syncProgressToCloud(data);
     } catch (e) {
         console.warn('Could not save progress:', e);
     }
