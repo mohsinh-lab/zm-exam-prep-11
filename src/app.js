@@ -1,4 +1,4 @@
-
+import './styles/main.css';
 import { Router } from './core/router.js';
 import { renderStudentHome } from './features/student/Home.js';
 import { renderStudentQuiz, mountStudentQuiz } from './features/student/Quiz.js';
