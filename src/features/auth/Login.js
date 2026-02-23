@@ -1,5 +1,5 @@
-
 import { login } from '../../engine/progressStore.js';
+import { audio } from '../../engine/audioEngine.js';
 
 export function renderLogin() {
     return `
@@ -42,6 +42,7 @@ export function mountLogin() {
     updateDots();
 
     window._pressKey = (key) => {
+        try { audio.init(); audio.play('click'); } catch (e) { }
         if (input.length < 4) {
             input += key;
             updateDots();
@@ -52,12 +53,14 @@ export function mountLogin() {
     };
 
     window._clearKeys = () => {
+        try { audio.init(); audio.play('click'); } catch (e) { }
         input = '';
         updateDots();
         hideError();
     };
 
     window._deleteKey = () => {
+        try { audio.init(); audio.play('click'); } catch (e) { }
         input = input.slice(0, -1);
         updateDots();
         hideError();

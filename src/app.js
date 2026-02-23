@@ -24,6 +24,12 @@ const routes = [
 function boot() {
   const progress = getProgress();
 
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW registered!', reg))
+      .catch(err => console.log('SW registration failed', err));
+  }
+
   // Inject global app structure
   document.getElementById('app').innerHTML = `
         <div id="navbar-anchor"></div>
