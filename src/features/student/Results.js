@@ -16,7 +16,7 @@ export function renderStudentResults() {
   const progress = getProgress();
   const colors = SUBJECT_COLORS[session.subject];
   const score = session.score;
-  const scoreColor = score >= 80 ? 'var(--c-success)' : score >= 60 ? 'var(--c-accent)' : 'var(--c-danger)';
+  const scoreColor = score >= 80 ? 'var(--c-success)' : score >= 60 ? 'var(--c-warn)' : 'var(--c-danger)';
   const scoreEmoji = score >= 80 ? '🌟' : score >= 60 ? '📈' : '💪';
   const label = score >= 80 ? 'Excellent!' : score >= 60 ? 'Good effort!' : 'Keep practising!';
 
@@ -49,8 +49,8 @@ export function renderStudentResults() {
   <!-- Score hero -->
   <div class="results-hero">
     <div class="results-score-circle"
-         style="background:conic-gradient(${scoreColor} ${score * 3.6}deg, rgba(255,255,255,0.06) 0deg);
-                box-shadow: 0 0 40px ${scoreColor}44">
+         style="background:conic-gradient(${scoreColor} ${score * 3.6}deg, #e2e8f0 0deg);
+                box-shadow: 0 0 40px ${scoreColor}11">
       <div class="results-score-num">${score}</div>
       <div class="results-score-pct">%</div>
     </div>

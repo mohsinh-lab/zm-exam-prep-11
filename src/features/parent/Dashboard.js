@@ -18,11 +18,11 @@ export function renderParentDashboard() {
   const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
 
   return `
-<div class="page page-enter parent-dashboard" style="color: var(--c-text-light)">
+<div class="page page-enter parent-dashboard" style="color: var(--c-text)">
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
     <div>
-      <h1 class="page-title" style="color: white; font-family: var(--font-heading); font-size: 36px; margin-bottom: 4px;">📊 Parent Portal</h1>
-      <p class="page-subtitle" style="color: var(--c-primary-light); font-weight: 700;">Monitoring ${name}'s 11+ Journey</p>
+      <h1 class="page-title" style="color: var(--c-text); font-family: var(--font-heading); font-size: 36px; margin-bottom: 4px;">📊 Parent Portal</h1>
+      <p class="page-subtitle" style="color: var(--c-primary); font-weight: 700;">Monitoring ${name}'s 11+ Journey</p>
     </div>
     <img src="transformer-plan.png" alt="Mission Control" class="desktop-only" style="width: 100px; border-radius: 12px; box-shadow: var(--shadow-sm);">
   </div>
@@ -59,7 +59,7 @@ export function renderParentDashboard() {
   </div>
 
   <!-- Subject Mastery -->
-  <h2 class="section-title" style="color: white; margin-bottom: 20px; font-family: var(--font-heading);">📚 SUBJECT MASTERY</h2>
+  <h2 class="section-title" style="color: var(--c-text); margin-bottom: 20px; font-family: var(--font-heading);">📚 SUBJECT MASTERY</h2>
   <div class="subject-grid">
     ${Object.values(SUBJECTS).map(sub => {
     const mastery = getSubjectMastery(sub);
@@ -80,7 +80,7 @@ export function renderParentDashboard() {
   </div>
 
   <!-- Recent sessions -->
-  <h2 class="section-title" style="color: white; margin-top:40px; margin-bottom: 20px; font-family: var(--font-heading);">📋 LOG BOOK</h2>
+  <h2 class="section-title" style="color: var(--c-text); margin-top:40px; margin-bottom: 20px; font-family: var(--font-heading);">📋 LOG BOOK</h2>
   <div class="card" style="padding:0; overflow:hidden; margin-bottom:40px; background: white; border: none; box-shadow: var(--shadow-md);">
     ${sessions.length === 0
       ? '<div style="padding:32px; text-align:center; color: var(--c-text-muted); font-weight: 700;">No sessions recorded yet!</div>'
@@ -103,7 +103,7 @@ export function renderParentDashboard() {
   </div>
 
   <!-- Profile Management -->
-  <h2 class="section-title" style="color: white; margin-bottom: 20px; font-family: var(--font-heading);">👤 SETTINGS</h2>
+  <h2 class="section-title" style="color: var(--c-text); margin-bottom: 20px; font-family: var(--font-heading);">👤 SETTINGS</h2>
   <div class="card" style="margin-bottom:40px; display: flex; align-items: center; gap: 32px; background: white; border: none; box-shadow: var(--shadow-md);">
     <div style="flex: 1;">
       <div class="input-group">
@@ -124,9 +124,8 @@ export function renderParentDashboard() {
     </div>
   </div>
 
-  <!-- Logout -->
   <div style="padding-bottom:100px; text-align:center">
-    <button class="btn btn-outline" style="border-color: rgba(255,255,255,0.3); color: white;" onclick="window._handleAuthLogout()">🚪 LOGOUT FROM PORTAL</button>
+    <button class="btn btn-outline" style="border-color: var(--c-border); color: var(--c-text-muted);" onclick="window._handleAuthLogout()">🚪 LOGOUT FROM PORTAL</button>
   </div>
 </div>
   <!-- Report preview modal -->

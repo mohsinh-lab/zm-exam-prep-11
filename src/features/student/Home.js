@@ -28,7 +28,7 @@ export function renderStudentHome() {
   const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
 
   return `
-<div class="page page-enter student-home" id="student-home" style="color: var(--c-text-light)">
+<div class="page page-enter student-home" id="student-home" style="color: var(--c-text)">
 
   <!-- PWA Helper for iPad -->
   <div id="pwa-helper" style="display:none; background: var(--c-accent); color: #000; padding: 14px; border-radius: 18px; margin-bottom: 24px; font-size: 14px; font-weight: 800; text-align: center; border: 3px solid #000;">
@@ -126,7 +126,7 @@ export function renderStudentHome() {
   ${renderWeekendWisdom()}
 
   <!-- Subject grid -->
-  <h2 class="section-title" style="color: white; margin-top: 48px; font-family: var(--font-heading); font-size: 28px;">Start Practice</h2>
+  <h2 class="section-title" style="color: var(--c-text); margin-top: 48px; font-family: var(--font-heading); font-size: 28px;">Start Practice</h2>
   <div class="subject-grid">
     ${subjects.map(sub => {
     const mastery = getSubjectMastery(sub);
