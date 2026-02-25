@@ -61,6 +61,21 @@ function boot() {
     }
     renderNav(window.location.hash);
   });
+
+  // Listen for sync state changes to update UI across all pages
+  window.addEventListener('sync_state_changed', (e) => {
+    const { connected, syncing } = e.detail;
+    const indicator = document.getElementById('sync-indicator');
+    if (!indicator) return;
+
+    if (!connected) {
+      indicator.innerHTML = '☁️ <span style="color:var(--c-danger)">Offline</span>';
+    } else if (syncing) {
+      indicator.innerHTML = '☁️ <span style="color:var(--c-warning)">Syncing...</span>';
+    } else {
+      indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
+    }
+  });
 }
 
 
@@ -139,6 +154,8 @@ function renderNav(hash) {
     navAnchor.innerHTML = `
             <nav class="navbar parent-nav">
                 <div class="nav-logo">👨‍👩‍👧 Parent Portal</div>
+                <div style="flex-grow: 1;"></div>
+                <div id="sync-indicator" style="font-size: 12px; font-weight: bold; margin-right: 16px;">☁️ <span style="color:var(--c-text-muted)">Connecting...</span></div>
                 <button class="btn btn-outline btn-sm" onclick="window.router.navigate('#/student/home')">← Student View</button>
             </nav>
         `;
@@ -165,6 +182,7 @@ function renderNav(hash) {
                 </div>
                 <div class="nav-xp">⚡ ${progress.xp || 0} XP</div>
                 <div class="nav-gems">💎 ${progress.gems || 0}</div>
+                <div id="sync-indicator" style="margin-left: 12px; font-size: 12px; font-weight: bold;">☁️ <span style="color:var(--c-text-muted)">Connecting...</span></div>
             </nav>
         `;
     tabAnchor.innerHTML = `

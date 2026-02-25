@@ -25,13 +25,7 @@ const googleProvider = new GoogleAuthProvider();
 // Initialize Realtime Database and get a reference to the service
 const database = getDatabase(app);
 
-// Keep the test emails mapping for admin/student routing as requested
-export const TEST_ACCOUNTS = {
-    'zayyanmohsin16@gmail.com': 'student',
-    // Example parent accounts
-    'mohsin.haji@gmail.com': 'parent'
-};
-
+// Roles are now fetched dynamically from Firebase Realtime Database (/users/{uid}/role)
 export {
     auth,
     googleProvider,

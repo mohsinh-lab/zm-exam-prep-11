@@ -59,15 +59,33 @@ export function mountLogin() {
                 try { audio.init(); audio.play('click'); } catch (e) { }
 
                 // We use dynamic import for firebase to not break the fallback if firebase isn't configured
-                const { auth, googleProvider, signInWithPopup, TEST_ACCOUNTS } = await import('../../config/firebase.js');
+                const { auth, googleProvider, signInWithPopup, database, ref, get, set } = await import('../../config/firebase.js');
 
-                signInWithPopup(auth, googleProvider).then((result) => {
+                signInWithPopup(auth, googleProvider).then(async (result) => {
                     const user = result.user;
                     console.log('Google Sign-In Success:', user.email);
 
-                    // Determine Role via email
+                    // Determine Role via dynamically via Firebase DB
                     const email = user.email.toLowerCase();
-                    const expectedRole = TEST_ACCOUNTS[email] || 'parent'; // default to parent onboarding
+                    const uid = user.uid;
+                    let expectedRole = 'parent'; // default to parent onboarding
+
+                    try {
+                        const roleRef = ref(database, 'users/' + uid + '/role');
+                        const roleSnap = await get(roleRef);
+                        if (roleSnap.exists()) {
+                            expectedRole = roleSnap.val();
+                        } else {
+                            // Assign default role based on email, store in DB
+                            expectedRole = email === 'zayyanmohsin16@gmail.com' ? 'student' : 'parent';
+                            await set(roleRef, expectedRole);
+                        }
+                    } catch (err) {
+                        console.error('Failed to get/set role from DB', err);
+                        // Fallback logic
+                        expectedRole = email === 'zayyanmohsin16@gmail.com' ? 'student' : 'parent';
+                    }
+
                     // Set local current_user info
                     localStorage.setItem('aceprep_user', JSON.stringify({
                         email: email,

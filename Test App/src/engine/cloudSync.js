@@ -11,13 +11,33 @@ export function setSyncEmail(email) {
     SYNC_ID = email.replace(/[@.]/g, '_');
 }
 
+let isConnected = false;
+let pendingWrites = 0;
+
+// Listen for Firebase connection state
+try {
+    const connectedRef = ref(database, '.info/connected');
+    onValue(connectedRef, (snap) => {
+        isConnected = snap.val() === true;
+        window.dispatchEvent(new CustomEvent('sync_state_changed', { detail: { connected: isConnected, syncing: pendingWrites > 0 } }));
+    });
+} catch (e) { /* Ignore if firebase is mock/disabled */ }
+
 export async function syncProgressToCloud(progress) {
+    pendingWrites++;
+    window.dispatchEvent(new CustomEvent('sync_state_changed', { detail: { connected: isConnected, syncing: true } }));
     try {
         const dbRef = ref(database, 'students/' + SYNC_ID);
         await set(dbRef, progress);
         console.log('✅ Progress synced to cloud for:', STUDENT_EMAIL);
     } catch (err) {
         console.warn('❌ Cloud sync failed:', err);
+    } finally {
+        pendingWrites--;
+        if (pendingWrites <= 0) {
+            pendingWrites = 0;
+            window.dispatchEvent(new CustomEvent('sync_state_changed', { detail: { connected: isConnected, syncing: false } }));
+        }
     }
 }
 

@@ -52,13 +52,26 @@ export function login(passcode) {
 
 export function logout() {
     sessionStorage.removeItem('ace_current_user');
+    localStorage.removeItem('aceprep_user');
+    import('../config/firebase.js')
+        .then(({ auth }) => auth.signOut())
+        .catch(() => { });
 }
 
 export function getAuth() {
     const progress = getProgress();
+    let currentUser = sessionStorage.getItem('ace_current_user') || null;
+    if (!currentUser) {
+        try {
+            const aceUser = JSON.parse(localStorage.getItem('aceprep_user'));
+            if (aceUser && aceUser.role) {
+                currentUser = aceUser.role;
+            }
+        } catch (e) { }
+    }
     return {
         ...progress.auth,
-        currentUser: sessionStorage.getItem('ace_current_user') || null
+        currentUser
     };
 }
 
