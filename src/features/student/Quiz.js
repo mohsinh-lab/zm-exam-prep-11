@@ -131,6 +131,9 @@ export function mountStudentQuiz() {
     if (!state.answered) window._autoTimeUp();
   };
 
+  if (quizTimer) {
+    quizTimer.stop();
+  }
   quizTimer = new Timer(SECS, updateTimerUI, onTimeUp);
   quizTimer.start();
 
@@ -143,6 +146,8 @@ export function mountStudentQuiz() {
     const timeTaken = (Date.now() - state.questionStart) / 1000;
     state.answers.push({ qId: q.id, isCorrect: false, index: null });
     recordAnswer(q, false);
+
+    try { audio.init(); audio.play('wrong'); } catch (e) { }
 
     const opts = document.querySelectorAll('.quiz-option');
     opts.forEach((el, i) => {
@@ -172,6 +177,7 @@ export function mountStudentQuiz() {
 
   window._selectOption = (index) => {
     if (state.answered) return;
+    try { audio.init(); audio.play('click'); } catch (e) { }
     state.selected = index;
     document.querySelectorAll('.quiz-option').forEach((el, i) => {
       el.classList.toggle('selected', i === index);
@@ -199,6 +205,12 @@ export function mountStudentQuiz() {
     state.timings.push({ qId: q.id, timeTaken, responseType, isCorrect });
 
     recordAnswer(q, isCorrect);
+
+    try {
+      audio.init();
+      if (isCorrect) audio.play('correct');
+      else audio.play('wrong');
+    } catch (e) { }
 
     // UI feedback
     const opts = document.querySelectorAll('.quiz-option');
@@ -300,6 +312,9 @@ export function mountStudentQuiz() {
     if (arcEl) { arcEl.style.stroke = colors.start; arcEl.style.strokeDashoffset = '0'; }
 
     // Restart timer
+    if (quizTimer) {
+      quizTimer.stop();
+    }
     quizTimer = new Timer(SECS, updateTimerUI, onTimeUp);
     quizTimer.start();
   };

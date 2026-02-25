@@ -26,8 +26,17 @@ export function renderLogin() {
             </div>
 
             <div id="auth-error" class="auth-error hidden" style="color: var(--c-danger); font-weight: 800; margin-top: 24px; font-size: 14px;">❌ WRONG PASSCODE</div>
+
+            <div class="div-line" style="margin: 32px 0; border-top: 1px solid #f1f5f9; position: relative;">
+                <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; color: var(--c-text-muted); font-size: 12px; font-weight: 700;">OR</span>
+            </div>
+
+            <button id="btn-google-signin" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; background: white; color: var(--c-text); border: 2px solid #e2e8f0; box-shadow: none;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 20px; height: 20px;">
+                Sign in with Google
+            </button>
             
-            <div class="auth-footer" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+            <div class="auth-footer" style="margin-top: 24px;">
                 <p style="color: var(--c-text-muted); font-size: 12px; font-weight: 700;">HINT: 2016 (STUDENT) · 0786 (PARENT)</p>
             </div>
         </div>
@@ -40,6 +49,60 @@ let input = '';
 export function mountLogin() {
     input = '';
     updateDots();
+
+    // Check Firebase Auth instance mapping
+    const googleBtn = document.getElementById('btn-google-signin');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+            try {
+                // Ensure audio context is unlocked
+                try { audio.init(); audio.play('click'); } catch (e) { }
+
+                // We use dynamic import for firebase to not break the fallback if firebase isn't configured
+                const { auth, googleProvider, signInWithPopup, TEST_ACCOUNTS } = await import('../../config/firebase.js');
+
+                signInWithPopup(auth, googleProvider).then((result) => {
+                    const user = result.user;
+                    console.log('Google Sign-In Success:', user.email);
+
+                    // Determine Role via email
+                    const email = user.email.toLowerCase();
+                    const expectedRole = TEST_ACCOUNTS[email] || 'parent'; // default to parent onboarding
+                    // Set local current_user info
+                    localStorage.setItem('aceprep_user', JSON.stringify({
+                        email: email,
+                        uid: user.uid,
+                        displayName: user.displayName,
+                        role: expectedRole
+                    }));
+
+                    if (expectedRole === 'student') {
+                        window.router.navigate('#/student/home');
+                    } else {
+                        window.router.navigate('#/parent/home');
+                    }
+                }).catch((error) => {
+                    console.error('SSO Error:', error);
+                    alert('Google Sign-In failed or was cancelled.');
+                });
+
+            } catch (err) {
+                console.error("Firebase module couldn't be loaded:", err);
+                alert('Sign-In requires Firebase to be configured properly in src/config/firebase.js');
+            }
+        });
+    }
+
+    // Attempt to parse auto-login if they had previous successful signIn
+    try {
+        const existingData = localStorage.getItem('aceprep_user');
+        if (existingData) {
+            const parsed = JSON.parse(existingData);
+            if (parsed.role === 'student' || parsed.role === 'parent') {
+                console.log("Auto-restoring session for", parsed.email);
+            }
+        }
+    } catch (e) { }
 
     window._pressKey = (key) => {
         try { audio.init(); audio.play('click'); } catch (e) { }
@@ -78,6 +141,14 @@ export function mountLogin() {
     function attemptLogin() {
         const userType = login(input);
         if (userType) {
+            // For the passcode fallback, we assume Zayyan's identity
+            const email = userType === 'student' ? 'zayyanmohsin16@gmail.com' : 'mohsin.haji@gmail.com';
+            localStorage.setItem('aceprep_user', JSON.stringify({
+                email: email,
+                uid: 'legacy-pin-' + userType,
+                role: userType
+            }));
+
             if (userType === 'student') {
                 window.router.navigate('#/student/home');
             } else {

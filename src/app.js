@@ -7,7 +7,7 @@ import { renderStudentResults, mountStudentResults } from './features/student/Re
 import { renderActionPlan } from './pages/actionplan.js';
 import { renderAchievements } from './pages/achievements.js';
 import { renderSetup, mountSetup } from './pages/setup.js';
-import { getProgress, getAuth, logout } from './engine/progressStore.js';
+import { getProgress, getAuth, logout, initLiveSync } from './engine/progressStore.js';
 import { renderLogin, mountLogin } from './features/auth/Login.js';
 
 const routes = [
@@ -41,6 +41,9 @@ function boot() {
 
   // Initial redirect logic
   const auth = getAuth();
+  if (auth.currentUser) {
+    initLiveSync();
+  }
   if (!auth.currentUser && window.location.hash !== '#/login') {
     window.router.navigate('#/login');
   } else if (!progress.setupDone && window.location.hash !== '#/setup') {
@@ -50,6 +53,9 @@ function boot() {
   renderNav(window.location.hash);
   window.addEventListener('hashchange', () => {
     const auth = getAuth();
+    if (auth.currentUser) {
+      initLiveSync();
+    }
     if (!auth.currentUser && window.location.hash !== '#/login') {
       window.router.navigate('#/login');
     }

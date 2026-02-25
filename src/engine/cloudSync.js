@@ -1,46 +1,56 @@
 // src/engine/cloudSync.js
 // Handles real-time synchronization using Zayyan's email as the unique identifier.
+import { database, ref, set, get, onValue } from '../config/firebase.js';
 
-const STUDENT_EMAIL = 'zayyanmohsin16@gmail.com';
-const SYNC_ID = STUDENT_EMAIL.replace(/[@.]/g, '_'); // zayyanmohsin16_gmail_com
+let STUDENT_EMAIL = 'zayyanmohsin16@gmail.com';
+let SYNC_ID = STUDENT_EMAIL.replace(/[@.]/g, '_'); // zayyanmohsin16_gmail_com
 
-// TODO: To enable live sync between iPad and Parent Dashboard, you need a free Firebase project.
-// Replace this URL with your Firebase Realtime Database URL once created.
-const FIREBASE_RTDB_URL = 'https://aceprep-db-default-rtdb.europe-west1.firebasedatabase.app';
+// Allow dynamically changing the sync ID if other users log in
+export function setSyncEmail(email) {
+    STUDENT_EMAIL = email;
+    SYNC_ID = email.replace(/[@.]/g, '_');
+}
 
 export async function syncProgressToCloud(progress) {
-    if (FIREBASE_RTDB_URL.includes('YOUR-PROJECT-ID')) {
-        console.warn('Cloud Sync disabled: Waiting for Firebase URL configuration.');
-        return;
-    }
-
     try {
-        // We use PUT instead of POST to overwrite the current state with the latest state
-        await fetch(`${FIREBASE_RTDB_URL}/students/${SYNC_ID}.json`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(progress)
-        });
+        const dbRef = ref(database, 'students/' + SYNC_ID);
+        await set(dbRef, progress);
         console.log('✅ Progress synced to cloud for:', STUDENT_EMAIL);
     } catch (err) {
-        console.error('❌ Cloud sync failed:', err);
+        console.warn('❌ Cloud sync failed:', err);
     }
 }
 
 export async function loadProgressFromCloud() {
-    if (FIREBASE_RTDB_URL.includes('YOUR-PROJECT-ID')) {
+    try {
+        const dbRef = ref(database, 'students/' + SYNC_ID);
+        const snapshot = await get(dbRef);
+        if (snapshot.exists()) {
+            console.log('✅ Progress loaded from cloud for:', STUDENT_EMAIL);
+            return snapshot.val();
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.warn('❌ Cloud load failed:', err);
         return null;
     }
+}
 
+// Live Sync capabilities
+let unsubscribe = null;
+export function subscribeToProgress(onUpdateCallback) {
+    if (unsubscribe) unsubscribe();
     try {
-        const response = await fetch(`${FIREBASE_RTDB_URL}/students/${SYNC_ID}.json`);
-        if (!response.ok) return null;
-
-        const data = await response.json();
-        console.log('✅ Progress loaded from cloud for:', STUDENT_EMAIL);
-        return data;
+        const dbRef = ref(database, 'students/' + SYNC_ID);
+        unsubscribe = onValue(dbRef, (snapshot) => {
+            if (snapshot.exists()) {
+                onUpdateCallback(snapshot.val());
+            }
+        });
+        return unsubscribe;
     } catch (err) {
-        console.error('❌ Cloud load failed:', err);
-        return null;
+        console.warn('Live sync subscribe failed', err);
+        return () => { }; // dummy unsubscribe
     }
 }

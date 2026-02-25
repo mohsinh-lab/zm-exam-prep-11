@@ -75,12 +75,47 @@ export function getProgress() {
 export function updateProgress(data) {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
+        // Dispatch event for UI to update
+        window.dispatchEvent(new CustomEvent('progress_updated', { detail: data }));
         // Auto-sync to the cloud in the background using Zayyan's email identifier
         syncProgressToCloud(data);
     } catch (e) {
         console.warn('Could not save progress:', e);
     }
+}
+
+let syncInitialized = false;
+export function initLiveSync() {
+    if (syncInitialized) return;
+    import('./cloudSync.js').then(({ subscribeToProgress, setSyncEmail }) => {
+        const authInfo = getAuth();
+        if (authInfo.currentUser) {
+            // Use the email that logged in instead of hardcoded
+            try {
+                const userData = JSON.parse(localStorage.getItem('aceprep_user'));
+                if (userData && userData.email) {
+                    setSyncEmail(userData.email);
+                }
+            } catch (e) { }
+
+            subscribeToProgress((cloudData) => {
+                if (!cloudData) return;
+                const localStr = localStorage.getItem(STORAGE_KEY);
+                const cloudStr = JSON.stringify(cloudData);
+                if (localStr !== cloudStr) {
+                    localStorage.setItem(STORAGE_KEY, cloudStr);
+                    console.log("☁️ Data synced from cloud!");
+                    window.dispatchEvent(new CustomEvent('progress_updated', { detail: cloudData }));
+                    // If on a static page, we might want to refresh
+                    const hash = window.location.hash;
+                    if (hash === '#/student/home' || hash === '#/parent/home' || hash === '#/student/results') {
+                        if (window.router) window.router.handleRoute();
+                    }
+                }
+            });
+            syncInitialized = true;
+        }
+    });
 }
 
 export async function forceSyncFromCloud() {
@@ -93,6 +128,7 @@ export async function forceSyncFromCloud() {
             if (currentDataStr !== newDataStr) {
                 // Only write and trigger refresh if data is actually different
                 localStorage.setItem(STORAGE_KEY, newDataStr);
+                window.dispatchEvent(new CustomEvent('progress_updated', { detail: cloudData }));
                 return true;
             }
         }
