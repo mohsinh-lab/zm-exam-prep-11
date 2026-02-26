@@ -9,10 +9,12 @@ import { renderAchievements } from './pages/achievements.js';
 import { renderSetup, mountSetup } from './pages/setup.js';
 import { getProgress, getAuth, logout, initLiveSync } from './engine/progressStore.js';
 import { renderLogin, mountLogin } from './features/auth/Login.js';
+import { renderOnboarding, mountOnboarding } from './features/auth/Onboarding.js';
 
 const routes = [
   { path: '#/setup', render: renderSetup, mount: mountSetup },
   { path: '#/login', render: renderLogin, mount: mountLogin },
+  { path: '#/onboarding', render: renderOnboarding, mount: mountOnboarding },
   { path: '#/student/home', render: renderStudentHome, mount: mountStudentHome },
   { path: '#/student/quiz/:subject', render: renderStudentQuiz, mount: mountStudentQuiz },
   { path: '#/student/plan', render: renderActionPlan },
@@ -44,9 +46,13 @@ function boot() {
   if (auth.currentUser) {
     initLiveSync();
   }
-  if (!auth.currentUser && window.location.hash !== '#/login') {
-    window.router.navigate('#/login');
-  } else if (!progress.setupDone && window.location.hash !== '#/setup') {
+
+  const hashBase = window.location.hash.split('?')[0];
+  const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
+
+  if (!auth.currentUser && !isAuthOrOnboarding) {
+    window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
+  } else if (!progress.setupDone && hashBase !== '#/setup') {
     window.router.navigate('#/setup');
   }
 
@@ -56,10 +62,13 @@ function boot() {
     if (auth.currentUser) {
       initLiveSync();
     }
-    if (!auth.currentUser && window.location.hash !== '#/login') {
-      window.router.navigate('#/login');
+    const hashBase = window.location.hash.split('?')[0];
+    const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
+
+    if (!auth.currentUser && !isAuthOrOnboarding) {
+      window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
     }
-    renderNav(window.location.hash);
+    renderNav(hashBase);
   });
 
   // Listen for sync state changes to update UI across all pages
@@ -136,8 +145,9 @@ function renderNav(hash) {
   const isParent = hash.includes('/parent/');
   const isSetup = hash === '#/setup';
   const isLogin = hash === '#/login';
+  const isOnboarding = hash === '#/onboarding';
 
-  if (isQuiz || isSetup || isLogin) {
+  if (isQuiz || isSetup || isLogin || isOnboarding) {
     navAnchor.innerHTML = '';
     tabAnchor.innerHTML = '';
     return;

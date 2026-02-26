@@ -17,12 +17,14 @@ export function renderParentDashboard() {
   const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Mathematics' };
   const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
 
+  const isVerified = sessions.length > 0 || progress.xp > 0;
+
   return `
 <div class="page page-enter parent-dashboard" style="color: var(--c-text)">
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
     <div>
       <h1 class="page-title" style="color: var(--c-text); font-family: var(--font-heading); font-size: 36px; margin-bottom: 4px;">📊 Parent Portal</h1>
-      <p class="page-subtitle" style="color: var(--c-primary); font-weight: 700;">Monitoring ${name}'s 11+ Journey</p>
+      <p class="page-subtitle" style="color: var(--c-primary); font-weight: 700;">${isVerified ? `Monitoring ${name}'s 11+ Journey` : 'Waiting for Student Link'}</p>
     </div>
     <div style="display:flex; gap:12px; align-items:center">
       <button onclick="window._syncCloud()" class="btn btn-primary btn-sm" style="border-radius: 8px;">🔄 LIVE SYNC</button>
@@ -30,6 +32,17 @@ export function renderParentDashboard() {
     </div>
   </div>
 
+  ${!isVerified ? `
+  <!-- Gated / Unverified State -->
+  <div class="card" data-testid="parent-gated-container" style="background: linear-gradient(135deg, #fef2f2 0%, #fff1f2 100%); border: 2px dashed #fecaca; padding: 40px; text-align: center; margin-bottom: 32px;">
+    <div style="font-size: 48px; margin-bottom: 16px;">🔒</div>
+    <h2 style="color: #991b1b; font-family: var(--font-heading); font-weight: 900; margin-bottom: 12px;">DASHBOARD PENDING</h2>
+    <p style="color: #b91c1c; font-weight: 600; max-width: 400px; margin: 0 auto 24px;">Your analytics, session logs, and mastery charts are locked until a student is linked to your account.</p>
+    <div style="display: inline-block; background: white; padding: 12px 20px; border-radius: 12px; border: 1px solid #fecaca; color: #b91c1c; font-size: 14px; font-weight: 800;">
+      Step 1: Invite your student below using their Google Email
+    </div>
+  </div>
+  ` : `
   <!-- Stats row -->
   <div class="stats-row" style="margin-bottom:32px">
     <div class="stat-card" style="background: white; border-bottom: 8px solid #818cf8;">
@@ -104,31 +117,49 @@ export function renderParentDashboard() {
         </div>`;
       }).join('')}
   </div>
+  `}
+  <!-- Family Management & Settings -->
+  <h2 class="section-title" style="color: var(--c-text); margin-bottom: 20px; font-family: var(--font-heading);">👨‍👩‍👧‍👦 FAMILY & SETTINGS</h2>
+  
+  <div class="card" style="margin-bottom:24px; background: white; border: none; border-left: 8px solid #8b5cf6; box-shadow: var(--shadow-md);">
+    <h3 style="color: var(--c-text); font-family: var(--font-heading); font-weight: 900; margin-bottom:12px">💌 INVITE A FAMILY MEMBER</h3>
+    <p style="color: var(--c-text-muted); font-size: 14px; font-weight: 600; margin-bottom: 20px;">Link a new Student to monitor, or invite a Co-Parent to share this dashboard.</p>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+      <div class="input-group">
+        <label class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">MEMBER'S NAME</label>
+        <input type="text" id="invite-name" class="input-field" style="border-width: 2px;" placeholder="e.g. Zayyan">
+      </div>
+      <div class="input-group">
+        <label class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">GOOGLE EMAIL ADDRESS</label>
+        <input type="email" id="invite-email" class="input-field" style="border-width: 2px;" placeholder="name@gmail.com">
+      </div>
+    </div>
+    
+    <div class="input-group" style="margin-bottom: 20px;">
+      <label class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">ROLE</label>
+      <select id="invite-role" class="input-field" style="border-width: 2px; height: 48px; background: white;">
+        <option value="student">🎓 Student (I want to monitor their progress)</option>
+        <option value="parent">👨‍👩‍👧 Co-Parent (They should see this dashboard)</option>
+      </select>
+    </div>
 
-  <!-- Profile Management -->
-  <h2 class="section-title" style="color: var(--c-text); margin-bottom: 20px; font-family: var(--font-heading);">👤 SETTINGS</h2>
+    <button class="btn btn-primary" data-testid="parent-invite-btn" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2); background: #8b5cf6;" onclick="window._sendInvite()">📩 GENERATE INVITE LINK</button>
+  </div>
+
   <div class="card" style="margin-bottom:40px; display: flex; align-items: center; gap: 32px; background: white; border: none; box-shadow: var(--shadow-md);">
     <div style="flex: 1;">
+      <h3 style="color: var(--c-text); font-family: var(--font-heading); font-weight: 900; margin-bottom:12px">⚙️ REPORT SETTINGS</h3>
       <div class="input-group">
-        <label class="input-label" style="color: var(--c-text); font-weight: 900;">STUDENT NAME</label>
+        <label class="input-label" style="color: var(--c-text); font-weight: 900;">PRIMARY STUDENT NAME (FOR PDF)</label>
         <input type="text" id="parent-student-name" class="input-field" style="border-width: 2px;" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
       </div>
-      <div class="input-group">
-        <label class="input-label" style="color: var(--c-text); font-weight: 900;">RECIPIENT EMAILS</label>
-        <input type="text" id="parent-emails" class="input-field" style="border-width: 2px;" value="${progress.parentEmail}" placeholder="email@example.com">
-      </div>
-      <button class="btn btn-primary" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._saveProfile()">SAVE PROFILE</button>
-      <p style="margin-top:16px; font-size:12px; color: var(--c-text-muted); font-weight: 600; line-height: 1.5;">
-        💡 <strong>Automation Note:</strong> To automate daily emails, we recommend upgrading to a Pro backend. Currently, use "Open in Mail" to send reports manually.
-      </p>
-    </div>
-    <div style="width: 180px; flex-shrink: 0;" class="desktop-only">
-      <img src="thinking-pokemon.png" alt="Thinking Pokemon" style="width: 100%; height: auto; border-radius: var(--r-md); box-shadow: var(--shadow-md);">
+      <button class="btn btn-primary" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._saveProfile()">SAVE PREFERENCES</button>
     </div>
   </div>
 
   <div style="padding-bottom:100px; text-align:center">
-    <button class="btn btn-outline" style="border-color: var(--c-border); color: var(--c-text-muted);" onclick="window._handleAuthLogout()">🚪 LOGOUT FROM PORTAL</button>
+    <button class="btn btn-outline" style="border-color: var(--c-border); color: var(--c-text-muted);" onclick="window._handleAuthLogout()">🚪 SECURE LOGOUT</button>
   </div>
 </div>
   <!-- Report preview modal -->
@@ -198,6 +229,7 @@ export function mountParentDashboard() {
     progress.parentEmail = email;
 
     updateProgress(progress);
+    console.log(`[Audit] Parent updated student profile: ${name}`);
     alert('✅ Student profile updated & synced!');
     window.router.handleRoute(); // Refresh
   };
@@ -228,6 +260,71 @@ export function mountParentDashboard() {
 
   window._handleAuthLogout = () => {
     window._handleLogout(); // use the global logout in app.js
+  };
+
+  window._sendInvite = async () => {
+    const name = document.getElementById('invite-name').value.trim();
+    const email = document.getElementById('invite-email').value.trim().toLowerCase();
+    const role = document.getElementById('invite-role').value;
+
+    if (!name || !email) {
+      alert("Please enter both a name and an email address.");
+      return;
+    }
+
+    // Try to get current authenticated parent UID
+    let parentUid = null;
+    let parentName = "Your Parent/Guardian";
+    try {
+      const user = JSON.parse(localStorage.getItem('aceprep_user'));
+      if (user && user.uid) {
+        parentUid = user.uid;
+        if (user.displayName) parentName = user.displayName;
+      }
+    } catch (e) { }
+
+    if (!parentUid) {
+      alert("Could not verify your Parent identity. Try refreshing or logging in again.");
+      return;
+    }
+
+    try {
+      // 1. Save Intent to Firebase
+      const { database, ref, set } = await import('../../config/firebase.js');
+      // Format email for DB key safely
+      const safeEmail = email.replace(/[.#$[\]]/g, '_');
+      const inviteRef = ref(database, 'users/' + parentUid + '/pending_invites/' + safeEmail);
+
+      await set(inviteRef, {
+        name: name,
+        email: email,
+        role: role,
+        timestamp: Date.now()
+      });
+      console.log(`[Audit] Pending invite created for ${email} as ${role}`);
+
+      // 2. Generate mailto: Deep Link
+      // Ensure absolute URL if deployed, fallback to local for dev
+      const baseUrl = window.location.href.split('#')[0];
+      const deepLink = `${baseUrl}#/login?invite=${parentUid}&role=${role}`;
+
+      const roleText = role === 'student' ? 'Student' : 'Co-Parent';
+      const subject = encodeURIComponent(`You've been invited to AcePrep 11+ as a ${roleText}!`);
+      const bodyText = `Hi ${name},\n\n${parentName} has invited you to join the AcePrep 11+ Dashboard as a ${roleText}.\n\nPlease click the link below to accept the invitation and sign in securely with your Google account:\n\n${deepLink}\n\nHappy studying!`;
+
+      const body = encodeURIComponent(bodyText);
+
+      // Open Mail App
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+
+      // Clear inputs
+      document.getElementById('invite-name').value = '';
+      document.getElementById('invite-email').value = '';
+
+    } catch (err) {
+      console.error("Failed to generate invite:", err);
+      alert("Something went wrong saving the invite to the database. Are you offline?");
+    }
   };
 
   // Perform a silent auto-sync every time the dashboard is loaded
