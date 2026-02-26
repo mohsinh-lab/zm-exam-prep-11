@@ -27,6 +27,38 @@ export function renderStudentHome() {
   const levelNames = ['Rookie', 'Explorer', 'Challenger', 'Expert', 'Champion', 'Elite Scholar', 'Ilford Star'];
   const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
 
+  // Gating Logic
+  let hasParent = false;
+  let userEmail = '';
+  try {
+    const userData = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
+    hasParent = userData.hasParent;
+    userEmail = userData.email || '';
+  } catch (e) { }
+
+  const isVerified = hasParent || userEmail === 'zayyanmohsin16@gmail.com';
+
+  if (!isVerified) {
+    return `
+      <div class="page page-enter student-verification-gate" data-testid="student-gated-container" style="min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: #f8fafc;">
+          <div class="card" style="max-width: 480px; width: 100%; background: white; border-radius: 32px; padding: 48px 40px; text-align: center; box-shadow: var(--shadow-xl); border: 2px solid #e2e8f0;">
+              <div style="font-size: 64px; margin-bottom: 24px;">🛡️</div>
+              <h1 style="font-family: var(--font-heading); font-weight: 900; font-size: 32px; color: #0f172a; margin-bottom: 12px;">Parent Approval Needed</h1>
+              <p style="color: #475569; font-weight: 600; line-height: 1.6; margin-bottom: 32px;">Great to have you here, ${name}! To keep your progress safe and synced, please ask a Parent or Guardian to link your account.</p>
+              
+              <div style="background: #f1f5f9; padding: 24px; border-radius: 20px; border: 1px solid #e2e8f0; margin-bottom: 32px; text-align: left;">
+                  <label style="display: block; font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Step 1: Enter Parent Email</label>
+                  <input type="email" id="link-parent-email" class="input-field" style="background: white; border-width: 2px;" placeholder="parent@gmail.com">
+              </div>
+
+              <button class="btn btn-primary" data-testid="student-send-approval-btn" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._sendApprovalRequest()">📩 SEND APPROVAL LINK</button>
+              
+              <button class="btn btn-outline" style="margin-top: 24px; border: none; color: #94a3b8; font-size: 13px;" onclick="window._handleAuthLogout()">🚪 Logout & Try Another Account</button>
+          </div>
+      </div>
+      `;
+  }
+
   return `
 <div class="page page-enter student-home" id="student-home" style="color: var(--c-text)">
 
@@ -34,13 +66,6 @@ export function renderStudentHome() {
   <div id="pwa-helper" style="display:none; background: var(--c-accent); color: #000; padding: 14px; border-radius: 18px; margin-bottom: 24px; font-size: 14px; font-weight: 800; text-align: center; border: 3px solid #000;">
     📲 iPad Prep: Tap Share <span style="font-size:20px">⎋</span> then "Add to Home Screen" for the full app experience!
   </div>
-
-  <script>
-    // Show PWA helper only on iOS/iPadOS if not in standalone
-    if ((navigator.userAgent.match(/iPad|iPhone|iPod/g)) && !window.navigator.standalone) {
-      document.getElementById('pwa-helper').style.display = 'block';
-    }
-  </script>
 
   <!-- Hero section -->
   <div class="home-hero" style="position: relative; overflow: hidden; background: linear-gradient(135deg, var(--c-primary), var(--c-vr)); border-radius: var(--r-xl); padding: var(--space-lg); border-bottom: 8px solid rgba(0,0,0,0.2);">
@@ -237,4 +262,43 @@ function renderWeekendWisdom() {
       </div>
     </div>
   </div>`;
+}
+
+export function mountStudentHome() {
+  // PWA helper logic
+  const pwaHelper = document.getElementById('pwa-helper');
+  if (pwaHelper && (navigator.userAgent.match(/iPad|iPhone|iPod/g)) && !window.navigator.standalone) {
+    pwaHelper.style.display = 'block';
+  }
+
+  window._sendApprovalRequest = () => {
+    const emailInput = document.getElementById('link-parent-email');
+    if (!emailInput) return;
+    const email = emailInput.value.trim().toLowerCase();
+    if (!email) { alert("Please enter your parent's email."); return; }
+
+    console.log(`[Audit] Student ${studentUid} requesting parent link for email: ${email}`);
+
+    const userData = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
+    const studentUid = userData.uid;
+    const studentName = userData.displayName || 'Your Student';
+
+    const baseUrl = window.location.href.split('#')[0];
+    const deepLink = `${baseUrl}#/login?invite=${studentUid}&role=parent`;
+
+    const subject = encodeURIComponent(`${studentName} wants to link their AcePrep 11+ account!`);
+    const bodyText = `Hi,\n\n${studentName} has started using AcePrep 11+ and needs you to approve their account to enable cloud syncing and reports.\n\nPlease click the link below to accept and link as a Parent:\n\n${deepLink}\n\nHappy studying!`;
+
+    const body = encodeURIComponent(bodyText);
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  };
+
+  window._handleAuthLogout = () => {
+    if (window._handleLogout) {
+      window._handleLogout();
+    } else {
+      localStorage.removeItem('aceprep_user');
+      window.location.reload();
+    }
+  };
 }

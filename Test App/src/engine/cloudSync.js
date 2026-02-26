@@ -66,11 +66,93 @@ export function subscribeToProgress(onUpdateCallback) {
         unsubscribe = onValue(dbRef, (snapshot) => {
             if (snapshot.exists()) {
                 onUpdateCallback(snapshot.val());
+            } else {
+                onUpdateCallback(null);
             }
         });
         return unsubscribe;
     } catch (err) {
         console.warn('Live sync subscribe failed', err);
         return () => { }; // dummy unsubscribe
+    }
+}
+
+// Parent Multi-Sync Capability
+let multiUnsubscribes = [];
+let parentStudentsMapUnsub = null;
+
+export function subscribeToLinkedStudents(parentUid, onUpdateCallback) {
+    // Clear old listeners
+    if (parentStudentsMapUnsub) parentStudentsMapUnsub();
+    multiUnsubscribes.forEach(unsub => unsub());
+    multiUnsubscribes = [];
+
+    let aggregatedData = {};
+
+    try {
+        const linkedRef = ref(database, 'users/' + parentUid + '/linked_students');
+
+        // Listen for additions/removals to the linked students list
+        parentStudentsMapUnsub = onValue(linkedRef, (snapshot) => {
+            // Re-clear child listeners when graph changes
+            multiUnsubscribes.forEach(unsub => unsub());
+            multiUnsubscribes = [];
+            aggregatedData = {};
+
+            if (!snapshot.exists()) {
+                onUpdateCallback({}); // No students linked yet
+                return;
+            }
+
+            const linkedStudents = snapshot.val() || {};
+            const safeEmails = Object.keys(linkedStudents);
+
+            if (safeEmails.length === 0) {
+                onUpdateCallback({});
+                return;
+            }
+
+            // Set up a listener for each student's progress node
+            let fetchedCount = 0;
+            safeEmails.forEach(safeEmail => {
+                const studentDbRef = ref(database, 'students/' + safeEmail);
+                const unsub = onValue(studentDbRef, (progSnap) => {
+                    if (progSnap.exists()) {
+                        aggregatedData[safeEmail] = progSnap.val();
+                    } else {
+                        aggregatedData[safeEmail] = null;
+                    }
+
+                    // Always callback so UI updates instantly
+                    onUpdateCallback(aggregatedData);
+                });
+                multiUnsubscribes.push(unsub);
+            });
+        });
+
+        return () => {
+            if (parentStudentsMapUnsub) parentStudentsMapUnsub();
+            multiUnsubscribes.forEach(unsub => unsub());
+        };
+    } catch (err) {
+        console.warn('Parent Live sync subscribe failed', err);
+        return () => { };
+    }
+}
+
+let studentParentLinkUnsub = null;
+export function subscribeToParentLink(studentUid, onLinkCallback) {
+    if (studentParentLinkUnsub) studentParentLinkUnsub();
+
+    try {
+        const linkRef = ref(database, 'users/' + studentUid + '/linked_parents');
+        studentParentLinkUnsub = onValue(linkRef, (snapshot) => {
+            const hasParent = snapshot.exists() && Object.keys(snapshot.val()).length > 0;
+            onLinkCallback(hasParent);
+        });
+        return studentParentLinkUnsub;
+    } catch (err) {
+        console.warn('Subscription to parent link failed', err);
+        return () => { };
     }
 }

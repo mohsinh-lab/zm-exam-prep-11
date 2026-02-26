@@ -1,5 +1,5 @@
 // Progress Store — localStorage-backed persistence
-import { syncProgressToCloud, loadProgressFromCloud } from './cloudSync.js';
+import { syncProgressToCloud, loadProgressFromCloud, subscribeToLinkedStudents, subscribeToProgress } from './cloudSync.js';
 
 const STORAGE_KEY = '11plus_progress';
 
@@ -24,8 +24,8 @@ const defaultProgress = () => ({
     weeklySnapshots: [],
     monthlySnapshots: [],
     // Student name
-    studentName: 'Zayyan Mohsin',
-    parentEmail: 'emailmohsinh@gmail.com, ashbaig19@gmail.com',
+    studentName: 'Student',
+    parentEmail: '',
     // Gems (hint currency)
     gems: 5,
     setupDone: true, // Auto-complete setup for this custom build
@@ -100,29 +100,96 @@ export function updateProgress(data) {
 let syncInitialized = false;
 export function initLiveSync() {
     if (syncInitialized) return;
-    import('./cloudSync.js').then(({ subscribeToProgress, setSyncEmail }) => {
-        const authInfo = getAuth();
-        if (authInfo.currentUser) {
-            // Use the email that logged in instead of hardcoded
-            try {
-                const userData = JSON.parse(localStorage.getItem('aceprep_user'));
-                if (userData && userData.email) {
-                    setSyncEmail(userData.email);
-                }
-            } catch (e) { }
+
+    const authInfo = getAuth();
+    if (!authInfo.currentUser) return;
+
+    let userEmail = null;
+    let userUid = null;
+    try {
+        const userData = JSON.parse(localStorage.getItem('aceprep_user'));
+        if (userData && userData.email) userEmail = userData.email;
+        if (userData && userData.uid) userUid = userData.uid;
+    } catch (e) { }
+
+    import('./cloudSync.js').then(({ setSyncEmail }) => {
+        if (authInfo.currentUser === 'student') {
+            if (userEmail) setSyncEmail(userEmail);
 
             subscribeToProgress((cloudData) => {
-                if (!cloudData) return;
                 const localStr = localStorage.getItem(STORAGE_KEY);
+                const localObj = getProgress();
+
+                if (!cloudData) {
+                    if (localObj.xp > 0 || localObj.sessions.length > 0) {
+                        syncProgressToCloud(localObj);
+                    }
+                    return;
+                }
+
+                if (localObj.xp > cloudData.xp) {
+                    const localSessionIds = new Set(localObj.sessions.map(s => s.id));
+                    const mergedSessions = [...localObj.sessions];
+                    for (const cs of cloudData.sessions || []) {
+                        if (!localSessionIds.has(cs.id)) mergedSessions.push(cs);
+                    }
+                    mergedSessions.sort((a, b) => a.id - b.id);
+                    localObj.sessions = mergedSessions;
+                    syncProgressToCloud(localObj);
+                    return;
+                }
+
                 const cloudStr = JSON.stringify(cloudData);
-                if (localStr !== cloudStr) {
+                if (localStr !== cloudStr && localObj.xp <= cloudData.xp) {
                     localStorage.setItem(STORAGE_KEY, cloudStr);
-                    console.log("☁️ Data synced from cloud!");
                     window.dispatchEvent(new CustomEvent('progress_updated', { detail: cloudData }));
-                    // If on a static page, we might want to refresh
                     const hash = window.location.hash;
                     if (hash === '#/student/home' || hash === '#/parent/home' || hash === '#/student/results') {
                         if (window.router) window.router.handleRoute();
+                    }
+                }
+            });
+
+            // Added: Student listens for parent approval
+            import('./cloudSync.js').then(({ subscribeToParentLink }) => {
+                subscribeToParentLink(userUid, (hasParent) => {
+                    const userData = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
+                    if (userData.hasParent !== hasParent) {
+                        userData.hasParent = hasParent;
+                        localStorage.setItem('aceprep_user', JSON.stringify(userData));
+                        const hash = window.location.hash;
+                        if (hash === '#/student/home') {
+                            if (window.router) window.router.handleRoute();
+                        }
+                    }
+                });
+            });
+            syncInitialized = true;
+
+        } else if (authInfo.currentUser === 'parent') {
+            if (!userUid) return;
+
+            // Parent listens to all linked students
+            subscribeToLinkedStudents(userUid, (aggregatedData) => {
+                // For MVP: Pull the first linked student to display on the dashboard
+                const studentEmails = Object.keys(aggregatedData);
+                if (studentEmails.length === 0) {
+                    // No students linked yet
+                    return;
+                }
+
+                // Grab the first student's progress
+                const primaryStudent = aggregatedData[studentEmails[0]];
+                if (primaryStudent) {
+                    const cloudStr = JSON.stringify(primaryStudent);
+                    const localStr = localStorage.getItem(STORAGE_KEY);
+                    if (localStr !== cloudStr) {
+                        localStorage.setItem(STORAGE_KEY, cloudStr);
+                        window.dispatchEvent(new CustomEvent('progress_updated', { detail: primaryStudent }));
+                        const hash = window.location.hash;
+                        if (hash === '#/parent/home') {
+                            if (window.router) window.router.handleRoute();
+                        }
                     }
                 }
             });
