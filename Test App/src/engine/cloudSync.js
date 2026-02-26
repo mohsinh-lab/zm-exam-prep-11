@@ -84,6 +84,7 @@ let parentStudentsMapUnsub = null;
 export function subscribeToLinkedStudents(parentUid, onUpdateCallback) {
     // Clear old listeners
     if (parentStudentsMapUnsub) parentStudentsMapUnsub();
+    console.log(`[Audit] Parent ${parentUid} subscribing to linked students graph...`);
     multiUnsubscribes.forEach(unsub => unsub());
     multiUnsubscribes = [];
 
@@ -148,6 +149,7 @@ export function subscribeToParentLink(studentUid, onLinkCallback) {
         const linkRef = ref(database, 'users/' + studentUid + '/linked_parents');
         studentParentLinkUnsub = onValue(linkRef, (snapshot) => {
             const hasParent = snapshot.exists() && Object.keys(snapshot.val()).length > 0;
+            console.log(`[Audit] Parent link status for ${studentUid}: ${hasParent ? 'VERIFIED' : 'PENDING'}`);
             onLinkCallback(hasParent);
         });
         return studentParentLinkUnsub;
