@@ -2,6 +2,7 @@
 import { getProgress, generateDailyReport, generateWeeklyReport, generateMonthlyReport, forceSyncFromCloud, updateProgress } from '../../engine/progressStore.js';
 import { getSubjectMastery, getWeakTopics } from '../../engine/adaptiveEngine.js';
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS } from '../../engine/questionBank.js';
+import { calculateReadiness, generateActionPlan, getCatchmentSchools } from '../../engine/readinessEngine.js';
 
 export function renderParentDashboard() {
   const progress = getProgress();
@@ -13,6 +14,10 @@ export function renderParentDashboard() {
   const avgScore = week.length
     ? Math.round(week.reduce((s, x) => s + x.score, 0) / week.length)
     : 0;
+
+  const readiness = calculateReadiness(progress);
+  const actionPlan = generateActionPlan(progress);
+  const targetDate = progress.goals?.examDate || 'Not Set';
 
   const subLabels = { vr: 'Verbal Reasoning', nvr: 'Non-Verbal Reasoning', en: 'English', maths: 'Mathematics' };
   const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
@@ -31,6 +36,42 @@ export function renderParentDashboard() {
       <img src="transformer-plan.png" alt="Mission Control" class="desktop-only" style="width: 100px; border-radius: 12px; box-shadow: var(--shadow-sm);">
     </div>
   </div>
+
+  ${isVerified ? `
+  <!-- Readiness Gauge -->
+  <div class="card" style="margin-bottom: 32px; background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); border: none; color: white;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+      <div>
+        <h3 style="font-family: var(--font-heading); font-weight: 900; margin: 0; font-size: 20px;">🛡️ PREDICTIVE READINESS</h3>
+        <p style="font-size: 13px; opacity: 0.9; font-weight: 700;">Target Date: ${targetDate}</p>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 32px; font-weight: 900; line-height: 1;">${readiness}%</div>
+        <div style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">Goal Probabilty</div>
+      </div>
+    </div>
+    <div style="background: rgba(255,255,255,0.2); height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
+      <div style="width: ${readiness}%; background: #4ade80; height: 100%; box-shadow: 0 0 10px #4ade80;"></div>
+    </div>
+    <div style="font-size: 12px; font-weight: 700; text-align: center; opacity: 0.9;">
+      ${readiness >= 85 ? '🌟 ELITE: Meeting competitive school benchmarks' : readiness >= 65 ? '📈 ON TRACK: Approaching qualifying scores' : '⚠️ BOOST NEEDED: Critical readiness gaps detected'}
+    </div>
+  </div>
+
+  <!-- Dynamic Action Plan -->
+  <div class="card" style="margin-bottom: 32px; background: white; border-left: 8px solid #f59e0b; box-shadow: var(--shadow-md);">
+    <h3 style="color: #b45309; font-family: var(--font-heading); font-weight: 900; margin-bottom: 8px;">📅 TANGIBLE ACTION PLAN</h3>
+    <p style="color: var(--c-text-muted); font-size: 14px; font-weight: 700; margin-bottom: 16px;">${actionPlan.narrative}</p>
+    <div style="display: grid; gap: 10px;">
+      ${actionPlan.steps.map(step => `
+        <div style="display: flex; gap: 12px; align-items: flex-start; background: #fffbeb; padding: 12px; border-radius: 8px; border-left: 4px solid #fbbf24;">
+          <span style="font-size: 18px;">✅</span>
+          <span style="font-size: 13px; font-weight: 800; color: #92400e;">${step}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+  ` : ''}
 
   ${!isVerified ? `
   <!-- Gated / Unverified State -->
@@ -147,7 +188,7 @@ export function renderParentDashboard() {
     <button class="btn btn-primary" data-testid="parent-invite-btn" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2); background: #8b5cf6;" onclick="window._sendInvite()">📩 GENERATE INVITE LINK</button>
   </div>
 
-  <div class="card" style="margin-bottom:40px; display: flex; align-items: center; gap: 32px; background: white; border: none; box-shadow: var(--shadow-md);">
+  <div class="card" style="margin-bottom:40px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; background: white; border: none; box-shadow: var(--shadow-md);">
     <div style="flex: 1;">
       <h3 style="color: var(--c-text); font-family: var(--font-heading); font-weight: 900; margin-bottom:12px">⚙️ REPORT SETTINGS</h3>
       <div class="input-group">
@@ -155,6 +196,18 @@ export function renderParentDashboard() {
         <input type="text" id="parent-student-name" class="input-field" style="border-width: 2px;" value="${progress.studentName}" placeholder="e.g. Zayyan Mohsin">
       </div>
       <button class="btn btn-primary" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._saveProfile()">SAVE PREFERENCES</button>
+    </div>
+    <div style="flex: 1; border-left: 1px solid #f0f0f0; padding-left: 32px;">
+      <h3 style="color: var(--c-text); font-family: var(--font-heading); font-weight: 900; margin-bottom:12px">🎯 GOAL SETTINGS</h3>
+      <div class="input-group">
+        <label class="input-label" style="color: var(--c-text); font-weight: 900;">POSTCODE (FOR CATCHMENT)</label>
+        <input type="text" id="parent-postcode" class="input-field" style="border-width: 2px;" value="${progress.goals?.postcode || ''}" placeholder="e.g. B15">
+      </div>
+      <div class="input-group">
+        <label class="input-label" style="color: var(--c-text); font-weight: 900;">EXAM DATE</label>
+        <input type="date" id="parent-exam-date" class="input-field" style="border-width: 2px;" value="${progress.goals?.examDate || ''}">
+      </div>
+      <button class="btn btn-outline" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.1);" onclick="window._saveGoals()">UPDATE CATCHMENT GOALS</button>
     </div>
   </div>
 
@@ -232,6 +285,25 @@ export function mountParentDashboard() {
     console.log(`[Audit] Parent updated student profile: ${name}`);
     alert('✅ Student profile updated & synced!');
     window.router.handleRoute(); // Refresh
+  };
+
+  window._saveGoals = () => {
+    const postcode = document.getElementById('parent-postcode').value.trim();
+    const examDate = document.getElementById('parent-exam-date').value;
+    const progress = getProgress();
+
+    if (!progress.goals) progress.goals = {};
+    progress.goals.postcode = postcode;
+    progress.goals.examDate = examDate;
+
+    // Trigger immediate refresh of catchment data
+    const schools = getCatchmentSchools(postcode);
+    progress.goals.targetSchools = schools;
+
+    updateProgress(progress);
+    console.log(`[Audit] Parent updated catchment goals: ${postcode}, Exam: ${examDate}`);
+    alert('🎯 Goals updated! Catchment schools and readiness scores have been recalibrated.');
+    window.router.handleRoute();
   };
 
   window._syncCloud = async (silent = false) => {

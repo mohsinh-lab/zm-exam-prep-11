@@ -34,6 +34,15 @@ const defaultProgress = () => ({
         currentUser: null, // 'student', 'parent', or null
         studentPass: '2016',
         parentPass: '0786'
+    },
+    // Goal & Catchment Data
+    goals: {
+        postcode: '',
+        targetSchools: [], // Array of { name: string, benchmark: number }
+        examDate: null,
+        targetScore: 90,
+        readinessScore: 0,
+        lastPlanUpdate: null
     }
 });
 

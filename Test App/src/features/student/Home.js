@@ -3,6 +3,8 @@ import { getProgress } from '../../engine/progressStore.js';
 import { getSubjectMastery, getCurrentLevel, getWeakTopics, checkBoosterRequired, isWeekend, getRankInfo } from '../../engine/adaptiveEngine.js';
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS, SUBJECT_ICONS } from '../../engine/questionBank.js';
 import { getRandomWeekendQuote, getMinuteAwareQuote } from '../../engine/quoteBank.js';
+import { calculateReadiness } from '../../engine/readinessEngine.js';
+import { getReadinessNudge } from '../../engine/notificationEngine.js';
 
 export function renderStudentHome() {
   const progress = getProgress();
@@ -23,6 +25,8 @@ export function renderStudentHome() {
   const xpPercent = ((xp % 200) / 200) * 100;
 
   const motivation = getMinuteAwareQuote();
+  const readiness = calculateReadiness(progress);
+  const nudge = getReadinessNudge(progress);
 
   const levelNames = ['Rookie', 'Explorer', 'Challenger', 'Expert', 'Champion', 'Elite Scholar', 'Ilford Star'];
   const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
@@ -109,6 +113,21 @@ export function renderStudentHome() {
         <div class="streak-desc" style="color: #000; font-weight: 900;">${streak === 0 ? 'START TODAY!' : streak < 3 ? 'KEEP GOING!' : streak < 7 ? "ON FIRE!" : '🏆 AMAZING!'}</div>
       </div>
     </div>
+    </div>
+
+    <!-- Readiness Nudge Overlay -->
+    <div class="card" style="margin: 0 24px; margin-top: -32px; background: white; border: none; border-left: 8px solid var(--c-primary); box-shadow: var(--shadow-xl); position: relative; z-index: 10;">
+        <div style="padding: 20px;">
+           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+               <span style="font-size: 11px; font-weight: 800; color: var(--c-primary); letter-spacing: 0.1em;">MISSION CONTROL NUDGE</span>
+               <span style="font-size: 11px; font-weight: 900; color: var(--c-text-muted);">${readiness}% READINESS</span>
+           </div>
+           <p style="font-size: 18px; font-weight: 800; color: var(--c-text); line-height: 1.4; margin: 0;">"${nudge}"</p>
+           <div style="margin-top: 12px; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden;">
+               <div style="width: ${readiness}%; height: 100%; background: var(--c-primary); border-radius: 3px;"></div>
+           </div>
+        </div>
+    </div>
   </div>
 
   <!-- Target banner -->
@@ -158,10 +177,16 @@ export function renderStudentHome() {
     const subLevel = getCurrentLevel(sub);
     const colors = SUBJECT_COLORS[sub];
     const weakTopics = getWeakTopics(sub);
+    const isBehind = readiness < 75 && weakTopics.length > 0;
     const weakLabel = weakTopics.length > 0 ? `⚠️ FOCUS: ${weakTopics[0].topic.toUpperCase()}` : '✅ MASTERED';
     return `
       <div class="subject-card" onclick="window.router.navigate('#/student/quiz/${sub}')"
-           style="background: white; border: none; border-bottom: 8px solid ${colors.start}; border-radius: var(--r-lg);">
+           style="background: white; border: none; border-bottom: 8px solid ${colors.start}; border-radius: var(--r-lg); position: relative;">
+        ${isBehind ? `
+          <div style="position: absolute; top: 12px; right: 12px; background: #f59e0b; color: white; font-size: 9px; font-weight: 900; padding: 4px 8px; border-radius: 20px; box-shadow: var(--shadow-sm); z-index: 2; display: flex; align-items: center; gap: 4px;">
+              <span>⚡</span> GOAL ACCELERATOR
+          </div>
+        ` : ''}
         <div class="subject-card-glow" style="background:${colors.start}11"></div>
         <div>
           <div class="subject-card-icon" style="background: ${colors.start}11; color: ${colors.start}; border-radius: 12px; padding: 10px;">${SUBJECT_ICONS[sub]}</div>

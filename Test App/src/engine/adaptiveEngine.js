@@ -4,6 +4,7 @@
 
 import { QUESTION_BANK, SUBJECTS, DIFFICULTY } from './questionBank.js';
 import { getProgress, updateProgress } from './progressStore.js';
+import { calculateReadiness, getWeakTopics as getEngineWeakTopics } from './readinessEngine.js';
 
 // ── ELO Constants ─────────────────────────────────────────────────────────
 const BASE_RATING = 1200;
@@ -39,8 +40,13 @@ export function getSessionQuestions(subject, count = MAX_SESSION_LENGTH) {
 
         let score = 1000 - gap; // Prefer closer difficulty match
 
+        const readiness = calculateReadiness(progress);
+        const isBehind = readiness < 70;
+
         // Spaced repetition: prioritise questions answered wrong before
-        if (lastResult === false) score += 300;
+        if (lastResult === false) {
+            score += isBehind ? 600 : 300; // Double priority if behind
+        }
 
         // De-prioritise recently correct questions
         if (lastResult === true) score -= 200;
@@ -100,7 +106,12 @@ export function recordAnswer(question, isCorrect) {
 // ── Get difficulty level from rating ─────────────────────────────────────
 export function getCurrentLevel(subject) {
     const progress = getProgress();
+    const readiness = calculateReadiness(progress);
     const rating = progress.ratings[subject] || BASE_RATING;
+
+    // If behind, force higher level exposure to accelerate learning
+    if (readiness < 60 && rating > 1050) return 2;
+
     if (rating < 1100) return 1;
     if (rating < 1350) return 2;
     return 3;
