@@ -32,6 +32,15 @@ function boot() {
       .catch(err => console.log('SW registration failed', err));
   }
 
+  // Remove splash screen before replacing app content
+  const splash = document.getElementById('splash');
+  if (splash) {
+    splash.classList.add('fade-out');
+    setTimeout(() => {
+      splash.remove();
+    }, 700); // Wait for CSS transition (600ms) + buffer
+  }
+
   // Inject global app structure
   document.getElementById('app').innerHTML = `
         <div id="navbar-anchor"></div>
@@ -85,17 +94,6 @@ function boot() {
       indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
     }
   });
-
-  // Remove splash screen after initialization
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    if (splash) {
-      splash.classList.add('fade-out');
-      setTimeout(() => {
-        splash.remove();
-      }, 600);
-    }
-  }, 1000);
 }
 
 
