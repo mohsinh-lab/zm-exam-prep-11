@@ -19,8 +19,7 @@ vi.mock('../src/engine/progressStore.js', () => ({
 }));
 
 vi.mock('../src/engine/readinessEngine.js', () => ({
-    calculateReadiness: vi.fn(() => 75),
-    getWeakTopics: vi.fn(() => [])
+    calculateReadiness: vi.fn(() => 75)
 }));
 
 describe('Adaptive Engine', () => {
