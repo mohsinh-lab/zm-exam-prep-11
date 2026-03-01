@@ -18,7 +18,7 @@ describe('Progress Store', () => {
 
     it('should return default progress if empty', () => {
         const progress = getProgress();
-        expect(progress.studentName).toBe('Zayyan Mohsin');
+        expect(progress.studentName).toBe('Student');
         expect(progress.xp).toBe(0);
         expect(progress.gems).toBe(5);
     });
