@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-    base: '/zm-exam-prep-11/',
+    base: process.env.NODE_ENV === 'production' ? '/zm-exam-prep-11/' : '/',
     root: '.',
     server: {
         port: 5173,
@@ -11,7 +11,7 @@ export default defineConfig({
         environment: 'jsdom',
         globals: true,
         setupFiles: ['./tests/setup.js'],
-        exclude: ['**/node_modules/**', '**/dist/**', 'tests/ui.spec.js', 'tests/ui-analysis.spec.js'],
+        exclude: ['**/node_modules/**', '**/dist/**', 'tests/ui.spec.js', 'tests/ui-analysis.spec.js', 'tests/**/*.e2e.spec.js'],
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],

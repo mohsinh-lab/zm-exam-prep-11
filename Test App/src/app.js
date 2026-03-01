@@ -85,6 +85,17 @@ function boot() {
       indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
     }
   });
+
+  // Remove splash screen after initialization
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.remove();
+      }, 600);
+    }
+  }, 1000);
 }
 
 
