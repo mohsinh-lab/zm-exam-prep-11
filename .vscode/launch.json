@@ -7,9 +7,44 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080",
-            "webRoot": "${workspaceFolder}"
+            "name": "Launch Dev Server",
+            "url": "http://localhost:5173/zm-exam-prep-11/",
+            "webRoot": "${workspaceFolder}/Test App",
+            "preLaunchTask": "npm: dev",
+            "skipFiles": ["<node_internals>/**"]
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Production Preview",
+            "url": "http://localhost:4173/zm-exam-prep-11/",
+            "webRoot": "${workspaceFolder}/Test App/dist",
+            "preLaunchTask": "npm: preview"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Debug Deployed Site",
+            "url": "https://mohsinh-lab.github.io/zm-exam-prep-11/",
+            "webRoot": "${workspaceFolder}/Test App/src"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Tests",
+            "cwd": "${workspaceFolder}/Test App",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["test"],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Tests with Coverage",
+            "cwd": "${workspaceFolder}/Test App",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "test:coverage"],
+            "console": "integratedTerminal"
         }
     ]
 }
