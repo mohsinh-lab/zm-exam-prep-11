@@ -28,8 +28,7 @@ function boot() {
     const progress = getProgress();
 
     if ('serviceWorker' in navigator) {
-      const swPath = `${import.meta.env.BASE_URL || '/'}sw.js`.replace(/\/+/g, '/');
-      navigator.serviceWorker.register(swPath)
+      navigator.serviceWorker.register('./sw.js')
         .then(reg => console.log('Service Worker Registered!', reg))
         .catch(err => console.error('Service Worker Registration Failed', err));
     }
