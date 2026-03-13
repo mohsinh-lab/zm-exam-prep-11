@@ -1,3 +1,4 @@
+
 import './styles/main.css';
 import { Router } from './core/router.js';
 import { renderStudentHome } from './features/student/Home.js';
@@ -7,7 +8,7 @@ import { renderStudentResults, mountStudentResults } from './features/student/Re
 import { renderActionPlan } from './pages/actionplan.js';
 import { renderAchievements } from './pages/achievements.js';
 import { renderSetup, mountSetup } from './pages/setup.js';
-import { getProgress, getAuth, logout, initLiveSync } from './engine/progressStore.js';
+import { getProgress, getAuth, logout, initLiveSync, getDailyChallenge } from './engine/progressStore.js';
 import { renderLogin, mountLogin } from './features/auth/Login.js';
 import { renderOnboarding, mountOnboarding } from './features/auth/Onboarding.js';
 
@@ -33,16 +34,12 @@ function boot() {
         .catch(err => console.error('Service Worker Registration Failed', err));
     }
 
-    // Remove splash screen before replacing app content
     const splash = document.getElementById('splash');
     if (splash) {
       splash.classList.add('fade-out');
-      setTimeout(() => {
-        splash.remove();
-      }, 700); // Wait for CSS transition (600ms) + buffer
+      setTimeout(() => splash.remove(), 700);
     }
 
-    // Inject global app structure
     document.getElementById('app').innerHTML = `
         <div id="navbar-anchor"></div>
         <main id="router-view" style="padding-top:var(--nav-height)"></main>
@@ -51,18 +48,13 @@ function boot() {
 
     window.router = new Router(routes, 'router-view');
 
-    // Initial redirect logic
     const authInfo = getAuth();
 
-    // --- Firebase Auth Observer ---
     import('./config/firebase.js').then(({ auth, onAuthStateChanged }) => {
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          console.log('👤 Firebase User Detected:', user.email);
-          // Sync role to localStorage if needed
           const localUser = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
           if (!localUser.uid || localUser.uid !== user.uid) {
-            // This handles cases where session persists but local storage was cleared
             import('./config/firebase.js').then(({ database, ref, get }) => {
               get(ref(database, 'users/' + user.uid + '/role')).then(snap => {
                 if (snap.exists()) {
@@ -73,7 +65,6 @@ function boot() {
                     role: snap.val()
                   }));
                   initLiveSync();
-                  // Trigger re-render if we're on a splash or login screen
                   if (window.location.hash === '#/login') window.router.handleRoute();
                 }
               });
@@ -81,8 +72,6 @@ function boot() {
           } else {
             initLiveSync();
           }
-        } else {
-          console.log('👤 No active Firebase session');
         }
       });
     });
@@ -98,16 +87,12 @@ function boot() {
 
     renderNav(window.location.hash);
 
-    // --- Signal Successful Boot ---
     window.__APP_BOOTED__ = true;
     if (window.__BOOT_TIMEOUT__) clearTimeout(window.__BOOT_TIMEOUT__);
-    console.log('🚀 AcePrep Boot Successful');
 
     window.addEventListener('hashchange', () => {
       const auth = getAuth();
-      if (auth.currentUser) {
-        initLiveSync();
-      }
+      if (auth.currentUser) initLiveSync();
       const hashBase = window.location.hash.split('?')[0];
       const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
 
@@ -117,32 +102,20 @@ function boot() {
       renderNav(hashBase);
     });
 
-    // Listen for sync state changes to update UI across all pages
     window.addEventListener('sync_state_changed', (e) => {
       const { connected, syncing } = e.detail;
       const indicator = document.getElementById('sync-indicator');
       if (!indicator) return;
-
-      if (!connected) {
-        indicator.innerHTML = '☁️ <span style="color:var(--c-danger)">Offline</span>';
-      } else if (syncing) {
-        indicator.innerHTML = '☁️ <span style="color:var(--c-warning)">Syncing...</span>';
-      } else {
-        indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
-      }
+      if (!connected) indicator.innerHTML = '☁️ <span style="color:var(--c-danger)">Offline</span>';
+      else if (syncing) indicator.innerHTML = '☁️ <span style="color:var(--c-warning)">Syncing...</span>';
+      else indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
     });
   } catch (error) {
     console.error('CRITICAL BOOT ERROR:', error);
-    if (window.onerror) {
-      window.onerror('Boot Error: ' + error.message, window.location.href, 0, 0, error);
-    }
   }
 }
 
-
-// Mount function for student home — wires countdown timer & quote refresh
 function mountStudentHome() {
-  // Countdown timer to exam (September 15, 2026)
   const countdownEl = document.getElementById('exam-countdown');
   if (countdownEl) {
     const examDate = new Date('2026-09-15');
@@ -155,49 +128,27 @@ function mountStudentHome() {
           </div>`;
   }
 
-  // Auto-refresh motivation quote every minute
-  if (window._quoteInterval) clearInterval(window._quoteInterval);
-  window._quoteInterval = null;
-
-  // Notification setup
-  window._setupNotifications = async () => {
-    if (!('Notification' in window)) {
-      alert("Oops! Your browser doesn't support notifications.");
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const btn = document.getElementById('noti-btn');
-      if (btn) btn.innerHTML = '✅ NUDGES ACTIVE';
-
-      // Send test nudge via Service Worker
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'SCHEDULE_REMINDER' });
-      }
+  window._startDaily = () => {
+    const challenge = getDailyChallenge();
+    if (challenge && !challenge.isCompleted) {
+      window.router.navigate(`#/student/quiz/${challenge.subject}?daily=true`);
     } else {
-      alert("No problem! You can always enable them later in settings.");
+      alert("Mission already complete! Check back tomorrow.");
     }
   };
-
-  // Check current status
-  if (Notification.permission === 'granted') {
-    const btn = document.getElementById('noti-btn');
-    if (btn) btn.innerHTML = '✅ NUDGES ACTIVE';
-  }
 }
 
 function renderNav(hash) {
   const navAnchor = document.getElementById('navbar-anchor');
   const tabAnchor = document.getElementById('tabbar-anchor');
-
   if (!navAnchor || !tabAnchor) return;
 
-  const isQuiz = hash.includes('/quiz/');
-  const isParent = hash.includes('/parent/');
-  const isSetup = hash === '#/setup';
-  const isLogin = hash === '#/login';
-  const isOnboarding = hash === '#/onboarding';
+  const hashBase = hash.split('?')[0];
+  const isQuiz = hashBase.includes('/quiz/');
+  const isParent = hashBase.includes('/parent/');
+  const isSetup = hashBase === '#/setup';
+  const isLogin = hashBase === '#/login';
+  const isOnboarding = hashBase === '#/onboarding';
 
   if (isQuiz || isSetup || isLogin || isOnboarding) {
     navAnchor.innerHTML = '';
@@ -205,9 +156,9 @@ function renderNav(hash) {
     return;
   }
 
-  const isHome = hash === '#/student/home' || hash === '';
-  const isPlan = hash === '#/student/plan';
-  const isBadges = hash === '#/student/badges';
+  const isHome = hashBase === '#/student/home' || hashBase === '' || hashBase === '#';
+  const isPlan = hashBase === '#/student/plan';
+  const isBadges = hashBase === '#/student/badges';
 
   const navBtn = (label, path, active) =>
     `<button class="nav-btn${active ? ' active' : ''}" onclick="window.router.navigate('${path}')">${label}</button>`;
@@ -217,7 +168,7 @@ function renderNav(hash) {
             <nav class="navbar parent-nav">
                 <div class="nav-logo">👨‍👩‍👧 Parent Portal</div>
                 <div style="flex-grow: 1;"></div>
-                <div id="sync-indicator" style="font-size: 12px; font-weight: bold; margin-right: 16px;">☁️ <span style="color:var(--c-text-muted)">Connecting...</span></div>
+                <div id="sync-indicator" style="font-size: 12px; font-weight: bold; margin-right: 16px;">☁️ ...</div>
                 <button class="btn btn-outline btn-sm" onclick="window.router.navigate('#/student/home')">← Student View</button>
             </nav>
         `;
@@ -239,12 +190,12 @@ function renderNav(hash) {
                     ${navBtn('🏠 Home', '#/student/home', isHome)}
                     ${navBtn('📅 Plan', '#/student/plan', isPlan)}
                     ${navBtn('🏅 Badges', '#/student/badges', isBadges)}
-                    ${isStudent ? '' : `<button class="nav-btn btn-parent${isParent ? ' active' : ''}" onclick="window.router.navigate('#/parent/home')">👪 Parents</button>`}
+                    ${isStudent ? '' : `<button class="nav-btn" onclick="window.router.navigate('#/parent/home')">👪 Parents</button>`}
                     <button class="nav-btn" onclick="window._handleLogout()">🚪 Logout</button>
                 </div>
                 <div class="nav-xp">⚡ ${progress.xp || 0} XP</div>
                 <div class="nav-gems">💎 ${progress.gems || 0}</div>
-                <div id="sync-indicator" style="margin-left: 12px; font-size: 12px; font-weight: bold;">☁️ <span style="color:var(--c-text-muted)">Connecting...</span></div>
+                <div id="sync-indicator" style="margin-left: 12px; font-size: 12px; font-weight: bold;">☁️ ...</div>
             </nav>
         `;
     tabAnchor.innerHTML = `
@@ -278,5 +229,3 @@ function renderNav(hash) {
 }
 
 window.addEventListener('DOMContentLoaded', boot);
-
-// SW registration is handled in boot() for consistency

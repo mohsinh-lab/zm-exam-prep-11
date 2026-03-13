@@ -43,6 +43,12 @@ const defaultProgress = () => ({
         targetScore: 90,
         readinessScore: 0,
         lastPlanUpdate: null
+    },
+    // Daily Challenge Tracking
+    daily: {
+        lastCompleted: null, // YYYY-MM-DD
+        currentSubject: null,
+        expires: null
     }
 });
 
@@ -95,6 +101,44 @@ export function getProgress() {
     } catch {
         return defaultProgress();
     }
+}
+
+export function getDailyChallenge() {
+    const progress = getProgress();
+    const today = new Date().toISOString().split('T')[0];
+
+    // If new day, pick a random subject
+    if (progress.daily?.lastCompleted !== today && (!progress.daily?.currentSubject || progress.daily?.expires !== today)) {
+        const subs = ['maths', 'en', 'vr', 'nvr'];
+        const randomSub = subs[Math.floor(Math.random() * subs.length)];
+        
+        progress.daily = {
+            lastCompleted: progress.daily?.lastCompleted || null,
+            currentSubject: randomSub,
+            expires: today
+        };
+        updateProgress(progress);
+    }
+
+    return {
+        subject: progress.daily.currentSubject,
+        isCompleted: progress.daily.lastCompleted === today
+    };
+}
+
+export function completeDailyChallenge() {
+    const progress = getProgress();
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (progress.daily.lastCompleted !== today) {
+        progress.daily.lastCompleted = today;
+        // Reward: 5 Gems + 100 Bonus XP
+        progress.gems = Math.min(20, (progress.gems || 0) + 5);
+        progress.xp = (progress.xp || 0) + 100;
+        updateProgress(progress);
+        return true;
+    }
+    return false;
 }
 
 export function updateProgress(data) {

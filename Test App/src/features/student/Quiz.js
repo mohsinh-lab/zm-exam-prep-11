@@ -1,5 +1,4 @@
-
-import { getProgress, recordSession, useHint } from '../../engine/progressStore.js';
+import { getProgress, recordSession, useHint, completeDailyChallenge } from '../../engine/progressStore.js';
 import { getSessionQuestions, recordAnswer, getRankInfo } from '../../engine/adaptiveEngine.js';
 import { SUBJECT_LABELS, SUBJECT_ICONS, SUBJECT_COLORS } from '../../engine/questionBank.js';
 import { audio } from '../../engine/audioEngine.js';
@@ -26,6 +25,7 @@ export function renderStudentQuiz(params) {
     timings: [],
     questionStart: Date.now(),
     focusWarnings: 0,
+    isDaily: window.location.hash.includes('daily=true')
   };
 
   return buildQuizHTML(state);
@@ -286,6 +286,11 @@ export function mountStudentQuiz() {
     if (state.current >= state.questions.length) {
       const timeTaken = (Date.now() - state.sessionStart) / 1000;
       const session = recordSession(state.subject, state.questions, state.answers, timeTaken);
+      
+      if (state.isDaily) {
+        completeDailyChallenge();
+      }
+
       localStorage.setItem('last_quiz_result', JSON.stringify({
         session,
         answers: state.answers,
@@ -321,13 +326,7 @@ export function mountStudentQuiz() {
 }
 
 function getBuddyEmoji(subject) {
-  const map = {
-    vr: '<img src="pokemon-quiz.png" style="width: 100px; height: 100px; object-fit: contain;">',
-    nvr: '<img src="transformer-speed.png" style="width: 100px; height: 100px; object-fit: contain;">',
-    en: '<img src="pokemon-hero.png" style="width: 100px; height: 100px; object-fit: contain;">',
-    maths: '<img src="transformer-plan.png" style="width: 100px; height: 100px; object-fit: contain;">'
-  };
-  return map[subject] || '🎓';
+  return `<img src="ace-mascot.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">`;
 }
 
 function getBuddyName(subject) {

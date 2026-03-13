@@ -1,5 +1,4 @@
-
-import { getProgress } from '../../engine/progressStore.js';
+import { getProgress, getDailyChallenge } from '../../engine/progressStore.js';
 import { getSubjectMastery, getCurrentLevel, getWeakTopics, checkBoosterRequired, isWeekend, getRankInfo } from '../../engine/adaptiveEngine.js';
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS, SUBJECT_ICONS } from '../../engine/questionBank.js';
 import { getRandomWeekendQuote, getMinuteAwareQuote } from '../../engine/quoteBank.js';
@@ -8,6 +7,7 @@ import { getReadinessNudge } from '../../engine/notificationEngine.js';
 
 export function renderStudentHome() {
   const progress = getProgress();
+  const daily = getDailyChallenge();
   const name = progress.studentName || 'Student';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -105,10 +105,11 @@ export function renderStudentHome() {
     </div>
     
     <!-- Character Companion -->
-    <img src="pokemon-hero.png" alt="Hero Pokemon" class="desktop-only" 
+    <img src="ace-mascot.png" alt="Ace Mascot" class="desktop-only" 
          style="position: absolute; right: 0; bottom: -20px; width: 340px; z-index: 1; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35)); transition: transform 0.3s ease-out;"
          onmouseover="this.style.transform='scale(1.05) rotate(2deg)'" 
-         onmouseout="this.style.transform='scale(1) rotate(0deg)'">
+         onmouseout="this.style.transform='scale(1) rotate(0deg)'"
+         loading="eager">
     
     <div class="hero-right" style="position: relative; z-index: 2;">
        <div class="profile-main glass" style="border-radius: var(--r-md); padding: 12px 20px;">
@@ -130,24 +131,52 @@ export function renderStudentHome() {
     </div>
   </div>
 
-  <!-- Mission Control Overlay (Optimized Readiness) -->
+  <!-- Mission Control Overlay -->
   <div style="margin: 0 40px; margin-top: -40px; position: relative; z-index: 10;">
       <div class="card glass hover-lift" style="padding: 24px; border-radius: var(--r-lg); box-shadow: var(--shadow-xl); border-left: 8px solid var(--c-accent) !important;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
               <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 18px;">🛰️</span>
                   <span style="font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 0.1em;">MISSION CONTROL</span>
               </div>
-              <div style="font-size: 14px; font-weight: 900; color: var(--c-text);">PREDICTED READINESS: <span style="color: var(--c-primary);">${readiness}%</span></div>
+              <div style="text-align: right;">
+                <div style="font-size: 14px; font-weight: 900; color: var(--c-text);">PREDICTED READINESS: <span style="color: var(--c-primary);">${readiness}%</span></div>
+                <div style="font-size: 10px; font-weight: 800; color: var(--c-accent); background: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 10px; display: inline-block;">RANK: ${rank.label}</div>
+              </div>
           </div>
-          <p style="font-size: 18px; font-weight: 800; color: var(--c-text); line-height: 1.5; margin: 0 0 16px 0;">"${nudge}"</p>
-          <div style="height: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
-              <div style="width: ${readiness}%; height: 100%; background: var(--c-primary-grad); border-radius: 5px; transition: width 1s var(--ease-out);"></div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            <div>
+              <p style="font-size: 18px; font-weight: 800; color: var(--c-text); line-height: 1.5; margin: 0 0 16px 0;">"${nudge}"</p>
+              <div style="height: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden;">
+                  <div style="width: ${readiness}%; height: 100%; background: var(--c-primary-grad); border-radius: 5px; transition: width 1s var(--ease-out);"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 10px; font-weight: 800; color: var(--c-text-muted); text-transform: uppercase;">
+                  <span>Beginner</span>
+                  <span>Ready for Exam 🎯</span>
+              </div>
+            </div>
+
+            <!-- Daily Challenge Directive -->
+            <div style="background: rgba(var(--rgb-accent), 0.1); border: 1px dashed var(--c-accent); padding: 12px; border-radius: 16px; position: relative;">
+               <div style="font-size: 10px; font-weight: 950; color: var(--c-accent); margin-bottom: 8px;">DAILY CHALLENGE</div>
+               ${daily.isCompleted 
+                 ? `<div style="text-align:center; padding: 4px;">
+                      <span style="font-size: 24px;">✅</span>
+                      <div style="font-size: 11px; font-weight: 900; color: var(--c-success); margin-top: 4px;">MISSION COMPLETE!</div>
+                    </div>`
+                 : `
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span style="font-size: 20px;">${{vr:'🔤', nvr:'🔷', en:'📖', maths:'🔢'}[daily.subject]}</span>
+                    <span style="font-weight: 800; font-size: 12px; color: var(--c-text);">${{vr:'Verbal', nvr:'Non-Verbal', en:'English', maths:'Maths'}[daily.subject].toUpperCase()}</span>
+                  </div>
+                  <button onclick="window._startDaily()" style="width: 100%; background: var(--c-accent); color: white; border: none; padding: 6px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer;">START +100 XP</button>
+                 `
+               }
+            </div>
           </div>
-          <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 10px; font-weight: 800; color: var(--c-text-muted); text-transform: uppercase;">
-              <span>Beginner</span>
-              <span>Ready for Exam 🎯</span>
-          </div>
+      </div>
+  </div>
       </div>
   </div>
 
