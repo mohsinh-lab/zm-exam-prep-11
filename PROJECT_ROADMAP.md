@@ -140,9 +140,10 @@ npm test -- --reporter=verbose
 - [ ] Add ARIA labels to emoji-only buttons
 - [ ] Ensure keyboard navigation works throughout
 - [ ] Test with screen reader (NVDA/JAWS)
-- [ ] Add focus indicators
+- [x] Add focus indicators (`:focus-visible`) ✅
+- [x] Add skip navigation links (`.skip-link`) ✅
+- [ ] Test with screen reader (NVDA/JAWS)
 - [ ] Test with reduced motion preferences
-- [ ] Add skip navigation links
 
 **Target:** WCAG 2.1 AA compliance
 

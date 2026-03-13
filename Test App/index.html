@@ -25,8 +25,11 @@
 </head>
 
 <body>
-  <div id="app">
-    <div class="splash" id="splash">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  
+  <main id="app">
+    <div id="main-content"></div>
+    <div id="splash" class="splash-screen">
       <div class="splash-logo">
         <div class="splash-icon">🎓</div>
         <h1>AcePrep 11+</h1>
@@ -49,7 +52,7 @@
         <p style="font-size: 0.7rem; color: #aaa; margin-top: 20px;" id="error-details"></p>
       </div>
     </div>
-  </div>
+  </main>
   <script>
     // --- Production Safety Net ---
     window.__BOOT_TIMEOUT__ = setTimeout(function () {

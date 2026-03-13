@@ -232,8 +232,9 @@ export function renderStudentHome() {
     const isBehind = readiness < 75 && weakTopics.length > 0;
     const weakLabel = weakTopics.length > 0 ? `⚠️ FOCUS: ${weakTopics[0].topic.toUpperCase()}` : '✅ MASTERED';
     return `
-      <div class="subject-card hover-lift" onclick="window.router.navigate('#/student/quiz/${sub}')"
-           style="background: white; border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+      <button class="subject-card hover-lift" onclick="window.router.navigate('#/student/quiz/${sub}')"
+           aria-label="Start ${SUBJECT_LABELS[sub]} training. Current mastery ${mastery}%."
+           style="background: white; border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--shadow-sm); width: 100%; text-align: left; display: block;">
         ${isBehind ? `
           <div class="pulse-glow" style="position: absolute; top: 12px; right: 12px; background: var(--c-accent); color: #000; font-size: 9px; font-weight: 900; padding: 4px 8px; border-radius: 20px; z-index: 2; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(0,0,0,0.1);">
               <span>⚡</span> BOOST ACTIVE
@@ -249,19 +250,19 @@ export function renderStudentHome() {
         </div>
 
         <div>
-          <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; margin-bottom: 4px; color: var(--c-text);">${SUBJECT_LABELS[sub].toUpperCase()}</h3>
-          <div style="font-size: 11px; font-weight: 700; color: ${colors.start};">LEVEL ${subLevel} ACADEMIC</div>
+           <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; margin-bottom: 4px; color: var(--c-text);">${SUBJECT_LABELS[sub].toUpperCase()}</h3>
+           <div style="font-size: 11px; font-weight: 700; color: ${colors.start};">LEVEL ${subLevel} ACADEMIC</div>
         </div>
 
         <div style="margin-top: 20px;">
-          <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
-            <div style="width:${mastery}%; height: 100%; background:${colors.start}; border-radius: 4px;"></div>
-          </div>
-          <div style="font-size: 10px; margin-top: 10px; font-weight: 800; color: var(--c-text-muted); display: flex; align-items: center; gap: 6px;">
-             ${weakTopics.length > 0 ? '🎯' : '⭐'} ${weakLabel}
-          </div>
+           <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
+             <div style="width:${mastery}%; height: 100%; background:${colors.start}; border-radius: 4px;"></div>
+           </div>
+           <div style="font-size: 10px; margin-top: 10px; font-weight: 800; color: var(--c-text-muted); display: flex; align-items: center; gap: 6px;">
+              ${weakTopics.length > 0 ? '🎯' : '⭐'} ${weakLabel}
+           </div>
         </div>
-      </div>`;
+      </button>`;
   }).join('')}
   </div>
 
@@ -309,12 +310,13 @@ function renderMissionCenter() {
   const colors = SUBJECT_COLORS[booster.subject];
 
   return `
-  <div class="card mission-card" onclick="window.router.navigate('#/student/quiz/${booster.subject}')"
+  <button class="card mission-card" onclick="window.router.navigate('#/student/quiz/${booster.subject}')"
+       aria-label="Start Booster Mission: ${booster.title}. Reward: ${booster.rewardXP} XP."
        style="background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(6,182,212,0.1));
               border: 2px solid ${colors.start}66; margin-bottom:28px; cursor:pointer;
-              animation: missionPulse 2s infinite">
+              animation: missionPulse 2s infinite; width: 100%; text-align: left; display: block;">
     <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-      <div style="font-size:48px">🚀</div>
+      <div style="font-size:48px" aria-hidden="true">🚀</div>
       <div style="flex:1">
         <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--c-accent);margin-bottom:4px">New Booster Unlocked!</div>
         <h3 style="font-family:var(--font-heading);font-size:20px;font-weight:900;margin-bottom:6px">${booster.title}</h3>
@@ -325,7 +327,7 @@ function renderMissionCenter() {
         <div style="font-size:12px;color:var(--c-text-muted)">Mastery Bonus</div>
       </div>
     </div>
-  </div>
+  </button>
   <style>
     @keyframes missionPulse {
       0% { box-shadow: 0 0 0 0 ${colors.start}33; transform: scale(1); }
