@@ -7,7 +7,7 @@ export function renderSetup() {
   return `
 <div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 50% 30%,#1a1060,#0f0f1a)">
   <div class="setup-screen">
-    <div class="setup-icon">🎓</div>
+    <div class="setup-icon" aria-hidden="true">🎓</div>
     <h1 style="font-family:var(--font-heading);font-size:30px;font-weight:900;margin-bottom:8px">Welcome to AcePrep 11+</h1>
     <p style="color:var(--c-text-muted);margin-bottom:28px;font-size:15px">Smart preparation for Dream School<br>Let's get you set up in 30 seconds!</p>
 
@@ -25,7 +25,7 @@ export function renderSetup() {
     </button>
 
     <div style="margin-top:20px;font-size:12px;color:var(--c-text-dim)">
-      🔒 All data stays on this device. No account required.
+      <span aria-hidden="true">🔒</span> All data stays on this device. No account required.
     </div>
   </div>
 </div>`;
@@ -51,5 +51,9 @@ export function mountSetup() {
 
   nameInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter') emailInput?.focus();
+  });
+
+  emailInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') window._setupSubmit();
   });
 }

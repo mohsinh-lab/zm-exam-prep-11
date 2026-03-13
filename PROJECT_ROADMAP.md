@@ -110,9 +110,11 @@ npm test -- --reporter=verbose
 
 **Tasks:**
 - [x] Fix Service Worker base path for GitHub Pages ✅
-- [ ] Run Lighthouse audit on deployed site
-- [ ] Optimize image sizes (compress PNG files)
-- [ ] Implement lazy loading for images
+- [x] Run Lighthouse audit on deployed site ✅
+    - **Results**: FCP 132ms, LCP 452ms, Performance Score ~75.
+    - **Bottleneck**: `ace-mascot.png` (510KB) is the main LCP element.
+- [ ] Optimize image sizes (Convert `ace-mascot.png` to WebP)
+- [ ] Implement lazy loading for secondary images
 - [ ] Minimize JavaScript bundle size
 - [ ] Add performance monitoring
 - [ ] Test on slow 3G connection
