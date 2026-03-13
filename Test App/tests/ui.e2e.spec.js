@@ -2,6 +2,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('AcePrep 11+ Navigation', () => {
+    test.beforeEach(async ({ page }) => {
+        // Clear storage and service workers before each test
+        await page.goto('/');
+        await page.evaluate(async () => {
+            localStorage.clear();
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                }
+            }
+        });
+    });
     test('should redirect to setup if not configured', async ({ page }) => {
         await page.goto('/');
         // Check if we are on the setup page

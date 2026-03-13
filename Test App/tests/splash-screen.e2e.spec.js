@@ -1,11 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Splash Screen Bug Fix', () => {
+test.describe('AcePrep 11+ Navigation', () => {
   test.beforeEach(async ({ page }) => {
-    // Clear storage before each test
+    // Clear storage and service workers before each test
     await page.goto('/');
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       localStorage.clear();
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+      }
     });
   });
 
