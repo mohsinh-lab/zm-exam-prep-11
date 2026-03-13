@@ -29,15 +29,18 @@ function boot() {
     const progress = getProgress();
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker Registered!', reg))
-        .catch(err => console.error('Service Worker Registration Failed', err));
+      const swPath = `${import.meta.env.BASE_URL}sw.js`;
+      navigator.serviceWorker.register(swPath)
+        .then(reg => console.log('🚀 Service Worker Registered!', reg))
+        .catch(err => console.error('❌ Service Worker Registration Failed', err));
     }
 
     const splash = document.getElementById('splash');
     if (splash) {
       splash.classList.add('fade-out');
-      setTimeout(() => splash.remove(), 700);
+      setTimeout(() => {
+        if (splash.parentNode) splash.remove();
+      }, 700);
     }
 
     document.getElementById('app').innerHTML = `

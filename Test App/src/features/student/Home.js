@@ -55,9 +55,9 @@ export function renderStudentHome() {
                   <input type="email" id="link-parent-email" class="input-field" style="background: white; border-width: 2px;" placeholder="parent@gmail.com">
               </div>
 
-              <button class="btn btn-primary" data-testid="student-send-approval-btn" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._sendApprovalRequest()">📩 SEND APPROVAL LINK</button>
+              <button class="btn btn-primary" data-testid="student-send-approval-btn" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._sendApprovalRequest()" aria-label="Send approval link to parent">📩 SEND APPROVAL LINK</button>
               
-              <button class="btn btn-outline" style="margin-top: 24px; border: none; color: #94a3b8; font-size: 13px;" onclick="window._handleAuthLogout()">🚪 Logout & Try Another Account</button>
+              <button class="btn btn-outline" style="margin-top: 24px; border: none; color: #94a3b8; font-size: 13px;" onclick="window._handleAuthLogout()" aria-label="Logout from account">🚪 Logout & Try Another Account</button>
           </div>
       </div>
       `;
@@ -170,7 +170,7 @@ export function renderStudentHome() {
                     <span style="font-size: 20px;">${{vr:'🔤', nvr:'🔷', en:'📖', maths:'🔢'}[daily.subject]}</span>
                     <span style="font-weight: 800; font-size: 12px; color: var(--c-text);">${{vr:'Verbal', nvr:'Non-Verbal', en:'English', maths:'Maths'}[daily.subject].toUpperCase()}</span>
                   </div>
-                  <button onclick="window._startDaily()" style="width: 100%; background: var(--c-accent); color: white; border: none; padding: 6px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer;">START +100 XP</button>
+                  <button onclick="window._startDaily()" style="width: 100%; background: var(--c-accent); color: white; border: none; padding: 6px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer;" aria-label="Start daily mission">START +100 XP</button>
                  `
                }
             </div>
@@ -363,8 +363,6 @@ export function mountStudentHome() {
     if (!emailInput) return;
     const email = emailInput.value.trim().toLowerCase();
     if (!email) { alert("Please enter your parent's email."); return; }
-
-    console.log(`[Audit] Student ${studentUid} requesting parent link for email: ${email}`);
 
     const userData = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
     const studentUid = userData.uid;
