@@ -1019,6 +1019,95 @@ const nvrQuestionsExtra = [
   },
 ];
 
+/* ─── RESTORED BATCH 2 DATA ─── */
+const mathsQuestionsBatch2 = [
+  {
+    id: 'ma_b2_001', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.MEDIUM,
+    question: 'What is 15% of 240?', options: ['30', '32', '36', '40'], answer: 2,
+    explanation: '10% is 24, 5% is 12. 24 + 12 = 36.', hint: 'Find 10% first, then add half of that.'
+  },
+  {
+    id: 'ma_b2_002', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.ALGEBRA, difficulty: DIFFICULTY.HARD,
+    question: 'If 3y + 4 = 19, what is y?', options: ['3', '4', '5', '6'], answer: 2,
+    explanation: '3y = 19 - 4 = 15. y = 15 / 3 = 5.', hint: 'Subtract 4, then divide by 3.'
+  },
+  {
+    id: 'ma_b2_003', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.GEOMETRY, difficulty: DIFFICULTY.MEDIUM,
+    question: 'A rectangle has a perimeter of 40cm. If its length is 12cm, what is its width?', options: ['6cm', '8cm', '14cm', '28cm'], answer: 1,
+    explanation: 'Perimeter = 2(l+w). 40 = 2(12+w) -> 20 = 12+w -> w = 8.', hint: 'Perimeter is twice the sum of length and width.'
+  },
+  {
+    id: 'ma_b2_004', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.DATA, difficulty: DIFFICULTY.MEDIUM,
+    question: 'The mean of four numbers is 10. Three of the numbers are 8, 12, and 11. What is the fourth?', options: ['8', '9', '10', '11'], answer: 1,
+    explanation: 'Total must be 4 * 10 = 40. 8 + 12 + 11 = 31. 40 - 31 = 9.', hint: 'If the mean is 10, the total sum of 4 numbers is 40.'
+  },
+  {
+    id: 'ma_b2_005', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.FRACTIONS, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Arrange in ascending order: 1/2, 1/4, 3/8', options: ['1/4, 3/8, 1/2', '1/4, 1/2, 3/8', '3/8, 1/4, 1/2', '1/2, 3/8, 1/4'], answer: 0,
+    explanation: '1/4 = 2/8, 1/2 = 4/8. So order is 2/8 (1/4), 3/8, 4/8 (1/2).', hint: 'Convert them all to a common denominator of 8.'
+  },
+  {
+    id: 'ma_b2_006', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.HARD,
+    question: 'Which of these is the largest?', options: ['0.6', '2/3', '65%', '0.66'], answer: 1,
+    explanation: '0.6=0.60, 2/3≈0.666..., 65%=0.65, 0.66=0.660. 2/3 is largest.', hint: 'Convert all to decimals to compare.'
+  },
+  {
+    id: 'ma_b2_007', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.ALGEBRA, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Solve for p: 5p + 7 = 32', options: ['4', '5', '6', '7'], answer: 1,
+    explanation: '5p = 25, p = 5.', hint: 'Subtract 7 then divide by 5.'
+  },
+  {
+    id: 'ma_b2_008', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.GEOMETRY, difficulty: DIFFICULTY.HARD,
+    question: 'How many degrees is the angle between the hands of a clock at 3:00?', options: ['45°', '90°', '120°', '180°'], answer: 1,
+    explanation: 'One hand is at 12, the other at 3. That is 1/4 of a circle. 360/4 = 90°.', hint: 'Think of the clock as a circle divided into 12 parts.'
+  }
+];
+
+const englishQuestionsBatch2 = [
+  {
+    id: 'en_b2_001', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.VOCABULARY, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which word is a synonym for "Courageous"?', options: ['Timid', 'Brave', 'Strong', 'Fast'], answer: 1,
+    explanation: 'Both "courageous" and "brave" mean showing courage.', hint: 'Think of a hero in a story.'
+  },
+  {
+    id: 'en_b2_002', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.PUNCTUATION, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Where should the apostrophe go in "the boys bikes" (meaning bikes belonging to multiple boys)?', options: ['boy\'s', 'boys\'', 'bo\'ys', 'boys'], answer: 1,
+    explanation: 'For plural nouns ending in s, the apostrophe goes after the s.', hint: 'Is it one boy or many boys?'
+  },
+  {
+    id: 'en_b2_003', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.SPELLING, difficulty: DIFFICULTY.HARD,
+    question: 'Which of these is spelled correctly?', options: ['Accommodation', 'Acomodation', 'Accomodation', 'Acommodation'], answer: 0,
+    explanation: 'Accommodation has double C and double M.', hint: 'Think: Two Cs and Two Ms.'
+  }
+];
+
+const vrQuestionsBatch2 = [
+  {
+    id: 'vr_b2_001', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.ANTONYMS, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Select the word that is most opposite in meaning to "Ancient".', options: ['Old', 'Aged', 'Modern', 'Dusty'], answer: 2,
+    explanation: '"Modern" is the opposite of "Ancient".', hint: 'Think about a new building vs a pyramid.'
+  },
+  {
+    id: 'vr_b2_002', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.COMPLETION, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Complete the sentence: The hiker was _______ after climbing for ten hours.', options: ['Exhausted', 'Excited', 'Energetic', 'Enthusiastic'], answer: 0,
+    explanation: 'Exhausted fits best as someone would be very tired after 10 hours of climbing.', hint: 'How would you feel after a long walk?'
+  }
+];
+
+const nvrQuestionsBatch2 = [
+  {
+    id: 'nvr_b2_001', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.SERIES, difficulty: DIFFICULTY.EASY,
+    question: 'A pattern moves 45 degrees clockwise each step. If it starts pointing North, where does it point after 3 steps?', options: ['East', 'South-East', 'South', 'North-East'], answer: 3,
+    explanation: 'Step 1: NE, Step 2: E, Step 3: SE. Wait, North -> NE -> E -> SE.', hint: 'North to North-East is 45 degrees.'
+  },
+  {
+    id: 'nvr_b2_002', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ODD_ONE_OUT, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which shape is the odd one out?', options: ['Circle', 'Square', 'Triangle', 'Cloud'], answer: 3,
+    explanation: 'Cloud is not a standard geometric polygon/shape like the others.', hint: 'Which one isn\'t usually in math class?'
+  }
+];
+
+
 const englishQuestionsBatch3 = [
   {
     id: 'en041', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.COMPREHENSION, difficulty: DIFFICULTY.MEDIUM,
