@@ -52,10 +52,40 @@ function boot() {
     window.router = new Router(routes, 'router-view');
 
     // Initial redirect logic
-    const auth = getAuth();
-    if (auth.currentUser) {
-      initLiveSync();
-    }
+    const authInfo = getAuth();
+
+    // --- Firebase Auth Observer ---
+    import('./config/firebase.js').then(({ auth, onAuthStateChanged }) => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log('👤 Firebase User Detected:', user.email);
+          // Sync role to localStorage if needed
+          const localUser = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
+          if (!localUser.uid || localUser.uid !== user.uid) {
+            // This handles cases where session persists but local storage was cleared
+            import('./config/firebase.js').then(({ database, ref, get }) => {
+              get(ref(database, 'users/' + user.uid + '/role')).then(snap => {
+                if (snap.exists()) {
+                  localStorage.setItem('aceprep_user', JSON.stringify({
+                    email: user.email,
+                    uid: user.uid,
+                    displayName: user.displayName,
+                    role: snap.val()
+                  }));
+                  initLiveSync();
+                  // Trigger re-render if we're on a splash or login screen
+                  if (window.location.hash === '#/login') window.router.handleRoute();
+                }
+              });
+            });
+          } else {
+            initLiveSync();
+          }
+        } else {
+          console.log('👤 No active Firebase session');
+        }
+      });
+    });
 
     const hashBase = window.location.hash.split('?')[0];
     const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';

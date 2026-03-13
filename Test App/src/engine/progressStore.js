@@ -59,12 +59,15 @@ export function login(passcode) {
     return null;
 }
 
-export function logout() {
+export async function logout() {
     sessionStorage.removeItem('ace_current_user');
     localStorage.removeItem('aceprep_user');
-    import('../config/firebase.js')
-        .then(({ auth }) => auth.signOut())
-        .catch(() => { });
+    try {
+        const { auth, signOut } = await import('../config/firebase.js');
+        await signOut(auth);
+    } catch (e) {
+        console.error('Logout failed:', e);
+    }
 }
 
 export function getAuth() {
