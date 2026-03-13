@@ -32,28 +32,34 @@ export function renderParentDashboard() {
       <p class="page-subtitle" style="color: var(--c-primary); font-weight: 700;">${isVerified ? `Monitoring ${name}'s 11+ Journey` : 'Waiting for Student Link'}</p>
     </div>
     <div style="display:flex; gap:12px; align-items:center">
-      <button onclick="window._syncCloud()" class="btn btn-primary btn-sm" style="border-radius: 8px;">🔄 LIVE SYNC</button>
-      <img src="transformer-plan.png" alt="Mission Control" class="desktop-only" style="width: 100px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+      <button onclick="window._syncCloud()" class="btn btn-primary btn-sm pulse-glow" style="border-radius: 12px;">🔄 LIVE SYNC</button>
+      <img src="ace-mascot.png" alt="Mission Control" class="desktop-only" style="width: 100px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));">
     </div>
   </div>
 
   ${isVerified ? `
   <!-- Readiness Gauge -->
-  <div class="card" style="margin-bottom: 32px; background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); border: none; color: white;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+  <div class="card hover-lift" style="margin-bottom: 32px; background: var(--c-primary-grad); border: none; color: white; position: relative; overflow: hidden; box-shadow: var(--shadow-lg);">
+    <!-- Character Companion -->
+    <img src="ace-mascot.png" alt="Ace Mascot" class="desktop-only" 
+         style="position: absolute; right: 0; bottom: -40px; width: 380px; z-index: 1; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35)); transition: transform 0.3s ease-out;"
+         onmouseover="this.style.transform='scale(1.05) translateY(-5px)'" 
+         onmouseout="this.style.transform='scale(1) translateY(0)'">
+    <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; position: relative; z-index: 2;">
       <div>
-        <h3 style="font-family: var(--font-heading); font-weight: 900; margin: 0; font-size: 20px;">🛡️ PREDICTIVE READINESS</h3>
-        <p style="font-size: 13px; opacity: 0.9; font-weight: 700;">Target Date: ${targetDate}</p>
+        <h3 style="font-family: var(--font-heading); font-weight: 900; margin: 0; font-size: 22px; letter-spacing: -0.5px;">PREDICTIVE READINESS</h3>
+        <p style="font-size: 13px; opacity: 0.9; font-weight: 700; background: rgba(0,0,0,0.1); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 4px;">Target Exam: ${targetDate}</p>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 32px; font-weight: 900; line-height: 1;">${readiness}%</div>
-        <div style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase;">Goal Probabilty</div>
+        <div style="font-size: 40px; font-weight: 900; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.2);">${readiness}%</div>
+        <div style="font-size: 11px; font-weight: 800; opacity: 0.8; text-transform: uppercase; margin-top: 4px;">Confidence Score</div>
       </div>
     </div>
-    <div style="background: rgba(255,255,255,0.2); height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
-      <div style="width: ${readiness}%; background: #4ade80; height: 100%; box-shadow: 0 0 10px #4ade80;"></div>
+    <div style="background: rgba(0,0,0,0.15); height: 14px; border-radius: 7px; overflow: hidden; margin-bottom: 12px; position: relative; z-index: 2; border: 1px solid rgba(255,255,255,0.1);">
+      <div style="width: ${readiness}%; background: var(--c-accent); height: 100%; box-shadow: 0 0 20px var(--c-accent);"></div>
     </div>
-    <div style="font-size: 12px; font-weight: 700; text-align: center; opacity: 0.9;">
+    <div style="font-size: 13px; font-weight: 800; text-align: center; background: rgba(255,255,255,0.15); padding: 8px; border-radius: 8px; position: relative; z-index: 2;">
       ${readiness >= 85 ? '🌟 ELITE: Meeting competitive school benchmarks' : readiness >= 65 ? '📈 ON TRACK: Approaching qualifying scores' : '⚠️ BOOST NEEDED: Critical readiness gaps detected'}
     </div>
   </div>
