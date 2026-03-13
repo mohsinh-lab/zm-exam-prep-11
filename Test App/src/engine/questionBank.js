@@ -1019,16 +1019,58 @@ const nvrQuestionsExtra = [
   },
 ];
 
+const englishQuestionsBatch3 = [
+  {
+    id: 'en041', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.COMPREHENSION, difficulty: DIFFICULTY.MEDIUM,
+    passage: "The Industrial Revolution, which began in the 18th century, transformed society from agricultural to industrial. New inventions like the steam engine allowed factories to produce goods on a massive scale. While this led to economic growth, it also caused overcrowded cities and poor working conditions for many.",
+    question: "When did the Industrial Revolution begin?",
+    options: ["17th century", "18th century", "19th century", "20th century"],
+    answer: 1, explanation: "The text states it 'began in the 18th century'.", hint: "Check the first sentence."
+  },
+  {
+    id: 'en042', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.VOCABULARY, difficulty: DIFFICULTY.HARD,
+    question: "What does the word 'benevolent' mean?",
+    options: ["Cruel", "Kind and well-meaning", "Wealthy", "Confused"],
+    answer: 1, explanation: "'Benevolent' comes from Latin 'bene' (well) and 'volens' (wishing) — wishing well or kind.", hint: "Think of a 'benefactor' who helps people."
+  }
+];
+
+const vrQuestionsBatch3 = [
+  {
+    id: 'vr036', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.NUMBER_SERIES, difficulty: DIFFICULTY.MEDIUM,
+    question: "What is the next number in the series?\n2, 6, 12, 20, 30, ?",
+    options: ["36", "40", "42", "45"],
+    answer: 2, explanation: "The differences are +4, +6, +8, +10. The next difference is +12. 30 + 12 = 42.", hint: "Look at the gap between each number. Does the gap increase?"
+  }
+];
+
+const nvrQuestionsBatch3 = [
+  {
+    id: 'nvr022', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ODD_ONE_OUT, difficulty: DIFFICULTY.MEDIUM,
+    question: "Which of these 2D shapes has the most sides?",
+    options: ["Pentagon", "Hexagon", "Heptagon", "Octagon"],
+    answer: 3, explanation: "Octagon (8) > Heptagon (7) > Hexagon (6) > Pentagon (5).", hint: "Think about the prefixes: Penta-, Hexa-, Hepta-, Octa-."
+  }
+];
+
+
 // ─── COMBINED BANK ─────────────────────────────────────────────────────────
 export const QUESTION_BANK = [
   ...vrQuestions,
   ...vrQuestionsExtra,
+  ...vrQuestionsBatch2,
+  ...vrQuestionsBatch3,
   ...englishQuestions,
   ...englishQuestionsExtra,
+  ...englishQuestionsBatch2,
+  ...englishQuestionsBatch3,
   ...mathsQuestions,
   ...mathsQuestionsExtra,
+  ...mathsQuestionsBatch2,
   ...nvrQuestions,
   ...nvrQuestionsExtra,
+  ...nvrQuestionsBatch2,
+  ...nvrQuestionsBatch3,
 ];
 
 

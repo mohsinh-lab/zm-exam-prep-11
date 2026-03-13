@@ -67,101 +67,124 @@ export function renderStudentHome() {
 <div class="page page-enter student-home" id="student-home" style="color: var(--c-text)">
 
   <!-- PWA Helper for iPad -->
-  <div id="pwa-helper" style="display:none; background: var(--c-accent); color: #000; padding: 14px; border-radius: 18px; margin-bottom: 24px; font-size: 14px; font-weight: 800; text-align: center; border: 3px solid #000;">
-    📲 iPad Prep: Tap Share <span style="font-size:20px">⎋</span> then "Add to Home Screen" for the full app experience!
+  <div id="pwa-helper" class="glass" style="display:none; color: var(--c-text); padding: 16px; border-radius: var(--r-md); margin-bottom: 24px; font-size: 14px; font-weight: 700; text-align: center; border: 1px solid var(--c-accent) !important;">
+    📲 <strong>iPad Tip:</strong> Tap Share <span style="font-size:20px">⎋</span> then "Add to Home Screen" for the full AcePrep experience!
   </div>
 
   <!-- Hero section -->
-  <div class="home-hero" style="position: relative; overflow: hidden; background: linear-gradient(135deg, var(--c-primary), var(--c-vr)); border-radius: var(--r-xl); padding: var(--space-lg); border-bottom: 8px solid rgba(0,0,0,0.2);">
+  <div class="home-hero hover-lift" style="position: relative; overflow: hidden; background: var(--c-primary-grad); border-radius: var(--r-xl); padding: var(--space-lg); box-shadow: var(--shadow-lg);">
+    <!-- Abstract background shapes for premium look -->
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; blur: 40px;"></div>
+    <div style="position: absolute; bottom: -30px; left: 10%; width: 150px; height: 150px; background: rgba(0,0,0,0.05); border-radius: 50%; blur: 20px;"></div>
+
     <div class="hero-left" style="position: relative; z-index: 2;">
-      <div class="greeting-small" style="color: var(--c-accent); font-weight: 900; letter-spacing: 0.05em;">👋 ${greeting.toUpperCase()}</div>
-      <h1 class="page-title" style="color: white; font-size: 48px; margin-bottom: 8px; font-family: var(--font-heading); text-shadow: 0 4px 0 rgba(0,0,0,0.2);">${name}!</h1>
-      <div class="level-badge" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 99px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.3);">
-        <span class="level-icon">⚡</span>
-        <span style="font-weight: 800; font-size: 14px;">LEVEL ${level} — <strong>${levelName.toUpperCase()}</strong></span>
-      </div>
-      <div class="xp-bar-wrap" style="max-width: 300px; margin-bottom: 20px;">
-        <div class="xp-bar" style="background: rgba(255,255,255,0.15); height: 14px; border-radius: 7px;">
-          <div class="xp-fill" style="width:${xpPercent}%; background: var(--c-accent)"></div>
+      <div class="greeting-small" style="color: var(--c-accent); font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;">${greeting}</div>
+      <h1 class="page-title" style="color: white; font-size: clamp(32px, 5vw, 56px); margin-bottom: 12px; font-family: var(--font-heading); font-weight: 900; line-height: 1.1;">Ready to soar, ${name}?</h1>
+      
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
+        <div class="level-badge glass" style="padding: 8px 16px; border-radius: 99px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.4) !important; color: white;">
+          <span class="level-icon">⚡</span>
+          <span style="font-weight: 800; font-size: 13px;">LVL ${level} · ${levelName}</span>
         </div>
-        <span class="xp-label" style="color: white; font-weight: 700; font-size: 12px; margin-top: 8px; display: block; opacity: 0.9;">${xp} XP · ${xpToNext} TO NEXT LEVEL</span>
+        <div class="nav-gems glass" style="border: 1px solid rgba(255,255,255,0.4) !important; color: var(--c-accent);">
+          <span>💎</span> <strong>${progress.gems || 0}</strong>
+        </div>
+      </div>
+
+      <div class="xp-bar-wrap" style="max-width: 340px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+           <span style="color: white; font-weight: 800; font-size: 11px; opacity: 0.9;">${xp} XP TOTAL</span>
+           <span style="color: white; font-weight: 800; font-size: 11px; opacity: 0.9;">${xpToNext} TO NEXT LEVEL</span>
+        </div>
+        <div class="xp-bar" style="background: rgba(255,255,255,0.15); height: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+          <div class="xp-fill pulse-glow" style="width:${xpPercent}%; background: var(--c-accent); box-shadow: 0 0 15px var(--c-accent);"></div>
+        </div>
       </div>
       
-      <button id="noti-btn" onclick="window._setupNotifications()" 
-              style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer;">
-        🔔 ENABLE STUDY NUDGES
-      </button>
-
-      <p class="motivation-quote" style="color: white; opacity: 0.9; font-style: italic; max-width: 80%; line-height: 1.4; margin-top: 20px;">${motivation}</p>
+      <p class="motivation-quote" style="color: white; opacity: 0.95; font-weight: 500; font-size: 15px; max-width: 90%; line-height: 1.6; border-left: 3px solid var(--c-accent); padding-left: 16px; margin-top: 24px;">"${motivation}"</p>
     </div>
     
     <!-- Character Companion -->
     <img src="pokemon-hero.png" alt="Hero Pokemon" class="desktop-only" 
-         style="position: absolute; right: 0; bottom: -10px; width: 320px; z-index: 1; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));">
+         style="position: absolute; right: 0; bottom: -20px; width: 340px; z-index: 1; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35)); transition: transform 0.3s ease-out;"
+         onmouseover="this.style.transform='scale(1.05) rotate(2deg)'" 
+         onmouseout="this.style.transform='scale(1) rotate(0deg)'">
     
     <div class="hero-right" style="position: relative; z-index: 2;">
-      <div class="profile-main" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
-        <div class="profile-avatar" style="background: var(--c-accent); color: #000; font-size: 28px;">${rank.icon}</div>
-        <div class="profile-details">
-          <div class="profile-name" style="color: white; font-weight: 800;">${name}</div>
-          <div class="profile-level" style="color: var(--c-accent); letter-spacing: 0.5px;">${rank.label}</div>
-        </div>
+       <div class="profile-main glass" style="border-radius: var(--r-md); padding: 12px 20px;">
+          <div class="profile-avatar" style="font-size: 32px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));">${rank.icon}</div>
+          <div class="profile-details">
+            <div class="profile-name" style="color: white; font-weight: 800; font-size: 16px;">${name}</div>
+            <div class="profile-level" style="color: var(--c-accent); font-weight: 900; font-size: 12px; letter-spacing: 1px;">${rank.label.toUpperCase()}</div>
+          </div>
+       </div>
+       <div class="streak-display hover-lift" style="background: white; border: none; padding: 12px 20px; border-radius: var(--r-md); box-shadow: var(--shadow-md); margin-top: 16px;">
+         <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 24px;">🔥</span>
+            <div>
+               <div style="font-weight: 900; font-size: 20px; color: var(--c-text);">${streak}</div>
+               <div style="font-weight: 700; font-size: 10px; color: var(--c-text-muted); text-transform: uppercase;">Day Streak</div>
+            </div>
+         </div>
+       </div>
+    </div>
+  </div>
+
+  <!-- Mission Control Overlay (Optimized Readiness) -->
+  <div style="margin: 0 40px; margin-top: -40px; position: relative; z-index: 10;">
+      <div class="card glass hover-lift" style="padding: 24px; border-radius: var(--r-lg); box-shadow: var(--shadow-xl); border-left: 8px solid var(--c-accent) !important;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">🛰️</span>
+                  <span style="font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 0.1em;">MISSION CONTROL</span>
+              </div>
+              <div style="font-size: 14px; font-weight: 900; color: var(--c-text);">PREDICTED READINESS: <span style="color: var(--c-primary);">${readiness}%</span></div>
+          </div>
+          <p style="font-size: 18px; font-weight: 800; color: var(--c-text); line-height: 1.5; margin: 0 0 16px 0;">"${nudge}"</p>
+          <div style="height: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
+              <div style="width: ${readiness}%; height: 100%; background: var(--c-primary-grad); border-radius: 5px; transition: width 1s var(--ease-out);"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 10px; font-weight: 800; color: var(--c-text-muted); text-transform: uppercase;">
+              <span>Beginner</span>
+              <span>Ready for Exam 🎯</span>
+          </div>
       </div>
-      <div class="streak-display" style="background: var(--c-accent); border: 2px solid white; color: #000; border-radius: var(--r-md);">
-        <div class="streak-num" style="color: #000;">🔥 ${streak}</div>
-        <div class="streak-label" style="color: #000; opacity: 0.7; font-weight: 800;">DAY STREAK</div>
-        <div class="streak-desc" style="color: #000; font-weight: 900;">${streak === 0 ? 'START TODAY!' : streak < 3 ? 'KEEP GOING!' : streak < 7 ? "ON FIRE!" : '🏆 AMAZING!'}</div>
-      </div>
-    </div>
-    </div>
+  </div>
 
-    <!-- Readiness Nudge Overlay -->
-    <div class="card" style="margin: 0 24px; margin-top: -32px; background: white; border: none; border-left: 8px solid var(--c-primary); box-shadow: var(--shadow-xl); position: relative; z-index: 10;">
-        <div style="padding: 20px;">
-           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-               <span style="font-size: 11px; font-weight: 800; color: var(--c-primary); letter-spacing: 0.1em;">MISSION CONTROL NUDGE</span>
-               <span style="font-size: 11px; font-weight: 900; color: var(--c-text-muted);">${readiness}% READINESS</span>
-           </div>
-           <p style="font-size: 18px; font-weight: 800; color: var(--c-text); line-height: 1.4; margin: 0;">"${nudge}"</p>
-           <div style="margin-top: 12px; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden;">
-               <div style="width: ${readiness}%; height: 100%; background: var(--c-primary); border-radius: 3px;"></div>
-           </div>
+  <div style="margin-top: 48px;">
+    <!-- Target banner -->
+    <div class="target-banner glass hover-lift" style="display: flex; align-items: center; padding: 24px 32px; border-radius: var(--r-lg); border: 2px dashed var(--c-accent) !important; box-shadow: var(--shadow-md);">
+      <div class="target-left" style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+           <span style="font-size: 24px;">🎯</span>
+           <div class="target-school" style="font-weight: 900; font-size: 18px; font-family: var(--font-heading);">PRIMARY TARGET: 11+ GL SUCCESS</div>
         </div>
+        <div class="target-desc" style="color: var(--c-text-muted); font-size: 13px; font-weight: 600; padding-left: 34px;">MASTERING MATHS, ENGLISH, VR & NVR</div>
+      </div>
+      <div class="target-countdown" id="exam-countdown" style="background: var(--c-text); color: white; padding: 14px 24px; border-radius: var(--r-md); font-weight: 900; font-size: 16px; letter-spacing: 0.5px;"></div>
     </div>
   </div>
 
-  <!-- Target banner -->
-  <div class="target-banner" style="display: flex; align-items: center; background: #fff; color: var(--c-text); border: 6px solid var(--c-accent); padding: 24px; border-radius: var(--r-lg); margin-top: 32px; box-shadow: var(--shadow-md); position: relative;">
-    <div class="target-left" style="flex: 1;">
-      <div class="target-school" style="color: var(--c-text); font-weight: 900; font-size: 20px; font-family: var(--font-heading);">🎯 TARGET: DREAM SCHOOL</div>
-      <div class="target-desc" style="color: var(--c-text-muted); font-size: 14px; font-weight: 600;">GL ASSESSMENT · PAPER 1 & 2 · 55 MINS</div>
+  <!-- Stats Grid -->
+  <div class="stats-row stagger-in" style="margin-top: 32px;">
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-vr); bo-shadow: var(--shadow-sm);">
+      <div class="stat-value" style="color: var(--c-vr)">${todaySessions}</div>
+      <div class="stat-label">TODAY</div>
     </div>
-    <div class="target-countdown" id="exam-countdown" style="background: var(--c-text); color: white; padding: 12px 20px; border-radius: var(--r-md); font-weight: 900;"></div>
-    
-    <!-- Transformer Companion -->
-    <img src="transformer-plan.png" alt="Optimus" 
-         style="width: 140px; margin-left: 20px; border-radius: var(--r-md); box-shadow: var(--shadow-sm);">
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-accent); bo-shadow: var(--shadow-sm);">
+      <div class="stat-value" style="color: #d97706">${progress.gems || 0}</div>
+      <div class="stat-label">GEMS</div>
+    </div>
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-nvr); bo-shadow: var(--shadow-sm);">
+      <div class="stat-value" style="color: var(--c-nvr)">${progress.badges?.length || 0}</div>
+      <div class="stat-label">BADGES</div>
+    </div>
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-maths); bo-shadow: var(--shadow-sm);">
+      <div class="stat-value" style="color: var(--c-maths)">${progress.sessions.length}</div>
+      <div class="stat-label">SESSIONS</div>
+    </div>
   </div>
 
-  <!-- Stats row -->
-  <div class="stats-row" style="margin-top: 32px;">
-    <div class="stat-card" style="background: white; border-bottom: 8px solid #818cf8; border-radius: var(--r-md);">
-      <div class="stat-value" style="color:#4f46e5">${todaySessions}</div>
-      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">TODAY</div>
-    </div>
-    <div class="stat-card" style="background: white; border-bottom: 8px solid #fb923c; border-radius: var(--r-md);">
-      <div class="stat-value" style="color:#ea580c">${progress.gems || 0} 💎</div>
-      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">GEMS</div>
-    </div>
-    <div class="stat-card" style="background: white; border-bottom: 8px solid #22d3ee; border-radius: var(--r-md);">
-      <div class="stat-value" style="color:#0891b2">${progress.badges?.length || 0}</div>
-      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">BADGES</div>
-    </div>
-    <div class="stat-card" style="background: white; border-bottom: 8px solid #4ade80; border-radius: var(--r-md);">
-      <div class="stat-value" style="color:#16a34a">${progress.sessions.length}</div>
-      <div class="stat-label" style="font-weight: 800; color: var(--c-text-muted)">TOTAL</div>
-    </div>
-  </div>
 
   <!-- Mission Center (Booster) -->
   ${renderMissionCenter()}
@@ -170,8 +193,8 @@ export function renderStudentHome() {
   ${renderWeekendWisdom()}
 
   <!-- Subject grid -->
-  <h2 class="section-title" style="color: var(--c-text); margin-top: 48px; font-family: var(--font-heading); font-size: 28px;">Start Practice</h2>
-  <div class="subject-grid">
+  <h2 class="section-title" style="margin-top: 64px; font-size: 24px;">Daily Training</h2>
+  <div class="subject-grid stagger-in">
     ${subjects.map(sub => {
     const mastery = getSubjectMastery(sub);
     const subLevel = getCurrentLevel(sub);
@@ -180,24 +203,34 @@ export function renderStudentHome() {
     const isBehind = readiness < 75 && weakTopics.length > 0;
     const weakLabel = weakTopics.length > 0 ? `⚠️ FOCUS: ${weakTopics[0].topic.toUpperCase()}` : '✅ MASTERED';
     return `
-      <div class="subject-card" onclick="window.router.navigate('#/student/quiz/${sub}')"
-           style="background: white; border: none; border-bottom: 8px solid ${colors.start}; border-radius: var(--r-lg); position: relative;">
+      <div class="subject-card hover-lift" onclick="window.router.navigate('#/student/quiz/${sub}')"
+           style="background: white; border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--shadow-sm);">
         ${isBehind ? `
-          <div style="position: absolute; top: 12px; right: 12px; background: #f59e0b; color: white; font-size: 9px; font-weight: 900; padding: 4px 8px; border-radius: 20px; box-shadow: var(--shadow-sm); z-index: 2; display: flex; align-items: center; gap: 4px;">
-              <span>⚡</span> GOAL ACCELERATOR
+          <div class="pulse-glow" style="position: absolute; top: 12px; right: 12px; background: var(--c-accent); color: #000; font-size: 9px; font-weight: 900; padding: 4px 8px; border-radius: 20px; z-index: 2; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(0,0,0,0.1);">
+              <span>⚡</span> BOOST ACTIVE
           </div>
         ` : ''}
-        <div class="subject-card-glow" style="background:${colors.start}11"></div>
-        <div>
-          <div class="subject-card-icon" style="background: ${colors.start}11; color: ${colors.start}; border-radius: 12px; padding: 10px;">${SUBJECT_ICONS[sub]}</div>
-          <div class="subject-card-name" style="color: var(--c-text); font-weight: 900;">${SUBJECT_LABELS[sub].toUpperCase()}</div>
-          <div class="subject-card-meta" style="color:${colors.start}; font-weight: 700; font-size: 11px;">${mastery}% MASTERY · LVL ${subLevel}</div>
+        
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px;">
+           <div style="font-size: 36px; background: ${colors.start}11; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 16px; color: ${colors.start};">${SUBJECT_ICONS[sub]}</div>
+           <div style="text-align: right;">
+              <div style="font-size: 20px; font-weight: 900; color: var(--c-text);">${mastery}%</div>
+              <div style="font-size: 10px; font-weight: 800; color: var(--c-text-muted);">MASTERY</div>
+           </div>
         </div>
+
         <div>
-          <div class="accuracy-bar" style="margin-top:14px; background: #eee; height: 10px; border-radius: 5px;">
-            <div class="accuracy-fill" style="width:${mastery}%; background:${colors.start}; border-radius: 5px;"></div>
+          <h3 style="font-family: var(--font-heading); font-weight: 900; font-size: 18px; margin-bottom: 4px; color: var(--c-text);">${SUBJECT_LABELS[sub].toUpperCase()}</h3>
+          <div style="font-size: 11px; font-weight: 700; color: ${colors.start};">LEVEL ${subLevel} ACADEMIC</div>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
+            <div style="width:${mastery}%; height: 100%; background:${colors.start}; border-radius: 4px;"></div>
           </div>
-          <div style="font-size:10px; margin-top:8px; font-weight: 800; color: var(--c-text-muted);">${weakLabel}</div>
+          <div style="font-size: 10px; margin-top: 10px; font-weight: 800; color: var(--c-text-muted); display: flex; align-items: center; gap: 6px;">
+             ${weakTopics.length > 0 ? '🎯' : '⭐'} ${weakLabel}
+          </div>
         </div>
       </div>`;
   }).join('')}
