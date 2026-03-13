@@ -33,7 +33,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('Property 2: Router initialization should work correctly', async ({ page }) => {
-    await page.goto('http://localhost:5173/');
+    await page.goto('/');
     
     // Wait for splash screen to disappear
     await page.waitForTimeout(2000);
@@ -44,7 +44,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('Property 2: Auth redirect should work correctly for unauthenticated users', async ({ page }) => {
-    await page.goto('http://localhost:5173/#/student/home');
+    await page.goto('/#/student/home');
     
     // Wait for splash screen to disappear
     await page.waitForTimeout(2000);
@@ -54,7 +54,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('Property 2: Setup redirect should work correctly', async ({ page }) => {
-    await page.goto('http://localhost:5173/');
+    await page.goto('/');
     
     // Wait for splash screen to disappear
     await page.waitForTimeout(2000);
@@ -64,7 +64,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('Property 2: Navigation should render correctly after splash screen', async ({ page }) => {
-    await page.goto('http://localhost:5173/');
+    await page.goto('/');
     
     // Wait for splash screen to disappear
     await page.waitForTimeout(2000);
@@ -78,7 +78,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('Splash screen works on first load', async ({ page }) => {
-    await page.goto('http://localhost:5173/');
+    await page.goto('/');
     
     // Splash screen should be visible initially
     const splash = page.locator('#splash');
@@ -96,7 +96,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('Splash screen works with direct route navigation', async ({ page }) => {
-    await page.goto('http://localhost:5173/#/setup');
+    await page.goto('/#/setup');
     
     // Splash screen should be visible initially
     const splash = page.locator('#splash');
@@ -112,7 +112,7 @@ test.describe('Splash Screen Bug Fix', () => {
   });
 
   test('User can interact with app after splash screen removal', async ({ page }) => {
-    await page.goto('http://localhost:5173/');
+    await page.goto('/');
     
     // Wait for splash to disappear
     await page.waitForTimeout(2000);

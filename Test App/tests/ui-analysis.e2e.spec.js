@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('UI Analysis - AcePrep 11+', () => {
   test('should load and analyze splash screen', async ({ page }) => {
     // Navigate to the app
-    await page.goto('http://localhost:5174/zm-exam-prep-11/');
+    await page.goto('/');
     
     // Wait for initial load
     await page.waitForLoadState('networkidle');
@@ -37,7 +37,7 @@ test.describe('UI Analysis - AcePrep 11+', () => {
   });
 
   test('should analyze login/onboarding screen', async ({ page }) => {
-    await page.goto('http://localhost:5174/zm-exam-prep-11/');
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     
     // Wait for splash to disappear and app to load
@@ -75,7 +75,7 @@ test.describe('UI Analysis - AcePrep 11+', () => {
   });
 
   test('should analyze page structure and styling', async ({ page }) => {
-    await page.goto('http://localhost:5174/zm-exam-prep-11/');
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { timeout: 10000 });
     await page.waitForTimeout(2000);
@@ -137,7 +137,7 @@ test.describe('UI Analysis - AcePrep 11+', () => {
       errors.push(error.message);
     });
     
-    await page.goto('http://localhost:5174/zm-exam-prep-11/');
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
     
@@ -178,7 +178,7 @@ test.describe('UI Analysis - AcePrep 11+', () => {
       });
     });
     
-    await page.goto('http://localhost:5174/zm-exam-prep-11/');
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     
@@ -207,7 +207,7 @@ test.describe('UI Analysis - AcePrep 11+', () => {
   });
 
   test('should test navigation and routing', async ({ page }) => {
-    await page.goto('http://localhost:5174/zm-exam-prep-11/');
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { timeout: 10000 });
     await page.waitForTimeout(2000);
@@ -258,7 +258,7 @@ test.describe('UI Analysis - AcePrep 11+', () => {
     
     for (const viewport of viewports) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto('http://localhost:5174/zm-exam-prep-11/');
+      await page.goto('/');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
       
