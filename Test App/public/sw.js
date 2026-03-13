@@ -1,14 +1,15 @@
 const CACHE_NAME = 'aceprep-v2';
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/pokemon-hero.png',
-    '/pokemon-quiz.png',
-    '/transformer-plan.png',
-    '/transformer-speed.png',
-    '/thinking-pokemon.png',
-    '/icon-192.png'
+    './',
+    './index.html',
+    './manifest.json',
+    './ace-mascot.png',
+    './pokemon-hero.png',
+    './pokemon-quiz.png',
+    './transformer-plan.png',
+    './transformer-speed.png',
+    './thinking-pokemon.png',
+    './icon-192.png'
 ];
 
 self.addEventListener('install', (event) => {

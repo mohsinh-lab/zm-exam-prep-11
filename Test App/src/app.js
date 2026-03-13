@@ -13,15 +13,15 @@ import { renderLogin, mountLogin } from './features/auth/Login.js';
 import { renderOnboarding, mountOnboarding } from './features/auth/Onboarding.js';
 
 const routes = [
-  { path: '#/setup', render: renderSetup, mount: mountSetup },
-  { path: '#/login', render: renderLogin, mount: mountLogin },
-  { path: '#/onboarding', render: renderOnboarding, mount: mountOnboarding },
-  { path: '#/student/home', render: renderStudentHome, mount: mountStudentHome },
-  { path: '#/student/quiz/:subject', render: renderStudentQuiz, mount: mountStudentQuiz },
-  { path: '#/student/plan', render: renderActionPlan },
-  { path: '#/student/badges', render: renderAchievements },
-  { path: '#/student/results', render: renderStudentResults, mount: mountStudentResults },
-  { path: '#/parent/home', render: renderParentDashboard, mount: mountParentDashboard },
+  { path: '#/setup', render: renderSetup, mount: mountSetup, title: 'Setup' },
+  { path: '#/login', render: renderLogin, mount: mountLogin, title: 'Login' },
+  { path: '#/onboarding', render: renderOnboarding, mount: mountOnboarding, title: 'Select Role' },
+  { path: '#/student/home', render: renderStudentHome, mount: mountStudentHome, title: 'Student Dashboard' },
+  { path: '#/student/quiz/:subject', render: renderStudentQuiz, mount: mountStudentQuiz, title: 'Quiz Training' },
+  { path: '#/student/plan', render: renderActionPlan, title: 'Study Plan' },
+  { path: '#/student/badges', render: renderAchievements, title: 'Achievements' },
+  { path: '#/student/results', render: renderStudentResults, mount: mountStudentResults, title: 'Quiz Results' },
+  { path: '#/parent/home', render: renderParentDashboard, mount: mountParentDashboard, title: 'Parent Portal' },
 ];
 
 function boot() {

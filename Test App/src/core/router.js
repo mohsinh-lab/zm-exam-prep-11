@@ -16,6 +16,14 @@ export class Router {
             const params = this.extractParams(route.path, path);
             const content = route.render(params, query);
             this.rootElement.innerHTML = content;
+            
+            // Update page title
+            if (route.title) {
+                document.title = `${route.title} | AcePrep 11+`;
+            } else {
+                document.title = 'AcePrep 11+ | Dream School';
+            }
+
             if (route.mount) {
                 requestAnimationFrame(() => route.mount(params, query));
             }
