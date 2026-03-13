@@ -1,0 +1,19 @@
+{
+    "rules": {
+        "students": {
+            "$safe_email": {
+                ".read": "auth != null && (auth.token.email.replace('@', '_').replace('.', '_').replace('.', '_') == $safe_email || root.child('users').child(auth.uid).child('linked_students').child($safe_email).exists())",
+                ".write": "auth != null && auth.token.email.replace('@', '_').replace('.', '_').replace('.', '_') == $safe_email"
+            }
+        },
+        "users": {
+            "$uid": {
+                ".read": "auth != null && auth.uid == $uid",
+                ".write": "auth != null && auth.uid == $uid"
+            }
+        },
+        ".info": {
+            ".read": true
+        }
+    }
+}

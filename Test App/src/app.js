@@ -24,76 +24,89 @@ const routes = [
 ];
 
 function boot() {
-  const progress = getProgress();
+  try {
+    const progress = getProgress();
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('SW registered!', reg))
-      .catch(err => console.log('SW registration failed', err));
-  }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registered!', reg))
+        .catch(err => console.log('SW registration failed', err));
+    }
 
-  // Remove splash screen before replacing app content
-  const splash = document.getElementById('splash');
-  if (splash) {
-    splash.classList.add('fade-out');
-    setTimeout(() => {
-      splash.remove();
-    }, 700); // Wait for CSS transition (600ms) + buffer
-  }
+    // Remove splash screen before replacing app content
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.remove();
+      }, 700); // Wait for CSS transition (600ms) + buffer
+    }
 
-  // Inject global app structure
-  document.getElementById('app').innerHTML = `
+    // Inject global app structure
+    document.getElementById('app').innerHTML = `
         <div id="navbar-anchor"></div>
         <main id="router-view" style="padding-top:var(--nav-height)"></main>
         <div id="tabbar-anchor"></div>
     `;
 
-  window.router = new Router(routes, 'router-view');
+    window.router = new Router(routes, 'router-view');
 
-  // Initial redirect logic
-  const auth = getAuth();
-  if (auth.currentUser) {
-    initLiveSync();
-  }
-
-  const hashBase = window.location.hash.split('?')[0];
-  const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
-
-  if (!auth.currentUser && !isAuthOrOnboarding) {
-    window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
-  } else if (!progress.setupDone && hashBase !== '#/setup') {
-    window.router.navigate('#/setup');
-  }
-
-  renderNav(window.location.hash);
-  window.addEventListener('hashchange', () => {
+    // Initial redirect logic
     const auth = getAuth();
     if (auth.currentUser) {
       initLiveSync();
     }
+
     const hashBase = window.location.hash.split('?')[0];
     const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
 
     if (!auth.currentUser && !isAuthOrOnboarding) {
       window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
+    } else if (!progress.setupDone && hashBase !== '#/setup') {
+      window.router.navigate('#/setup');
     }
-    renderNav(hashBase);
-  });
 
-  // Listen for sync state changes to update UI across all pages
-  window.addEventListener('sync_state_changed', (e) => {
-    const { connected, syncing } = e.detail;
-    const indicator = document.getElementById('sync-indicator');
-    if (!indicator) return;
+    renderNav(window.location.hash);
 
-    if (!connected) {
-      indicator.innerHTML = '☁️ <span style="color:var(--c-danger)">Offline</span>';
-    } else if (syncing) {
-      indicator.innerHTML = '☁️ <span style="color:var(--c-warning)">Syncing...</span>';
-    } else {
-      indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
+    // --- Signal Successful Boot ---
+    window.__APP_BOOTED__ = true;
+    if (window.__BOOT_TIMEOUT__) clearTimeout(window.__BOOT_TIMEOUT__);
+    console.log('🚀 AcePrep Boot Successful');
+
+    window.addEventListener('hashchange', () => {
+      const auth = getAuth();
+      if (auth.currentUser) {
+        initLiveSync();
+      }
+      const hashBase = window.location.hash.split('?')[0];
+      const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
+
+      if (!auth.currentUser && !isAuthOrOnboarding) {
+        window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
+      }
+      renderNav(hashBase);
+    });
+
+    // Listen for sync state changes to update UI across all pages
+    window.addEventListener('sync_state_changed', (e) => {
+      const { connected, syncing } = e.detail;
+      const indicator = document.getElementById('sync-indicator');
+      if (!indicator) return;
+
+      if (!connected) {
+        indicator.innerHTML = '☁️ <span style="color:var(--c-danger)">Offline</span>';
+      } else if (syncing) {
+        indicator.innerHTML = '☁️ <span style="color:var(--c-warning)">Syncing...</span>';
+      } else {
+        indicator.innerHTML = '☁️ <span style="color:var(--c-success)">Synced</span>';
+      }
+    });
+  } catch (error) {
+    console.error('CRITICAL BOOT ERROR:', error);
+    if (window.onerror) {
+      window.onerror('Boot Error: ' + error.message, window.location.href, 0, 0, error);
     }
-  });
+  }
 }
 
 

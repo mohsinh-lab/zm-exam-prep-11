@@ -4,7 +4,7 @@
 
 import { QUESTION_BANK, SUBJECTS, DIFFICULTY } from './questionBank.js';
 import { getProgress, updateProgress } from './progressStore.js';
-import { calculateReadiness, getWeakTopics as getEngineWeakTopics } from './readinessEngine.js';
+import { calculateReadiness } from './readinessEngine.js';
 
 // ── ELO Constants ─────────────────────────────────────────────────────────
 const BASE_RATING = 1200;
