@@ -49,7 +49,12 @@ const defaultProgress = () => ({
         lastCompleted: null, // YYYY-MM-DD
         currentSubject: null,
         expires: null
-    }
+    },
+    // Ace Skins
+    activeSkin: 'default',
+    unlockedSkins: ['default'],
+    // Parent Challenges
+    parentGoal: null // { type: 'sessions'|'xp'|'percent', target: number, reward: number, progress: number, completed: boolean }
 });
 
 export function login(passcode) {
@@ -296,8 +301,9 @@ export function recordSession(subject, questions, answers, timeTaken) {
     // XP
     progress.xp = (progress.xp || 0) + session.xpGained;
 
-    // Gems: gain 1 gem per session, max 10
-    progress.gems = Math.min(10, (progress.gems || 0) + 1);
+    // Gems: gain gems based on performance
+    const gemsAwarded = score >= 90 ? 3 : score >= 70 ? 2 : 1;
+    progress.gems = Math.min(25, (progress.gems || 0) + gemsAwarded);
 
     // Streak
     const today = new Date().toDateString();
@@ -312,6 +318,31 @@ export function recordSession(subject, questions, answers, timeTaken) {
 
     // Badge checking
     progress.badges = checkBadges(progress);
+
+    // Skin checking
+    const { unlocked, newSkin } = checkSkins(progress);
+    progress.unlockedSkins = unlocked;
+    if (newSkin) {
+        console.log(`✨ Skin unlocked: ${newSkin}`);
+        // Auto-equip if it's better?
+    }
+
+    // Parent Goal Tracking
+    if (progress.parentGoal && !progress.parentGoal.completed) {
+        const goal = progress.parentGoal;
+        if (goal.type === 'sessions') {
+            goal.progress = (goal.progress || 0) + 1;
+        } else if (goal.type === 'xp') {
+            goal.progress = (goal.progress || 0) + session.xpGained;
+        } else if (goal.type === 'percent' && session.score >= goal.target) {
+            goal.progress = goal.target;
+        }
+
+        if (goal.progress >= goal.target) {
+            goal.completed = true;
+            console.log("🎯 Parent Goal Completed!");
+        }
+    }
 
     // Keep only last 100 sessions
     if (progress.sessions.length > 100) {
@@ -344,6 +375,32 @@ export function setParentEmail(email) {
 
 export function resetProgress() {
     localStorage.removeItem(STORAGE_KEY);
+}
+
+export function setParentGoal(type, target, reward) {
+    const progress = getProgress();
+    progress.parentGoal = {
+        type,
+        target: parseInt(target),
+        reward: parseInt(reward),
+        progress: 0,
+        completed: false,
+        createdAt: Date.now()
+    };
+    updateProgress(progress);
+    return true;
+}
+
+export function claimParentGoalReward() {
+    const progress = getProgress();
+    if (progress.parentGoal && progress.parentGoal.completed) {
+        const reward = progress.parentGoal.reward;
+        progress.gems = (progress.gems || 0) + reward;
+        progress.parentGoal = null; // Clear after claiming
+        updateProgress(progress);
+        return reward;
+    }
+    return 0;
 }
 
 // ── XP Calculation ────────────────────────────────────────────────────────
@@ -383,7 +440,26 @@ function checkBadges(progress) {
     return Array.from(current);
 }
 
-export { BADGE_DEFINITIONS };
+const SKIN_DEFINITIONS = [
+    { id: 'knight', label: 'Ace Knight', xp: 1000, color: '#f59e0b', emoji: '⚔️' },
+    { id: 'spaceman', label: 'Ace Spaceman', xp: 3000, color: '#06b6d4', emoji: '🧑‍🚀' },
+    { id: 'ninja', label: 'Ace Ninja', xp: 5000, color: '#6366f1', emoji: '🥷' },
+    { id: 'legend', label: 'Ace Legend', xp: 10000, color: '#ec4899', emoji: '👑' },
+];
+
+function checkSkins(progress) {
+    const current = new Set(progress.unlockedSkins || ['default']);
+    let newSkin = null;
+    for (const skin of SKIN_DEFINITIONS) {
+        if (!current.has(skin.id) && progress.xp >= skin.xp) {
+            current.add(skin.id);
+            newSkin = skin.id;
+        }
+    }
+    return { unlocked: Array.from(current), newSkin };
+}
+
+export { BADGE_DEFINITIONS, SKIN_DEFINITIONS };
 
 // ── Report generation for parent emails ───────────────────────────────────
 export function generateDailyReport(studentName) {

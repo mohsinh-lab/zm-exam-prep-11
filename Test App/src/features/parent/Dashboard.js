@@ -1,5 +1,5 @@
 
-import { getProgress, generateDailyReport, generateWeeklyReport, generateMonthlyReport, forceSyncFromCloud, updateProgress } from '../../engine/progressStore.js';
+import { getProgress, generateDailyReport, generateWeeklyReport, generateMonthlyReport, forceSyncFromCloud, updateProgress, setParentGoal } from '../../engine/progressStore.js';
 import { getSubjectMastery, getWeakTopics } from '../../engine/adaptiveEngine.js';
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS } from '../../engine/questionBank.js';
 import { calculateReadiness, generateActionPlan, getCatchmentSchools } from '../../engine/readinessEngine.js';
@@ -32,6 +32,7 @@ export function renderParentDashboard() {
       <p class="page-subtitle" style="color: var(--c-primary); font-weight: 700;">${isVerified ? `Monitoring ${name}'s 11+ Journey` : 'Waiting for Student Link'}</p>
     </div>
     <div style="display:flex; gap:12px; align-items:center">
+      <button onclick="window.print()" class="btn btn-outline btn-sm" style="border-radius: 12px; border: 2px solid #ddd;">📄 PDF REPORT</button>
       <button onclick="window._syncCloud()" class="btn btn-primary btn-sm pulse-glow" style="border-radius: 12px;" aria-label="Refresh Data">🔄 LIVE SYNC</button>
       <img src="ace-mascot.png" alt="Mission Control" class="desktop-only" style="width: 100px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));" loading="lazy">
     </div>
@@ -124,8 +125,25 @@ export function renderParentDashboard() {
     </div>
   </div>
 
-  <!-- Performance Trend & Log -->
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; margin-bottom: 48px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; margin-bottom: 48px;" class="desktop-only">
+      <div>
+        <h2 class="section-title" style="color: var(--c-text); margin-bottom: 24px; font-family: var(--font-heading); display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;" aria-hidden="true">📊</span> SKILLS ANALYSIS
+        </h2>
+        <div class="card shadow-sm" style="background: white; border: 1px solid var(--c-border); border-radius: var(--r-xl); padding: 24px; display: flex; align-items: center; justify-content: center; height: 320px;">
+          ${renderRadarChart(progress)}
+        </div>
+      </div>
+      <div>
+        <h2 class="section-title" style="color: var(--c-text); margin-bottom: 24px; font-family: var(--font-heading); display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;" aria-hidden="true">🎯</span> PRIORITY TOPICS
+        </h2>
+        <div class="card shadow-sm" style="background: white; border: 1px solid var(--c-border); border-radius: var(--r-xl); padding: 0; min-height: 320px;">
+          ${renderWeakTopicInsights(progress)}
+        </div>
+      </div>
+    </div>
+
     <div>
       <h2 class="section-title" style="color: var(--c-text); margin-bottom: 24px; font-family: var(--font-heading); display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 24px;" aria-hidden="true">📈</span> PERFORMANCE TREND
@@ -205,6 +223,56 @@ export function renderParentDashboard() {
     <button onclick="window._sendInvite()" class="btn btn-accent pulse-glow" style="padding: 14px 28px; border-radius: 12px; font-weight: 900;">SEND ENCRYPTED INVITATION</button>
   </div>
 
+  <!-- Parent Special Challenge -->
+  ${isVerified ? `
+  <div class="card" style="margin-bottom:48px; background: white; border: none; border-left: 8px solid var(--c-primary); box-shadow: var(--shadow-md); border-radius: var(--r-xl);">
+    <h3 style="color: var(--c-text); font-family: var(--font-heading); font-weight: 950; margin-bottom:12px">🎯 SET A SPECIAL CHALLENGE</h3>
+    <p style="color: var(--c-text-muted); font-size: 14px; font-weight: 600; margin-bottom: 20px;">Motivate ${name} with a personalized mission and a Gem reward.</p>
+    
+    ${progress.parentGoal ? `
+      <div style="background: var(--c-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--c-border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-weight: 800; font-size: 14px; color: var(--c-primary);">ACTIVE CHALLENGE</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--c-text-muted);">${new Date(progress.parentGoal.createdAt).toLocaleDateString()}</span>
+        </div>
+        <p style="font-weight: 700; color: var(--c-text); margin-bottom: 12px;">
+          Goal: ${progress.parentGoal.type === 'sessions' ? `Complete ${progress.parentGoal.target} sessions` : 
+                 progress.parentGoal.type === 'xp' ? `Earn ${progress.parentGoal.target} XP` : 
+                 `Achieve ${progress.parentGoal.target}% score`}
+        </p>
+        <div style="height: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+          <div style="width: ${Math.min(100, (progress.parentGoal.progress / progress.parentGoal.target) * 100)}%; height: 100%; background: var(--c-primary); border-radius: 4px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700;">
+          <span style="color: var(--c-text-muted);">${progress.parentGoal.progress} / ${progress.parentGoal.target} progress</span>
+          <span style="color: var(--c-accent);">💎 ${progress.parentGoal.reward} GEMS REWARD</span>
+        </div>
+        <button onclick="window._cancelGoal()" class="btn btn-sm" style="margin-top: 16px; color: var(--c-danger); border: 1px solid var(--c-danger); background: transparent;">CANCEL CHALLENGE</button>
+      </div>
+    ` : `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+        <div class="input-group">
+          <label for="goal-type" class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">CHALLENGE TYPE</label>
+          <select id="goal-type" class="input-field" style="border-width: 2px; height: 48px; background: white;">
+            <option value="sessions">Practice Sessions (Count)</option>
+            <option value="xp">Total XP Gained</option>
+            <option value="percent">Minimum % Score</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="goal-target" class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">TARGET VALUE</label>
+          <input type="number" id="goal-target" class="input-field" style="border-width: 2px;" placeholder="e.g. 5">
+        </div>
+        <div class="input-group">
+          <label for="goal-reward" class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">GEM REWARD</label>
+          <input type="number" id="goal-reward" class="input-field" style="border-width: 2px;" value="10">
+        </div>
+      </div>
+      <button onclick="window._setGoal()" class="btn btn-primary" style="padding: 14px 28px; border-radius: 12px; font-weight: 900;">ACTIVATE CHALLENGE</button>
+    `}
+  </div>
+  ` : ''}
+
   <div style="text-align: center; margin-bottom: 40px; opacity: 0.6;">
     <p style="font-size: 12px; font-weight: 800; color: var(--c-text-muted); line-height: 1.6;">
       ACEPREP 11+ VERSION 2.5.0 (PREMIUM)<br>
@@ -254,6 +322,73 @@ function renderProgressChart(sessions) {
   `;
 }
 
+function renderRadarChart(progress) {
+  const mastery = {
+    vr: Math.min(100, (getSubjectMastery(progress, 'vr') % 100) || 30),
+    nvr: Math.min(100, (getSubjectMastery(progress, 'nvr') % 100) || 30),
+    en: Math.min(100, (getSubjectMastery(progress, 'en') % 100) || 30),
+    maths: Math.min(100, (getSubjectMastery(progress, 'maths') % 100) || 30)
+  };
+
+  const center = 110;
+  const radius = 80;
+  const points = [
+    { x: center, y: center - radius * (mastery.en / 100), label: 'English', lx: center, ly: center - radius - 15 },
+    { x: center + radius * (mastery.maths / 100), y: center, label: 'Maths', lx: center + radius + 25, ly: center + 5 },
+    { x: center, y: center + radius * (mastery.vr / 100), label: 'VR', lx: center, ly: center + radius + 15 },
+    { x: center - radius * (mastery.nvr / 100), y: center, label: 'NVR', lx: center - radius - 25, ly: center + 5 }
+  ];
+
+  const polyPoints = points.map(p => `${p.x},${p.y}`).join(' ');
+
+  return `
+    <svg width="260" height="260" viewBox="0 0 220 220" style="overflow:visible">
+      <!-- Grid -->
+      <circle cx="${center}" cy="${center}" r="${radius}" fill="none" stroke="#e2e8f0" stroke-width="1" />
+      <circle cx="${center}" cy="${center}" r="${radius * 0.6}" fill="none" stroke="#e2e8f0" stroke-width="1" />
+      <circle cx="${center}" cy="${center}" r="${radius * 0.3}" fill="none" stroke="#e2e8f0" stroke-width="1" />
+      <line x1="${center - radius}" y1="${center}" x2="${center + radius}" y2="${center}" stroke="#e2e8f0" stroke-width="1" />
+      <line x1="${center}" y1="${center - radius}" x2="${center}" y2="${center + radius}" stroke="#e2e8f0" stroke-width="1" />
+      
+      <!-- Data -->
+      <polygon points="${polyPoints}" fill="rgba(108,99,255,0.2)" stroke="var(--c-primary)" stroke-width="3" stroke-linejoin="round" />
+      ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--c-primary)" stroke="white" stroke-width="2" />`).join('')}
+      
+      <!-- Labels -->
+      ${points.map(p => `<text x="${p.lx}" y="${p.ly}" text-anchor="middle" font-size="10" font-weight="950" fill="var(--c-text-muted)" style="text-transform:uppercase;letter-spacing:1px">${p.label}</text>`).join('')}
+    </svg>
+  `;
+}
+
+function renderWeakTopicInsights(progress) {
+  const allWeak = [];
+  ['vr', 'nvr', 'en', 'maths'].forEach(sub => {
+    getWeakTopics(sub).forEach(t => allWeak.push({ ...t, subject: sub }));
+  });
+
+  const sorted = allWeak.sort((a, b) => a.mastery - b.mastery).slice(0, 4);
+
+  if (sorted.length === 0) {
+    return `<div style="padding:40px;text-align:center;color:var(--c-text-muted);font-weight:700">No priority topics identified yet. Keep practicing!</div>`;
+  }
+
+  return sorted.map(t => {
+    const color = SUBJECT_COLORS[t.subject]?.start || 'var(--c-primary)';
+    return `
+      <div style="padding:16px 24px;border-bottom:1px solid rgba(0,0,0,0.03);display:flex;align-items:center;justify-content:space-between">
+        <div>
+           <div style="font-size:11px;font-weight:900;color:${color};text-transform:uppercase;margin-bottom:4px">${SUBJECT_LABELS[t.subject]}</div>
+           <div style="font-weight:800;font-size:14px;color:var(--c-text)">${t.topic}</div>
+        </div>
+        <div style="text-align:right">
+           <div style="font-weight:950;font-size:16px;color:var(--c-danger)">${t.mastery}%</div>
+           <div style="font-size:10px;font-weight:800;color:var(--c-text-muted)">ACCURACY</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 export function mountParentDashboard() {
   window._syncCloud = async () => {
     const btn = event?.target;
@@ -287,12 +422,31 @@ export function mountParentDashboard() {
         role: role,
         timestamp: Date.now()
       }).then(() => {
-        alert("Invitation Mission Sent!\n\nAccess link generated for " + email);
+        const baseUrl = window.location.href.split('#')[0];
+        const deepLink = `${baseUrl}#/login?invite=${user.uid}&role=${role}`;
+        alert("Invitation Mission Sent!\n\nLink for " + name + ":\n" + deepLink + "\n\n(Share this link with them)");
         document.getElementById('invite-name').value = '';
         document.getElementById('invite-email').value = '';
       }).catch(err => {
         alert("Failed to secure connection. Try again.");
       });
     });
+  };
+
+  window._setGoal = () => {
+    const type = document.getElementById('goal-type').value;
+    const target = document.getElementById('goal-target').value;
+    const reward = document.getElementById('goal-reward').value;
+    if (!target || !reward) return alert("Please specify target and reward.");
+    setParentGoal(type, target, reward);
+    alert("Mission Broadcasted! " + (type === 'sessions' ? `Target: ${target} sessions` : ''));
+  };
+
+  window._cancelGoal = () => {
+    if (confirm("Cancel this challenge? Progress will be lost.")) {
+      const progress = getProgress();
+      progress.parentGoal = null;
+      updateProgress(progress);
+    }
   };
 }
