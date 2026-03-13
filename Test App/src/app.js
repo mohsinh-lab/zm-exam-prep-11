@@ -28,9 +28,10 @@ function boot() {
     const progress = getProgress();
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('SW registered!', reg))
-        .catch(err => console.log('SW registration failed', err));
+      const swPath = `${import.meta.env.BASE_URL || '/'}sw.js`.replace(/\/+/g, '/');
+      navigator.serviceWorker.register(swPath)
+        .then(reg => console.log('Service Worker Registered!', reg))
+        .catch(err => console.error('Service Worker Registration Failed', err));
     }
 
     // Remove splash screen before replacing app content
@@ -279,11 +280,4 @@ function renderNav(hash) {
 
 window.addEventListener('DOMContentLoaded', boot);
 
-// PWA: Register Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('SW Registered', reg))
-      .catch(err => console.log('SW Failed', err));
-  });
-}
+// SW registration is handled in boot() for consistency
