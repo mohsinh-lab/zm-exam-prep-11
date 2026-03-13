@@ -12,11 +12,11 @@ export function renderSetup() {
     <p style="color:var(--c-text-muted);margin-bottom:28px;font-size:15px">Smart preparation for Dream School<br>Let's get you set up in 30 seconds!</p>
 
     <div class="input-group">
-      <label class="input-label">Student's First Name</label>
+      <label class="input-label" for="setup-name">Student's First Name</label>
       <input type="text" class="input-field" id="setup-name" placeholder="e.g. Adam" maxlength="30" autofocus />
     </div>
     <div class="input-group">
-      <label class="input-label">Parent Email (for progress reports)</label>
+      <label class="input-label" for="setup-email">Parent Email (for progress reports)</label>
       <input type="email" class="input-field" id="setup-email" placeholder="parent@example.com" />
     </div>
 

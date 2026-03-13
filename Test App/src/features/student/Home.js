@@ -46,18 +46,18 @@ export function renderStudentHome() {
     return `
       <div class="page page-enter student-verification-gate" data-testid="student-gated-container" style="min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: #f8fafc;">
           <div class="card" style="max-width: 480px; width: 100%; background: white; border-radius: 32px; padding: 48px 40px; text-align: center; box-shadow: var(--shadow-xl); border: 2px solid #e2e8f0;">
-              <div style="font-size: 64px; margin-bottom: 24px;">🛡️</div>
+              <div style="font-size: 64px; margin-bottom: 24px;" aria-hidden="true">🛡️</div>
               <h1 style="font-family: var(--font-heading); font-weight: 900; font-size: 32px; color: #0f172a; margin-bottom: 12px;">Parent Approval Needed</h1>
               <p style="color: #475569; font-weight: 600; line-height: 1.6; margin-bottom: 32px;">Great to have you here, ${name}! To keep your progress safe and synced, please ask a Parent or Guardian to link your account.</p>
               
               <div style="background: #f1f5f9; padding: 24px; border-radius: 20px; border: 1px solid #e2e8f0; margin-bottom: 32px; text-align: left;">
-                  <label style="display: block; font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Step 1: Enter Parent Email</label>
+                  <label for="link-parent-email" style="display: block; font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Step 1: Enter Parent Email</label>
                   <input type="email" id="link-parent-email" class="input-field" style="background: white; border-width: 2px;" placeholder="parent@gmail.com">
               </div>
 
               <button class="btn btn-primary" data-testid="student-send-approval-btn" style="width: 100%; border-bottom: 4px solid rgba(0,0,0,0.2);" onclick="window._sendApprovalRequest()" aria-label="Send approval link to parent">📩 SEND APPROVAL LINK</button>
               
-              <button class="btn btn-outline" style="margin-top: 24px; border: none; color: #94a3b8; font-size: 13px;" onclick="window._handleAuthLogout()" aria-label="Logout from account">🚪 Logout & Try Another Account</button>
+              <button class="btn btn-outline" style="margin-top: 24px; border: none; color: #4b5563; font-size: 13px; font-weight: 700;" onclick="window._handleAuthLogout()" aria-label="Logout from account">🚪 Logout & Try Another Account</button>
           </div>
       </div>
       `;

@@ -101,12 +101,15 @@ npm test -- --reporter=verbose
 
 ---
 
+### 🟡 High Priority (Phase 2 - PERFORMANCE & ACCESSIBILITY)
+
 #### 4. Performance Optimization
-**Status:** Not Started  
+**Status:** In Progress 🚧
 **Priority:** P1 - User experience  
 **Description:** Optimize app performance for mobile devices
 
 **Tasks:**
+- [x] Fix Service Worker base path for GitHub Pages ✅
 - [ ] Run Lighthouse audit on deployed site
 - [ ] Optimize image sizes (compress PNG files)
 - [ ] Implement lazy loading for images
@@ -124,16 +127,19 @@ npm test -- --reporter=verbose
 ---
 
 #### 5. Accessibility Improvements
-**Status:** Not Started  
+**Status:** In Progress 🚧  
 **Priority:** P1 - Inclusive design  
 **Description:** Ensure app is accessible to all users
 
 **Tasks:**
-- [ ] Run axe DevTools accessibility audit
-- [ ] Add ARIA labels to interactive elements
+- [x] Run internal accessibility audit ✅
+- [x] Link form labels to inputs (Fix `setup.js`, `Home.js`, `Dashboard.js`) ✅
+- [x] Hide decorative icons/emojis from screen readers (`aria-hidden`) ✅
+- [x] Improve color contrast for secondary buttons (Logout) ✅
+- [x] Modernize mobile meta tags (`mobile-web-app-capable`) ✅
+- [ ] Add ARIA labels to emoji-only buttons
 - [ ] Ensure keyboard navigation works throughout
 - [ ] Test with screen reader (NVDA/JAWS)
-- [ ] Improve color contrast ratios
 - [ ] Add focus indicators
 - [ ] Test with reduced motion preferences
 - [ ] Add skip navigation links

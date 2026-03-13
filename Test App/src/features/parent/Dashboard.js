@@ -128,14 +128,14 @@ export function renderParentDashboard() {
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; margin-bottom: 48px;">
     <div>
       <h2 class="section-title" style="color: var(--c-text); margin-bottom: 24px; font-family: var(--font-heading); display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 24px;">📈</span> PERFORMANCE TREND
+        <span style="font-size: 24px;" aria-hidden="true">📈</span> PERFORMANCE TREND
       </h2>
       ${renderProgressChart(sessions)}
     </div>
 
     <div>
       <h2 class="section-title" style="color: var(--c-text); margin-bottom: 24px; font-family: var(--font-heading); display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 24px;">📋</span> RECENT LOG BOOK
+        <span style="font-size: 24px;" aria-hidden="true">📋</span> RECENT LOG BOOK
       </h2>
       <div class="card shadow-sm" style="padding:0; overflow:hidden; background: white; border: 1px solid var(--c-border); border-radius: var(--r-xl);">
         ${sessions.length === 0
@@ -185,17 +185,17 @@ export function renderParentDashboard() {
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
       <div class="input-group">
-        <label class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">MEMBER'S NAME</label>
+        <label for="invite-name" class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">MEMBER'S NAME</label>
         <input type="text" id="invite-name" class="input-field" style="border-width: 2px;" placeholder="e.g. Zayyan">
       </div>
       <div class="input-group">
-        <label class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">GOOGLE EMAIL ADDRESS</label>
+        <label for="invite-email" class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">GOOGLE EMAIL ADDRESS</label>
         <input type="email" id="invite-email" class="input-field" style="border-width: 2px;" placeholder="name@gmail.com">
       </div>
     </div>
     
     <div class="input-group" style="margin-bottom: 24px;">
-      <label class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">ROLE</label>
+      <label for="invite-role" class="input-label" style="color: var(--c-text); font-weight: 800; font-size: 12px;">ROLE</label>
       <select id="invite-role" class="input-field" style="border-width: 2px; height: 48px; background: white;">
         <option value="student">Student Account (Zayyan)</option>
         <option value="parent">Co-Parent (Full Access)</option>

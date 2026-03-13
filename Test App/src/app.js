@@ -163,8 +163,8 @@ function renderNav(hash) {
   const isPlan = hashBase === '#/student/plan';
   const isBadges = hashBase === '#/student/badges';
 
-  const navBtn = (label, path, active) =>
-    `<button class="nav-btn${active ? ' active' : ''}" onclick="window.router.navigate('${path}')">${label}</button>`;
+  const navBtn = (label, path, active, aria) =>
+    `<button class="nav-btn${active ? ' active' : ''}" onclick="window.router.navigate('${path}')" aria-label="${aria || label}">${label}</button>`;
 
   if (isParent) {
     navAnchor.innerHTML = `
@@ -190,11 +190,11 @@ function renderNav(hash) {
             <nav class="navbar student-nav">
                 <div class="nav-logo">🎓 AcePrep</div>
                 <div class="nav-links">
-                    ${navBtn('🏠 Home', '#/student/home', isHome)}
-                    ${navBtn('📅 Plan', '#/student/plan', isPlan)}
-                    ${navBtn('🏅 Badges', '#/student/badges', isBadges)}
-                    ${isStudent ? '' : `<button class="nav-btn" onclick="window.router.navigate('#/parent/home')">👪 Parents</button>`}
-                    <button class="nav-btn" onclick="window._handleLogout()">🚪 Logout</button>
+                    ${navBtn('🏠 Home', '#/student/home', isHome, 'Go to Home')}
+                    ${navBtn('📅 Plan', '#/student/plan', isPlan, 'Go to Study Plan')}
+                    ${navBtn('🏅 Badges', '#/student/badges', isBadges, 'View Achievements')}
+                    ${isStudent ? '' : `<button class="nav-btn" onclick="window.router.navigate('#/parent/home')" aria-label="Go to Parents Portal">👪 Parents</button>`}
+                    <button class="nav-btn" onclick="window._handleLogout()" aria-label="Logout of session">🚪 Logout</button>
                 </div>
                 <div class="nav-xp">⚡ ${progress.xp || 0} XP</div>
                 <div class="nav-gems">💎 ${progress.gems || 0}</div>
@@ -203,26 +203,26 @@ function renderNav(hash) {
         `;
     tabAnchor.innerHTML = `
             <div class="mobile-tabbar">
-                <button class="mobile-tab${isHome ? ' active' : ''}" onclick="window.router.navigate('#/student/home')">
-                    <span class="tab-icon">🏠</span>
+                <button class="mobile-tab${isHome ? ' active' : ''}" onclick="window.router.navigate('#/student/home')" aria-label="Student Home">
+                    <span class="tab-icon" aria-hidden="true">🏠</span>
                     <span>Home</span>
                 </button>
-                <button class="mobile-tab${isPlan ? ' active' : ''}" onclick="window.router.navigate('#/student/plan')">
-                    <span class="tab-icon">📅</span>
+                <button class="mobile-tab${isPlan ? ' active' : ''}" onclick="window.router.navigate('#/student/plan')" aria-label="Study Plan">
+                    <span class="tab-icon" aria-hidden="true">📅</span>
                     <span>Plan</span>
                 </button>
-                <button class="mobile-tab${isBadges ? ' active' : ''}" onclick="window.router.navigate('#/student/badges')">
-                    <span class="tab-icon">🏅</span>
+                <button class="mobile-tab${isBadges ? ' active' : ''}" onclick="window.router.navigate('#/student/badges')" aria-label="My Badges">
+                    <span class="tab-icon" aria-hidden="true">🏅</span>
                     <span>Badges</span>
                 </button>
                 ${isStudent ? `
-                <button class="mobile-tab" onclick="window._handleLogout()">
-                    <span class="tab-icon">🚪</span>
+                <button class="mobile-tab" onclick="window._handleLogout()" aria-label="Logout Account">
+                    <span class="tab-icon" aria-hidden="true">🚪</span>
                     <span>Logout</span>
                 </button>
                 ` : `
-                <button class="mobile-tab${isParent ? ' active' : ''}" onclick="window.router.navigate('#/parent/home')">
-                    <span class="tab-icon">👪</span>
+                <button class="mobile-tab${isParent ? ' active' : ''}" onclick="window.router.navigate('#/parent/home')" aria-label="Parent Portal">
+                    <span class="tab-icon" aria-hidden="true">👪</span>
                     <span>Parents</span>
                 </button>
                 `}
