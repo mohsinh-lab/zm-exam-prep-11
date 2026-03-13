@@ -119,9 +119,9 @@ export function renderStudentHome() {
             <div class="profile-level" style="color: var(--c-accent); font-weight: 900; font-size: 12px; letter-spacing: 1px;">${rank.label.toUpperCase()}</div>
           </div>
        </div>
-       <div class="streak-display hover-lift" style="background: white; border: none; padding: 12px 20px; border-radius: var(--r-md); box-shadow: var(--shadow-md); margin-top: 16px;">
+       <div class="streak-display hover-lift" style="background: white; border: none; padding: 12px 20px; border-radius: var(--r-md); box-shadow: var(--shadow-md); margin-top: 16px;" aria-label="Current streak: ${streak} days">
          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 24px;">🔥</span>
+            <span style="font-size: 24px;" aria-hidden="true">🔥</span>
             <div>
                <div style="font-weight: 900; font-size: 20px; color: var(--c-text);">${streak}</div>
                <div style="font-weight: 700; font-size: 10px; color: var(--c-text-muted); text-transform: uppercase;">Day Streak</div>
@@ -185,7 +185,7 @@ export function renderStudentHome() {
     <div class="target-banner glass hover-lift" style="display: flex; align-items: center; padding: 24px 32px; border-radius: var(--r-lg); border: 2px dashed var(--c-accent) !important; box-shadow: var(--shadow-md);">
       <div class="target-left" style="flex: 1;">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-           <span style="font-size: 24px;">🎯</span>
+           <span style="font-size: 24px;" aria-hidden="true">🎯</span>
            <div class="target-school" style="font-weight: 900; font-size: 18px; font-family: var(--font-heading);">PRIMARY TARGET: 11+ GL SUCCESS</div>
         </div>
         <div class="target-desc" style="color: var(--c-text-muted); font-size: 13px; font-weight: 600; padding-left: 34px;">MASTERING MATHS, ENGLISH, VR & NVR</div>
@@ -202,7 +202,7 @@ export function renderStudentHome() {
     </div>
     <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-accent); bo-shadow: var(--shadow-sm);">
       <div class="stat-value" style="color: #d97706">${progress.gems || 0}</div>
-      <div class="stat-label">GEMS</div>
+      <div class="stat-label">GEMS <span aria-hidden="true">💎</span></div>
     </div>
     <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-nvr); bo-shadow: var(--shadow-sm);">
       <div class="stat-value" style="color: var(--c-nvr)">${progress.badges?.length || 0}</div>

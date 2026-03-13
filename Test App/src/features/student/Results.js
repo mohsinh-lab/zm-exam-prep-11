@@ -125,11 +125,11 @@ export function renderStudentResults() {
 
   <!-- Actions -->
   <div class="results-actions" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
-    <button class="btn btn-primary btn-lg" onclick="window.router.navigate('#/student/quiz/${session.subject}')">
+    <button class="btn btn-primary btn-lg" onclick="window.router.navigate('#/student/quiz/${session.subject}')" aria-label="Practice ${SUBJECT_LABELS[session.subject]} again">
       🔄 Practice Again
     </button>
-    <button class="btn btn-outline" onclick="window.router.navigate('#/student/home')">🏠 Home</button>
-    <button class="btn btn-outline" onclick="window.router.navigate('#/student/badges')">🏅 Badges</button>
+    <button class="btn btn-outline" onclick="window.router.navigate('#/student/home')" aria-label="Go to Student Home">🏠 Home</button>
+    <button class="btn btn-outline" onclick="window.router.navigate('#/student/badges')" aria-label="View my Badges">🏅 Badges</button>
   </div>
 
 </div>
