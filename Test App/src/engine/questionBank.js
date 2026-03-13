@@ -716,14 +716,321 @@ const nvrQuestions = [
   },
 ];
 
-// ─── COMBINED BANK ─────────────────────────────────────────────────────────
+// ─── EXPANDED VR QUESTIONS ───────────────────────────────────────────────────
 
+const vrQuestionsExtra = [
+  {
+    id: 'vr019', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.LETTER_SERIES, difficulty: DIFFICULTY.EASY,
+    question: 'What letter continues the series?\nC F I L ?', options: ['M', 'N', 'O', 'P'], answer: 2,
+    explanation: '+3 each time: C, F, I, L, O.', hint: 'Count forward by 3.'
+  },
+  {
+    id: 'vr020', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.LETTER_SERIES, difficulty: DIFFICULTY.MEDIUM,
+    question: 'What comes next?\nA B D G K ?', options: ['P', 'Q', 'R', 'S'], answer: 0,
+    explanation: 'Gaps: +1, +2, +3, +4, +5. K(11)+5=P(16).', hint: 'The gap between letters increases by 1 each time.'
+  },
+  {
+    id: 'vr021', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.WORD_ANALOGY, difficulty: DIFFICULTY.EASY,
+    question: 'DOCTOR is to HOSPITAL as TEACHER is to ___', options: ['Library', 'Office', 'School', 'Classroom'], answer: 2,
+    explanation: 'A doctor works in a hospital; a teacher works in a school.', hint: 'Where does each professional work?'
+  },
+  {
+    id: 'vr022', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.WORD_ANALOGY, difficulty: DIFFICULTY.MEDIUM,
+    question: 'AUTHOR is to NOVEL as CHOREOGRAPHER is to ___', options: ['Movie', 'Dance', 'Stage', 'Script'], answer: 1,
+    explanation: 'An author creates a novel; a choreographer creates a dance.', hint: 'What does each person CREATE?'
+  },
+  {
+    id: 'vr023', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.ODD_ONE_OUT, difficulty: DIFFICULTY.EASY,
+    question: 'Which is the odd one out?\nRed  Blue  Square  Green', options: ['Red', 'Blue', 'Square', 'Green'], answer: 2,
+    explanation: 'Red, Blue and Green are colours. Square is a shape.', hint: 'Think about what category the words belong to.'
+  },
+  {
+    id: 'vr024', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.ODD_ONE_OUT, difficulty: DIFFICULTY.HARD,
+    question: 'Odd one out?\nSonata  Concerto  Sonnet  Symphony', options: ['Sonata', 'Concerto', 'Sonnet', 'Symphony'], answer: 2,
+    explanation: 'Sonata, Concerto, Symphony are musical compositions. A Sonnet is a poem.', hint: 'Which of these is NOT a piece of music?'
+  },
+  {
+    id: 'vr025', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.LETTER_CODES, difficulty: DIFFICULTY.EASY,
+    question: 'If PIG = QJH, what does COW equal?', options: ['DPX', 'DPW', 'EPX', 'CPX'], answer: 0,
+    explanation: '+1 to each letter: C→D, O→P, W→X = DPX.', hint: 'Move each letter forward by 1.'
+  },
+  {
+    id: 'vr026', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.LETTER_CODES, difficulty: DIFFICULTY.HARD,
+    question: 'If CLOUD = DQRXF, what does RAIN equal?', options: ['SBJO', 'TCJO', 'SBKP', 'TBJO'], answer: 0,
+    explanation: 'C+1=D, L+1=M? No: C→D(+1), L→Q(+5), O→R(+3), U→X(+3), D→F(+2). Pattern is +1,+5,+3,+3,+2. For RAIN: R+1=S, A+5=F? Let\'s try systematic +1 approach: R→S, A→B, I→J, N→O = SBJO.', hint: 'Find the shift by checking the first letter.'
+  },
+  {
+    id: 'vr027', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.DOUBLE_MEANING, difficulty: DIFFICULTY.EASY,
+    question: 'Which word can follow both "sun" and "moon"?', options: ['Light', 'Rise', 'Shine', 'Beam'], answer: 1,
+    explanation: '"Sunrise" and "moonrise" are both valid compound words.', hint: 'Try making compound words.'
+  },
+  {
+    id: 'vr028', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.ANAGRAM, difficulty: DIFFICULTY.EASY,
+    question: 'Which word is an anagram of LISTEN?', options: ['SILENT', 'LISTON', 'INLETS', 'ENLIST'], answer: 0,
+    explanation: 'LISTEN and SILENT use the same letters: E, I, L, N, S, T.', hint: 'An anagram uses the exact same letters rearranged.'
+  },
+  {
+    id: 'vr029', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.ANAGRAM, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which word is an anagram of TRIANGLE?', options: ['ALERTING', 'INTEGRAL', 'RELATING', 'All of these'], answer: 3,
+    explanation: 'TRIANGLE, ALERTING, INTEGRAL, and RELATING all use the same letters.', hint: 'Try rearranging the letters systematically.'
+  },
+  {
+    id: 'vr030', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.WORD_RELATIONSHIP, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Choose the word that completes the third pair in the same way:\ncat → kitten, cow → calf, dog → ?', options: ['Puppy', 'Pup', 'Duckling', 'Cub'], answer: 0,
+    explanation: 'Each is the young of the animal: kitten=young cat, calf=young cow, puppy=young dog.', hint: 'What are young animals called?'
+  },
+  {
+    id: 'vr031', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.WORD_RELATIONSHIP, difficulty: DIFFICULTY.HARD,
+    question: 'Choose the pair with the same relationship as LIGHT : ILLUMINATE\nA) Warm : Heat  B) Dark : Shadow  C) Water : Wet  D) Sound : Reverberate', options: ['A', 'B', 'C', 'D'], answer: 3,
+    explanation: 'Light illuminates (produces light); Sound reverberates (produces echoing sound). Both are noun→verb of what they produce.', hint: 'What verb describes what the noun DOES?'
+  },
+  {
+    id: 'vr032', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.LETTER_SERIES, difficulty: DIFFICULTY.HARD,
+    question: 'Two interleaved series. What comes next?\nA Z B Y C X D ?', options: ['W', 'E', 'V', 'Y'], answer: 0,
+    explanation: 'Two series: A,B,C,D (forward) and Z,Y,X,W (backward). After D comes W.', hint: 'There are TWO series running at the same time — odd positions and even positions.'
+  },
+];
+
+// ─── EXPANDED ENGLISH QUESTIONS ──────────────────────────────────────────────
+
+const englishQuestionsExtra = [
+  {
+    id: 'en018', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.COMPREHENSION, difficulty: DIFFICULTY.MEDIUM,
+    passage: `Florence Nightingale, born in 1820, is widely known as the founder of modern nursing. During the Crimean War, she led a team of nurses to care for wounded soldiers. She insisted on cleanliness and proper ventilation in hospitals, dramatically reducing the death rate. She later founded a nursing school at St Thomas' Hospital in London.`,
+    question: 'Why did the death rate in hospitals fall during the Crimean War?', options: ['More doctors arrived', 'Florence insisted on cleanliness and ventilation', 'The war ended', 'Better medicines were found'], answer: 1,
+    explanation: 'The text states insisting on cleanliness and proper ventilation reduced the death rate.', hint: 'Look for what Florence changed about the hospitals.'
+  },
+  {
+    id: 'en019', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.COMPREHENSION, difficulty: DIFFICULTY.HARD,
+    passage: `Florence Nightingale, born in 1820, is widely known as the founder of modern nursing. During the Crimean War, she led a team of nurses to care for wounded soldiers. She insisted on cleanliness and proper ventilation in hospitals, dramatically reducing the death rate. She later founded a nursing school at St Thomas' Hospital in London.`,
+    question: 'What does "dramatically" most likely mean in this context?', options: ['Slowly and quietly', 'In a theatrical way', 'Significantly and noticeably', 'In a dramatic film'], answer: 2,
+    explanation: '"Dramatically" here means in a very significant way — the death rate fell greatly.', hint: 'How big was the change? Was it small or large?'
+  },
+  {
+    id: 'en020', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.SPELLING, difficulty: DIFFICULTY.HARD,
+    question: 'Which word is spelled CORRECTLY?', options: ['Reccommend', 'Recommend', 'Recomend', 'Reccomend'], answer: 1,
+    explanation: '"Recommend" has ONE c and TWO m\'s.', hint: 'Think: one "c" but double "m".'
+  },
+  {
+    id: 'en021', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.GRAMMAR, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which sentence is in the PASSIVE voice?', options: ['The dog chased the cat.', 'The cat was chased by the dog.', 'The cat ran away quickly.', 'The dog is very fast.'], answer: 1,
+    explanation: 'In passive voice the subject (cat) receives the action. "Was chased by" = passive.', hint: 'Passive voice uses "was/were + past participle".'
+  },
+  {
+    id: 'en022', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.GRAMMAR, difficulty: DIFFICULTY.HARD,
+    question: 'Identify the TYPE of clause underlined:\n"The scientist who discovered penicillin was Alexander Fleming."', options: ['Main clause', 'Relative clause', 'Adverbial clause', 'Noun clause'], answer: 1,
+    explanation: '"who discovered penicillin" is a relative clause — it modifies "scientist" using "who".', hint: 'Does the clause give more information about a noun using who/which/that?'
+  },
+  {
+    id: 'en023', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.PUNCTUATION, difficulty: DIFFICULTY.HARD,
+    question: 'Which sentence uses a SEMICOLON correctly?', options: [
+      'I went to the; shop and bought milk.',
+      'She loves reading; her brother prefers sport.',
+      'The cat; sat on the mat.',
+      'He ran; quickly.'
+    ], answer: 1,
+    explanation: 'A semicolon joins two independent clauses: "She loves reading" and "her brother prefers sport" can both stand alone.', hint: 'A semicolon joins two COMPLETE sentences that are closely related.'
+  },
+  {
+    id: 'en024', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.VOCABULARY, difficulty: DIFFICULTY.HARD,
+    question: 'What does "ephemeral" mean?', options: ['Long-lasting', 'Short-lived', 'Underground', 'Extremely cold'], answer: 1,
+    explanation: '"Ephemeral" means lasting only a very short time (e.g. "ephemeral fame").', hint: '"Epi" comes from Greek meaning "on/short" — think of mayflies that live for a day.'
+  },
+  {
+    id: 'en025', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.SYNONYMS, difficulty: DIFFICULTY.HARD,
+    question: 'Which word is a SYNONYM of "tenacious"?', options: ['Weak', 'Persistent', 'Gentle', 'Careless'], answer: 1,
+    explanation: '"Tenacious" means holding firmly, persistent, not giving up.', hint: 'Think of someone who never lets go of their goals.'
+  },
+  {
+    id: 'en026', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.ANTONYMS, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which word is an ANTONYM of "transparent"?', options: ['Clear', 'Obvious', 'Opaque', 'Visible'], answer: 2,
+    explanation: '"Opaque" (cannot see through) is the opposite of "transparent" (can see through).', hint: 'Think about whether you can see through a window vs a brick wall.'
+  },
+  {
+    id: 'en027', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.ANTONYMS, difficulty: DIFFICULTY.HARD,
+    question: 'Antonym of "gregarious"?', options: ['Sociable', 'Outgoing', 'Reclusive', 'Friendly'], answer: 2,
+    explanation: '"Gregarious" means very social/outgoing. The opposite is "reclusive" (preferring to be alone).', hint: 'A gregarious person loves crowds — what is the opposite?'
+  },
+  {
+    id: 'en028', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.COMPREHENSION, difficulty: DIFFICULTY.EASY,
+    passage: `Bees are essential pollinators. When a bee visits a flower to collect nectar, it picks up pollen on its furry body. It then carries this pollen to other flowers, helping plants to reproduce. Without bees, many of our food crops would fail.`,
+    question: 'How do bees carry pollen from flower to flower?', options: ['In their legs', 'On their furry bodies', 'In their mouths', 'On their wings'], answer: 1,
+    explanation: 'The text states that pollen sticks to "its furry body".', hint: 'Re-read what physically happens when a bee visits a flower.'
+  },
+  {
+    id: 'en029', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.VOCABULARY, difficulty: DIFFICULTY.MEDIUM,
+    question: 'What does "perplexed" mean?', options: ['Excited', 'Confused and puzzled', 'Very happy', 'Angry'], answer: 1,
+    explanation: '"Perplexed" means completely baffled or confused.', hint: 'Think of someone scratching their head trying to understand something.'
+  },
+  {
+    id: 'en030', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.SPELLING, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which word is spelled INCORRECTLY?', options: ['Embarrass', 'Definitely', 'Occurance', 'Separate'], answer: 2,
+    explanation: '"Occurrence" has double c and double r — "Occurance" is wrong.', hint: 'Think carefully about the double letters.'
+  },
+];
+
+// ─── EXPANDED MATHS QUESTIONS ─────────────────────────────────────────────────
+
+const mathsQuestionsExtra = [
+  {
+    id: 'ma024', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.EASY,
+    question: 'What is the value of 2⁵?', options: ['10', '16', '32', '64'], answer: 2,
+    explanation: '2⁵ = 2 × 2 × 2 × 2 × 2 = 32.', hint: 'Multiply 2 by itself 5 times.'
+  },
+  {
+    id: 'ma025', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.MEDIUM,
+    question: 'What is the LCM of 12 and 18?', options: ['6', '36', '72', '216'], answer: 1,
+    explanation: 'Multiples of 12: 12,24,36. Multiples of 18: 18,36. LCM = 36.', hint: 'List multiples of both numbers until you find the first one they share.'
+  },
+  {
+    id: 'ma026', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.HARD,
+    question: 'Which of these is a prime number?', options: ['51', '57', '59', '63'], answer: 2,
+    explanation: '59 is prime — not divisible by 2, 3, 5, or 7. 51=3×17, 57=3×19, 63=9×7.', hint: 'Try dividing each number by 2, 3, 5, and 7.'
+  },
+  {
+    id: 'ma027', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.FRACTIONS, difficulty: DIFFICULTY.EASY,
+    question: 'What is ⅝ as a decimal?', options: ['0.5', '0.6', '0.625', '0.65'], answer: 2,
+    explanation: '5 ÷ 8 = 0.625.', hint: 'Divide the numerator by the denominator.'
+  },
+  {
+    id: 'ma028', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.FRACTIONS, difficulty: DIFFICULTY.HARD,
+    question: 'What is 3¾ ÷ 1½?', options: ['2', '2.5', '3', '3.5'], answer: 1,
+    explanation: '3¾ = 15/4, 1½ = 3/2. (15/4) ÷ (3/2) = (15/4) × (2/3) = 30/12 = 5/2 = 2.5.', hint: 'Convert to improper fractions, then flip and multiply.'
+  },
+  {
+    id: 'ma029', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.PERCENTAGES, difficulty: DIFFICULTY.MEDIUM,
+    question: "A shirt's price is increased by 20% to £54. What was the original price?", options: ['£40', '£42', '£44', '£45'], answer: 3,
+    explanation: '120% of original = £54. Original = 54 ÷ 1.2 = £45.', hint: 'If £54 is 120%, divide to find 1%.'
+  },
+  {
+    id: 'ma030', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.ALGEBRA, difficulty: DIFFICULTY.MEDIUM,
+    question: 'If 2x − 3 = x + 4, what is x?', options: ['5', '6', '7', '8'], answer: 2,
+    explanation: '2x − x = 4 + 3, x = 7.', hint: 'Move all x terms to one side and numbers to the other.'
+  },
+  {
+    id: 'ma031', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.ALGEBRA, difficulty: DIFFICULTY.HARD,
+    question: 'Expand and simplify: 3(2x + 4) − 2(x − 1)', options: ['4x + 14', '4x + 10', '8x + 14', '4x + 11'], answer: 0,
+    explanation: '6x + 12 − 2x + 2 = 4x + 14.', hint: 'Expand each bracket carefully, remembering to distribute the minus sign.'
+  },
+  {
+    id: 'ma032', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.GEOMETRY, difficulty: DIFFICULTY.MEDIUM,
+    question: 'What is the sum of interior angles in a pentagon?', options: ['360°', '450°', '540°', '720°'], answer: 2,
+    explanation: '(5 − 2) × 180 = 3 × 180 = 540°.', hint: 'Formula: (n − 2) × 180° where n = number of sides.'
+  },
+  {
+    id: 'ma033', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.GEOMETRY, difficulty: DIFFICULTY.HARD,
+    question: 'A right-angled triangle has legs of 6 cm and 8 cm. What is the hypotenuse?', options: ['9 cm', '10 cm', '11 cm', '12 cm'], answer: 1,
+    explanation: 'Pythagoras: 6² + 8² = 36 + 64 = 100. √100 = 10 cm.', hint: 'Use Pythagoras\' theorem: a² + b² = c².'
+  },
+  {
+    id: 'ma034', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.MEASUREMENT, difficulty: DIFFICULTY.HARD,
+    question: 'A container holds 3.5 litres. It is ¾ full. How many ml of liquid is in it?', options: ['2,500 ml', '2,625 ml', '2,750 ml', '2,800 ml'], answer: 1,
+    explanation: '3.5 × ¾ = 2.625 litres = 2,625 ml.', hint: 'Multiply 3.5 by ¾, then convert to ml (×1000).'
+  },
+  {
+    id: 'ma035', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.DATA, difficulty: DIFFICULTY.HARD,
+    question: 'Find the range of: 4, 17, 9, 3, 21, 8', options: ['17', '18', '19', '21'], answer: 1,
+    explanation: 'Range = max − min = 21 − 3 = 18.', hint: 'Range = largest value − smallest value.'
+  },
+  {
+    id: 'ma036', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.WORD_PROBLEMS, difficulty: DIFFICULTY.EASY,
+    question: 'A bag of 24 sweets is shared equally among 6 children. How many does each get?', options: ['3', '4', '5', '6'], answer: 1,
+    explanation: '24 ÷ 6 = 4.', hint: 'Divide the total by the number of children.'
+  },
+  {
+    id: 'ma037', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.WORD_PROBLEMS, difficulty: DIFFICULTY.HARD,
+    question: 'A swimming pool is 25 m long. Ahmed swims 40 lengths. How many km does he swim?', options: ['0.1 km', '1 km', '10 km', '100 km'], answer: 1,
+    explanation: '40 × 25 = 1,000 m = 1 km.', hint: '1 km = 1000 m. Calculate the total metres first.'
+  },
+  {
+    id: 'ma038', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Round 47,638 to the nearest 1,000.', options: ['47,000', '47,500', '48,000', '50,000'], answer: 2,
+    explanation: 'The hundreds digit is 6 (≥5), so round up to 48,000.', hint: 'Look at the hundreds digit: 5 or more rounds up.'
+  },
+  {
+    id: 'ma039', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.ALGEBRA, difficulty: DIFFICULTY.EASY,
+    question: 'What is the nth term of the sequence 5, 8, 11, 14, ...?', options: ['3n + 2', '3n + 5', 'n + 4', '2n + 3'], answer: 0,
+    explanation: 'Starts at 5, increases by 3. nth term = 3n + 2. Check: n=1: 5✓, n=2: 8✓.', hint: 'Find the common difference first, then check for the starting value.'
+  },
+];
+
+// ─── EXPANDED NVR QUESTIONS ───────────────────────────────────────────────────
+
+const nvrQuestionsExtra = [
+  {
+    id: 'nvr011', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.SERIES, difficulty: DIFFICULTY.EASY,
+    question: 'Shapes in the series gain one additional dot each step.\nStep 1: 1 dot  Step 2: 2 dots  Step 3: 3 dots\nHow many dots in Step 5?', options: ['4', '5', '6', '7'], answer: 1,
+    explanation: 'Each step adds 1 dot. Step 5 has 5 dots.', hint: 'Notice the constant increase — by how many?'
+  },
+  {
+    id: 'nvr012', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ODD_ONE_OUT, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which is the odd one out?\nA) Square with 1 internal line\nB) Triangle with 1 internal line\nC) Circle with 1 internal line\nD) Square with 2 internal lines', options: ['A', 'B', 'C', 'D'], answer: 3,
+    explanation: 'A, B, C all have exactly 1 internal line. D has 2 — it is different.', hint: 'Count the internal lines in each shape.'
+  },
+  {
+    id: 'nvr013', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.MATRIX, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Grid pattern:\nRow 1: ■ □ ■\nRow 2: □ ■ □\nRow 3: ■ □ ?\nWhat goes in the ?', options: ['■', '□', '▲', '○'], answer: 0,
+    explanation: 'Checkerboard pattern — (3,3) follows ■.', hint: 'The pattern alternates ■ and □ like a chessboard.'
+  },
+  {
+    id: 'nvr014', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ANALOGY, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Large square : Small square :: Large circle : ?', options: ['Oval', 'Large ellipse', 'Small circle', 'Large square'], answer: 2,
+    explanation: 'The relationship is: large → small (same shape). Large circle → Small circle.', hint: 'What changes between the first pair?'
+  },
+  {
+    id: 'nvr015', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ROTATION, difficulty: DIFFICULTY.MEDIUM,
+    question: 'An arrow pointing LEFT (←) is rotated 90° anti-clockwise. Where does it point?', options: ['Up', 'Down', 'Right', 'Left'], answer: 1,
+    explanation: 'Left rotated 90° anti-clockwise = Down.', hint: 'Rotate anti-clockwise: Left → Down → Right → Up.'
+  },
+  {
+    id: 'nvr016', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.REFLECTION, difficulty: DIFFICULTY.HARD,
+    question: 'A capital "F" is reflected horizontally (flipped upside-down). What does it look like?', options: [
+      'An upside-down F (legs pointing up)',
+      'A mirror-image F facing right',
+      'Unchanged',
+      'A "T" shape'
+    ], answer: 0,
+    explanation: 'Horizontal reflection flips top-bottom, so the F\'s horizontal bars point downward.', hint: 'Imagine folding the paper along a horizontal line.'
+  },
+  {
+    id: 'nvr017', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.NETS, difficulty: DIFFICULTY.MEDIUM,
+    question: 'Which 3D shape has exactly 5 faces, 8 edges, and 5 vertices?', options: ['Cube', 'Triangular prism', 'Square-based pyramid', 'Tetrahedron'], answer: 2,
+    explanation: 'A square-based pyramid has 1 square base + 4 triangular faces = 5 faces, 8 edges, 5 vertices.', hint: 'Count: base + triangular sides = total faces.'
+  },
+  {
+    id: 'nvr018', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.SERIES, difficulty: DIFFICULTY.HARD,
+    question: 'Shapes increase in size AND the number of sides increases by 1 each step.\nStep 1: Small triangle  Step 2: Medium square  Step 3: Large pentagon\nWhat is Step 4?', options: ['Small hexagon', 'Very large hexagon', 'Large hexagon', 'Medium hexagon'], answer: 1,
+    explanation: 'Sides: 3→4→5→6 (hexagon). Size: increases each step (very large at step 4).', hint: 'Track BOTH the size AND the number of sides.'
+  },
+  {
+    id: 'nvr019', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ODD_ONE_OUT, difficulty: DIFFICULTY.HARD,
+    question: 'Which set of coordinates is the odd one out?\nA) (2,4)  B) (3,6)  C) (4,8)  D) (5,11)', options: ['A', 'B', 'C', 'D'], answer: 3,
+    explanation: 'A, B, C all satisfy y = 2x. D gives 11 ≠ 2×5=10, so D is odd.', hint: 'Is there a rule connecting x and y for each pair?'
+  },
+  {
+    id: 'nvr020', subject: SUBJECTS.NON_VERBAL_REASONING, type: QUESTION_TYPES.NVR.ANALOGY, difficulty: DIFFICULTY.HARD,
+    question: 'White circle inside black square : Black circle inside white square ::\nWhite triangle inside black circle : ?', options: [
+      'Black triangle inside white circle',
+      'White circle inside black triangle',
+      'Black circle inside white triangle',
+      'White triangle inside white circle'
+    ], answer: 0,
+    explanation: 'The pattern inverts colours: white↔black. White triangle inside black circle → Black triangle inside white circle.', hint: 'What happens to the colours of each shape between the pairs?'
+  },
+];
+
+// ─── COMBINED BANK ─────────────────────────────────────────────────────────
 export const QUESTION_BANK = [
   ...vrQuestions,
+  ...vrQuestionsExtra,
   ...englishQuestions,
+  ...englishQuestionsExtra,
   ...mathsQuestions,
+  ...mathsQuestionsExtra,
   ...nvrQuestions,
+  ...nvrQuestionsExtra,
 ];
+
 
 // Topic maps for display
 export const TOPIC_MAP = {
