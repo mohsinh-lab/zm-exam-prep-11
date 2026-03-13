@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getAuth, logout } from '../src/engine/progressStore.js';
 
 vi.mock('../src/config/firebase.js', () => ({
-    auth: { signOut: vi.fn().mockResolvedValue() }
+    auth: {},
+    signOut: vi.fn().mockResolvedValue()
 }));
 
 describe('Auth integration tests', () => {
