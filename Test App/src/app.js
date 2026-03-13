@@ -90,7 +90,7 @@ function boot() {
     const hashBase = window.location.hash.split('?')[0];
     const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
 
-    if (!auth.currentUser && !isAuthOrOnboarding) {
+    if (!authInfo.currentUser && !isAuthOrOnboarding) {
       window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
     } else if (!progress.setupDone && hashBase !== '#/setup') {
       window.router.navigate('#/setup');
