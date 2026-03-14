@@ -98,6 +98,7 @@ function boot() {
     renderNav(window.location.hash);
 
     window.__APP_BOOTED__ = true;
+    console.log('✅ AcePrep Boot Successful');
     if (window.__BOOT_TIMEOUT__) clearTimeout(window.__BOOT_TIMEOUT__);
 
     window.addEventListener('hashchange', () => {
