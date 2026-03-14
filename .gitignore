@@ -11,3 +11,9 @@ dist/
 .DS_Store
 .vscode/
 .tmp/
+
+# test artifacts
+playwright-report/
+test-results/
+*_SUMMARY.md
+boot-timeout.e2e.spec.js
