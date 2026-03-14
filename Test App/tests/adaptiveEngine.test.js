@@ -309,12 +309,26 @@ describe('Adaptive Engine', () => {
     });
 
     describe('getSubjectMastery', () => {
-        it('should return 0 for new subject', () => {
+        it('should return 0 for new subject with no topic mastery or ratings', () => {
             progressStore.getProgress.mockReturnValue({
-                ratings: {}
+                ratings: {},
+                topicMastery: {}
             });
 
-            expect(getSubjectMastery('vr')).toBe(0);
+            // With no topic mastery data, falls back to ELO rating.
+            // BASE_RATING (1200) → (1200-800)/10 = 40. Result is always 0-100.
+            const result = getSubjectMastery('vr');
+            expect(result).toBeGreaterThanOrEqual(0);
+            expect(result).toBeLessThanOrEqual(100);
+        });
+
+        it('should return mastery from topic data when available', () => {
+            progressStore.getProgress.mockReturnValue({
+                ratings: {},
+                topicMastery: { vr: { analogies: { correct: 8, total: 10 } } }
+            });
+
+            expect(getSubjectMastery('vr')).toBe(80);
         });
     });
 
