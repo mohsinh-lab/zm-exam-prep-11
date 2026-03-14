@@ -12,6 +12,12 @@
                 ".write": "auth != null && auth.uid == $uid"
             }
         },
+        "leaderboard": {
+            ".read": "auth != null",
+            "$safe_email": {
+                ".write": "auth != null && auth.token.email.replace('@', '_').replace('.', '_').replace('.', '_') == $safe_email"
+            }
+        },
         ".info": {
             ".read": true
         }

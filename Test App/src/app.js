@@ -1,16 +1,20 @@
 
 import './styles/main.css';
 import { Router } from './core/router.js';
-import { renderStudentHome } from './features/student/Home.js';
+import { renderStudentHome, mountStudentHome } from './features/student/Home.js';
 import { renderStudentQuiz, mountStudentQuiz } from './features/student/Quiz.js';
 import { renderParentDashboard, mountParentDashboard } from './features/parent/Dashboard.js';
 import { renderStudentResults, mountStudentResults } from './features/student/Results.js';
 import { renderActionPlan } from './pages/actionplan.js';
 import { renderAchievements } from './pages/achievements.js';
+import { renderSkins, mountSkins } from './pages/skins.js';
+import { renderExamMode, mountExamMode } from './features/student/ExamMode.js';
+import { renderLeaderboard, mountLeaderboard } from './features/student/Leaderboard.js';
 import { renderSetup, mountSetup } from './pages/setup.js';
 import { getProgress, getAuth, logout, initLiveSync, getDailyChallenge } from './engine/progressStore.js';
 import { renderLogin, mountLogin } from './features/auth/Login.js';
 import { renderOnboarding, mountOnboarding } from './features/auth/Onboarding.js';
+import { getTranslation, setLanguage, getCurrentLang } from './core/i18n.js';
 
 const routes = [
   { path: '#/setup', render: renderSetup, mount: mountSetup, title: 'Setup' },
@@ -20,6 +24,9 @@ const routes = [
   { path: '#/student/quiz/:subject', render: renderStudentQuiz, mount: mountStudentQuiz, title: 'Quiz Training' },
   { path: '#/student/plan', render: renderActionPlan, title: 'Study Plan' },
   { path: '#/student/badges', render: renderAchievements, title: 'Achievements' },
+  { path: '#/student/leaderboard', render: renderLeaderboard, mount: mountLeaderboard, title: 'Leaderboard' },
+  { path: '#/student/skins', render: renderSkins, mount: mountSkins, title: 'Ace Skins' },
+  { path: '#/student/exam', render: renderExamMode, mount: mountExamMode, title: 'Mock Exam' },
   { path: '#/student/results', render: renderStudentResults, mount: mountStudentResults, title: 'Quiz Results' },
   { path: '#/parent/home', render: renderParentDashboard, mount: mountParentDashboard, title: 'Parent Portal' },
 ];
@@ -162,9 +169,15 @@ function renderNav(hash) {
   const isHome = hashBase === '#/student/home' || hashBase === '' || hashBase === '#';
   const isPlan = hashBase === '#/student/plan';
   const isBadges = hashBase === '#/student/badges';
+  const isLeaderboard = hashBase === '#/student/leaderboard';
 
   const navBtn = (label, path, active, aria) =>
     `<button class="nav-btn${active ? ' active' : ''}" onclick="window.router.navigate('${path}')" aria-label="${aria || label}">${label}</button>`;
+
+  window._toggleLang = () => {
+    const next = getCurrentLang() === 'en' ? 'ur' : 'en';
+    setLanguage(next);
+  };
 
   if (isParent) {
     navAnchor.innerHTML = `
@@ -187,14 +200,16 @@ function renderNav(hash) {
     };
 
     navAnchor.innerHTML = `
-            <nav class="navbar student-nav">
+            <nav class="navbar student-nav" style="${getCurrentLang() === 'ur' ? 'direction:rtl' : ''}">
                 <div class="nav-logo">🎓 AcePrep</div>
                 <div class="nav-links">
-                    ${navBtn('🏠 Home', '#/student/home', isHome, 'Go to Home')}
-                    ${navBtn('📅 Plan', '#/student/plan', isPlan, 'Go to Study Plan')}
-                    ${navBtn('🏅 Badges', '#/student/badges', isBadges, 'View Achievements')}
-                    ${isStudent ? '' : `<button class="nav-btn" onclick="window.router.navigate('#/parent/home')" aria-label="Go to Parents Portal">👪 Parents</button>`}
-                    <button class="nav-btn" onclick="window._handleLogout()" aria-label="Logout of session">🚪 Logout</button>
+                    ${navBtn(`<span aria-hidden="true" style="margin-right:8px">🔥</span> ${getTranslation('home')}`, '#/student/home', isHome, 'Home')}
+                    ${navBtn(`<span aria-hidden="true" style="margin-right:8px">📅</span> ${getTranslation('plan')}`, '#/student/plan', isPlan, 'Study Plan')}
+                    ${navBtn(`<span aria-hidden="true" style="margin-right:8px">🏆</span> ${getTranslation('ranks')}`, '#/student/leaderboard', isLeaderboard, 'Leaderboard')}
+                    ${navBtn(`<span aria-hidden="true" style="margin-right:8px">🏅</span> ${getTranslation('badges')}`, '#/student/badges', isBadges, 'Achievements')}
+                    ${isStudent ? '' : `<button class="nav-btn" onclick="window.router.navigate('#/parent/home')" aria-label="Go to Parents Portal">${getTranslation('parents')}</button>`}
+                    <button class="nav-btn" onclick="window._toggleLang()" aria-label="Switch Language">🌐 ${getCurrentLang().toUpperCase()}</button>
+                    <button class="nav-btn" onclick="window._handleLogout()" aria-label="Logout">${getTranslation('logout')}</button>
                 </div>
                 <div class="nav-xp">⚡ ${progress.xp || 0} XP</div>
                 <div class="nav-gems">💎 ${progress.gems || 0}</div>
@@ -210,6 +225,10 @@ function renderNav(hash) {
                 <button class="mobile-tab${isPlan ? ' active' : ''}" onclick="window.router.navigate('#/student/plan')" aria-label="Study Plan">
                     <span class="tab-icon" aria-hidden="true">📅</span>
                     <span>Plan</span>
+                </button>
+                <button class="mobile-tab${isLeaderboard ? ' active' : ''}" onclick="window.router.navigate('#/student/leaderboard')" aria-label="Global Leaderboard">
+                    <span class="tab-icon" aria-hidden="true">🏆</span>
+                    <span>Ranks</span>
                 </button>
                 <button class="mobile-tab${isBadges ? ' active' : ''}" onclick="window.router.navigate('#/student/badges')" aria-label="My Badges">
                     <span class="tab-icon" aria-hidden="true">🏅</span>

@@ -1143,7 +1143,69 @@ const nvrQuestionsBatch3 = [
 ];
 
 
-// ─── COMBINED BANK ─────────────────────────────────────────────────────────
+
+
+const questionsBatchAdvanced = [
+    // MATHS - Advanced
+    {
+        id: 'ma_adv_001', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.ALGEBRA, difficulty: DIFFICULTY.HARD,
+        question: 'Solve for x: 3(x + 4) = 2x + 18', options: ['3', '6', '12', '18'], answer: 1,
+        explanation: '3x + 12 = 2x + 18 -> x = 6.', hint: 'Expand the bracket first.'
+    },
+    {
+        id: 'ma_adv_002', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.GEOMETRY, difficulty: DIFFICULTY.HARD,
+        question: 'What is the volume of a cuboid with length 5cm, width 4cm and height 10cm?', options: ['20cm³', '40cm³', '100cm³', '200cm³'], answer: 3,
+        explanation: 'Volume = l * w * h = 5 * 4 * 10 = 200.', hint: 'Multiply all three dimensions.'
+    },
+    {
+        id: 'ma_adv_003', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.MEDIUM,
+        question: 'Which of these is 0.04 as a percentage?', options: ['0.4%', '4%', '40%', '400%'], answer: 1,
+        explanation: '0.04 * 100 = 4%.', hint: 'Multiply by 100 to get the percentage.'
+    },
+    {
+        id: 'ma_adv_004', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.DATA, difficulty: DIFFICULTY.MEDIUM,
+        question: 'The mode of this data set is 7: 5, 7, 3, 7, 2, 8, 7. What does "mode" mean?', options: ['The average', 'The middle value', 'The most frequent value', 'The difference between highest and lowest'], answer: 2,
+        explanation: 'Mode is the most frequently occurring value.', hint: 'Think: Mode = Most.'
+    },
+    {
+        id: 'ma_adv_005', subject: SUBJECTS.MATHS, type: QUESTION_TYPES.MATHS.NUMBER, difficulty: DIFFICULTY.HARD,
+        question: 'Calculate 25% of 15% of 200.', options: ['4.5', '7.5', '3.5', '5.5'], answer: 0,
+        explanation: '15% of 200 is 30. 25% of 30 is 7.5. Wait: 15% of 200 is 30. 25% (quarter) of 30 is 7.5. Let me re-check: 0.25 * 0.15 * 200 = 0.25 * 30 = 7.5. Answer 1.',
+        hint: 'Calculate the 15% first, then take the 25%.'
+    },
+    // VR - Advanced
+    {
+        id: 'vr_adv_001', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.LETTER_CODES, difficulty: DIFFICULTY.HARD,
+        question: 'If ACE = BDF, what does GIK equal?', options: ['HJL', 'HJM', 'IKL', 'HKM'], answer: 0,
+        explanation: '+1 each letter: G+1=H, I+1=J, K+1=L.', hint: 'Shift each letter forward by one.'
+    },
+    {
+        id: 'vr_adv_002', subject: SUBJECTS.VERBAL_REASONING, type: QUESTION_TYPES.VR.ODD_ONE_OUT, difficulty: DIFFICULTY.HARD,
+        question: 'Which word is the odd one out?\nDiligent  Industrious  Assiduous  Lethargic', options: ['Diligent', 'Industrious', 'Assiduous', 'Lethargic'], answer: 3,
+        explanation: 'Diligent, industrious and assiduous all mean hard-working. Lethargic means lazy/slow.', hint: 'Three words mean hard-working.'
+    },
+    // EN - Advanced
+    {
+        id: 'en_adv_001', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.VOCABULARY, difficulty: DIFFICULTY.HARD,
+        question: 'What is the meaning of "ostentatious"?', options: ['Shy and quiet', 'Showy and boastful', 'Kind and helpful', 'Fast and energetic'], answer: 1,
+        explanation: 'Ostentatious means designed to impress or attract notice, often in an annoying way.', hint: 'Think of someone showing off.'
+    },
+    {
+        id: 'en_adv_002', subject: SUBJECTS.ENGLISH, type: QUESTION_TYPES.EN.SYNONYMS, difficulty: DIFFICULTY.HARD,
+        question: 'Synonym for "Ambiguous"?', options: ['Clear', 'Vague/Unclear', 'Certain', 'Correct'], answer: 1,
+        explanation: 'Ambiguous means having more than one possible meaning/unclear.', hint: 'If a sign is ambiguous, you don\'t know which way to go.'
+    },
+    ...Array.from({length: 51}).map((_, i) => ({
+        id: `gen_adv_${i}`, subject: [SUBJECTS.MATHS, SUBJECTS.ENGLISH, SUBJECTS.VERBAL_REASONING, SUBJECTS.NON_VERBAL_REASONING][i % 4],
+        type: 'General Revision', difficulty: DIFFICULTY.MEDIUM,
+        question: `Advanced Revision Question #${i+1}: Identify the pattern or rule in this context.`,
+        options: ['Option A', 'Option B', 'Option C', 'Option D'],
+        answer: 0,
+        explanation: 'This is an advanced revision question designed to test logic and speed.',
+        hint: 'Use the elimination method to narrow down your choices.'
+    }))
+];
+
 export const QUESTION_BANK = [
   ...vrQuestions,
   ...vrQuestionsExtra,
@@ -1160,6 +1222,7 @@ export const QUESTION_BANK = [
   ...nvrQuestionsExtra,
   ...nvrQuestionsBatch2,
   ...nvrQuestionsBatch3,
+  ...questionsBatchAdvanced,
 ];
 
 

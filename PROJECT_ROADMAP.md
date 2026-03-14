@@ -1,461 +1,175 @@
 # AcePrep 11+ Project Roadmap
 
-## Project Status: MVP Complete ✅
+## Project Status: MVP COMPLETE - PHASE 2 IN PROGRESS 🚀
 
-**Last Updated:** March 13, 2026  
-**Target Exam Date:** September 15, 2026 (186 days remaining)  
-**Deployed URL:** https://mohsinh-lab.github.io/zm-exam-prep-11/
+**Last Updated:** March 14, 2026  
+**Target Exam Date:** September 15, 2026 (185 days remaining)  
+**Deployed URL:** https://mohsinh-lab.github.io/zm-exam-prep-11/  
+**Development Model:** Trunk-Based Development (main branch as trunk)
+
+---
+
+## Development Workflow
+
+We follow **trunk-based development** principles:
+- **Main branch** (`main`) is the trunk - always production-ready
+- **Short-lived feature branches** created from main for specific features
+- **Rapid integration** - features merged back to main within 1-2 weeks
+- **Continuous deployment** - main branch automatically deployed to production
 
 ---
 
 ## Current Status Summary
 
-### ✅ Completed Features
-- Core adaptive learning engine with ELO rating system
-- Multi-subject quiz system (Maths, English, VR, NVR)
-- Student home dashboard with progress tracking
-- Parent monitoring portal
-- Firebase authentication (Google OAuth)
-- Cloud sync for cross-device progress
-- PWA support with offline capability
-- Achievements and XP system
-- Exam readiness calculator
-- Action plan generator
-- Themed graphics (Pokemon/Transformers)
-- Islamic motivational quotes
-- Comprehensive test coverage (73/73 tests passing) ✅
-- CI/CD pipeline with GitHub Actions
-- Automated daily parent reports
+### ✅ MVP Phase Complete (feat/mvp-completion-v1)
+**Status:** Ready to merge to main  
+**Completion Date:** March 13, 2026
 
-### 🔧 Recent Improvements
-- Added unit tests for adaptive engine, readiness engine, and router
-- Created deployment and Firebase setup documentation
-- Enhanced VS Code configuration for better DX
-- Set up code quality and security workflows
-- Configured Dependabot for dependency updates
-- Created Makefile for common tasks
-- **Production Consolidation**: Unified `feat/production-readiness-v2` into `main`, fixed base path issues, and activated production-grade CI/CD pipeline. ✅
-- **Premium Expansion**: Integrated "Ace" mascot, Daily Challenges, and Performance Trend Chart.
+#### Core Features Delivered
+- **Parent Special Missions**: Custom goals (Sessions, XP, or Score) with Gem rewards ✅
+- **Content Depth**: **210+ questions** across all subjects (Easy 30%, Medium 50%, Hard 20%) ✅
+- **PDF Export**: Monthly tracking reports for Parent Dashboard ✅
+- **Accessibility (A11y)**: Full ARIA labels and touch-friendly focus states ✅
+- **Sound & Feedback**: Polished audio cues for interactions ✅
+- **Global Leaderboard**: Real-time Firebase synchronization with secure rules ✅
+- **Ace Skins**: Unlockable avatar suits (Knight, Spaceman, Ninja, Legend) ✅
+- **11+ Mock Exam Mode**: Full Paper simulation (55 mins) for GL Assessment ✅
+- **Advanced Parent Analytics**: Radar charts for skill analysis ✅
+- **Multi-Language Engine**: English and Urdu with RTL layout switching ✅
 
 ---
 
-## Priority Tasks
+## Technical Achievement Log
 
-### 🔴 Critical (Do First)
+### 📊 Community & Gamification
+- **Mission Control**: Integrated "Parent Challenges" that appear on the student dashboard as "Special Missions".
+- **Reward Engine**: Claiming a mission reward grants Gems, which can be spent on hints.
+- **Leaderboard**: Secure Firebase rules established to prevent data tampering.
 
-#### 1. Fix Deployed Site Loading Issue
-**Status:** Completed ✅
-**Priority:** P0 - Blocking users
-**Description:** Deployed site stuck on splash screen "Loading your learning journey..."
+### 📝 Exam Simulation & Content
+- **210+ Questions**: Balanced across Easy (30%), Medium (50%), and Hard (20%).
+- **Advanced Logic**: Added Algebra, Complex Geometry, and Sophisticated Vocabulary to English bank.
+- **Silent Feedback**: Mock exams use a "review mode" at the end to maximize learning.
 
-**Tasks:**
-- [x] Verify hard refresh resolves issue
-- [x] Check browser console for JavaScript errors
-- [x] Verify GitHub Actions deployment completed successfully
-- [x] Test on multiple browsers
-- [x] Test on mobile devices (iPad, iPhone)
-- [x] Add error boundary for better error handling
-- [x] Add loading timeout with error message
-
-**Files to Check:**
-- `Test App/index.html` - Splash screen logic
-- `Test App/src/app.js` - Application bootstrap
-- `.github/workflows/deploy.yml` - Deployment pipeline
+### 👪 Parent Portal 2.0
+- **Radar Chart**: Real-time SVG visualization of student competency.
+- **PDF Tracking**: Parents can now print reports for offline discussion with tutors.
+- **Goal Management**: Dynamic UI for activating and canceling special student missions.
 
 ---
 
-#### 2. Fix Remaining Test Failures
-**Status:** Completed ✅
-**Priority:** P1 - Quality assurance
-**Description:** 2 tests failing out of 73 (97% pass rate)
+## Phase 2: Scale & Polish (March 15 - April 30, 2026)
 
-**Tasks:**
-- [x] Identify which 2 tests are failing
-- [x] Debug and fix test failures
-- [x] Ensure 100% test pass rate
-- [x] Update test documentation
+### 🎯 Phase 2 Objectives
+Enhance user engagement, expand content, and optimize performance for production scale.
 
-**Command:**
-```bash
-cd "Test App"
-npm test -- --reporter=verbose
-```
+### Planned Features (Short-lived branches from main)
 
----
+#### 1. **Anti-Gravity Physics Engine** (feat/anti-gravity-v1)
+- **Timeline:** March 15-22, 2026 (1 week)
+- **Description:** Implement dynamic gravity-based animations for UI elements
+- **Scope:**
+  - Floating particle effects during quiz transitions
+  - Gravity-influenced gem collection animations
+  - Physics-based leaderboard rank animations
+- **Acceptance Criteria:**
+  - Smooth 60fps animations on mobile devices
+  - Configurable gravity strength per animation type
+  - Fallback for low-end devices (reduced motion support)
+- **Testing:** E2E tests for animation performance, unit tests for physics calculations
 
-### 🟡 High Priority (This Week)
+#### 2. **AI Voice Tutor** (feat/ai-voice-tutor-v1)
+- **Timeline:** March 23 - April 5, 2026 (2 weeks)
+- **Description:** Real-time reading of reading comprehension passages
+- **Scope:**
+  - Web Speech API integration for text-to-speech
+  - Passage highlighting during playback
+  - Speed control (0.75x, 1x, 1.25x, 1.5x)
+  - Offline fallback with pre-recorded audio
+- **Acceptance Criteria:**
+  - Support for English and Urdu voices
+  - Synchronized highlighting with audio playback
+  - Works on iOS Safari and Android Chrome
+- **Testing:** Cross-browser E2E tests, accessibility testing with screen readers
 
-#### 3. Content Enhancement
-**Status:** In Progress 🚧
-**Priority:** P1 - Core functionality
-**Description:** Expand question bank for better practice coverage
+#### 3. **Physical Flashcards** (feat/flashcards-export-v1)
+- **Timeline:** April 6-13, 2026 (1 week)
+- **Description:** Printable PDF vocabulary cards based on student's weak words
+- **Scope:**
+  - Generate PDF with vocabulary cards (front: word, back: definition)
+  - Filter by subject and difficulty
+  - Customizable card size and layout
+  - Include pronunciation guides
+- **Acceptance Criteria:**
+  - PDF generation completes in <5 seconds
+  - Print-friendly layout with proper page breaks
+  - Support for 50-500 cards per PDF
+- **Testing:** PDF generation tests, print preview validation
 
-**Tasks:**
-- [x] Audit current question count per subject
-- [x] Add 200+ total questions (added Maths, English, VR, NVR batches)
-- [ ] Ensure difficulty distribution (Easy: 30%, Medium: 50%, Hard: 20%)
-- [ ] Add detailed explanations for ALL questions
-
-**Files:**
-- `Test App/src/engine/questionBank.js`
-
----
-
-### 🟡 High Priority (Phase 2 - PERFORMANCE & ACCESSIBILITY)
-
-#### 4. Performance Optimization
-**Status:** In Progress 🚧
-**Priority:** P1 - User experience  
-**Description:** Optimize app performance for mobile devices
-
-**Tasks:**
-- [x] Fix Service Worker base path for GitHub Pages ✅
-- [x] Run Lighthouse audit on deployed site ✅
-    - **Results**: FCP 132ms, LCP 452ms, Performance Score ~75.
-    - **Bottleneck**: `ace-mascot.png` (510KB) is the main LCP element.
-- [ ] Optimize image sizes (Convert `ace-mascot.png` to WebP)
-- [ ] Implement lazy loading for secondary images
-- [ ] Minimize JavaScript bundle size
-- [ ] Add performance monitoring
-- [ ] Test on slow 3G connection
-- [ ] Optimize Service Worker caching strategy
-
-**Target Metrics:**
-- Performance score: >90
-- First Contentful Paint: <1.5s
-- Time to Interactive: <3s
-- Bundle size: <200KB (gzipped)
-
----
-
-#### 5. Accessibility Improvements
-**Status:** In Progress 🚧  
-**Priority:** P1 - Inclusive design  
-**Description:** Ensure app is accessible to all users
-
-**Tasks:**
-- [x] Run internal accessibility audit ✅
-- [x] Link form labels to inputs (Fix `setup.js`, `Home.js`, `Dashboard.js`) ✅
-- [x] Hide decorative icons/emojis from screen readers (`aria-hidden`) ✅
-- [x] Improve color contrast for secondary buttons (Logout) ✅
-- [x] Modernize mobile meta tags (`mobile-web-app-capable`) ✅
-- [ ] Add ARIA labels to emoji-only buttons
-- [ ] Ensure keyboard navigation works throughout
-- [ ] Test with screen reader (NVDA/JAWS)
-- [x] Add focus indicators (`:focus-visible`) ✅
-- [x] Add skip navigation links (`.skip-link`) ✅
-- [ ] Test with screen reader (NVDA/JAWS)
-- [ ] Test with reduced motion preferences
-
-**Target:** WCAG 2.1 AA compliance
+#### 4. **Battle Mode** (feat/battle-mode-v1)
+- **Timeline:** April 14-30, 2026 (2 weeks)
+- **Description:** Real-time 1v1 practice against friends or AI bots
+- **Scope:**
+  - Real-time multiplayer via Firebase Realtime Database
+  - AI opponent with difficulty levels
+  - Live score updates and animations
+  - Match history and statistics
+- **Acceptance Criteria:**
+  - <500ms latency for score updates
+  - AI responds within 3 seconds
+  - Support for 100+ concurrent matches
+- **Testing:** Load testing, real-time sync validation, AI logic tests
 
 ---
 
-### 🟢 Medium Priority (This Month)
+## Integration & Deployment Strategy
 
-#### 6. Analytics Integration
-**Status:** Not Started  
-**Priority:** P2 - Product insights  
-**Description:** Add analytics to understand user behavior
+### Trunk-Based Development Workflow
+1. **Feature Branch Creation:** Each feature gets a short-lived branch (1-2 weeks max)
+2. **Daily Integration:** Features integrated to main daily or every 2-3 days
+3. **Continuous Testing:** All tests run on main before deployment
+4. **Production Deployment:** Main branch automatically deployed to GitHub Pages
 
-**Tasks:**
-- [ ] Choose analytics provider (Firebase Analytics, Plausible, or Umami)
-- [ ] Implement event tracking for key actions
-- [ ] Track quiz completions by subject
-- [ ] Track time spent per session
-- [ ] Track error rates and crashes
-- [ ] Create analytics dashboard
-- [ ] Set up weekly analytics reports
+### Branch Naming Convention
+- Feature branches: `feat/{feature-name}-v{version}`
+- Bug fixes: `fix/{bug-name}-v{version}`
+- Chores: `chore/{task-name}-v{version}`
+- Example: `feat/anti-gravity-v1`, `fix/leaderboard-sync-v1`
 
-**Key Events to Track:**
-- Quiz started/completed
-- Subject selected
-- Achievements unlocked
-- Parent portal visits
-- PWA installation
+### Merge Strategy
+- Squash commits for cleaner history
+- Require passing tests before merge
+- Code review by at least one team member
+- Delete branch after merge
 
 ---
 
-#### 7. Enhanced Parent Portal
-**Status:** In Progress 🚧
-**Priority:** P2 - Parent engagement
-**Description:** Improve parent monitoring capabilities
-
-**Tasks:**
-- [x] Add detailed progress charts (Performance Trend)
-- [ ] Show subject-wise breakdown (Radar chart)
-- [ ] Show weak topics with recommendations
-- [ ] Add ability to set study goals / rewards
-- [ ] Export progress reports as PDF
-
-**Files:**
-- `Test App/src/features/parent/Dashboard.js`
+## Technical Maintenance
+- **Testing**: Resolved `EPERM` issues in local test runner; CI/CD pipeline validated.
+- **Security**: Invitation links now use base64-cloaked UIDs for privacy.
+- **Performance**: Optimized bundle size; lazy loading for feature modules.
 
 ---
 
-#### 8. Gamification Enhancements
-**Status:** In Progress 🚧
-**Priority:** P2 - User engagement
-**Description:** Add more engaging game mechanics
+## Future Roadmap (Post-Phase 2)
 
-**Tasks:**
-- [x] Add daily streak tracking
-- [x] Add Daily Challenges (Directives)
-- [ ] Add customizable avatars (Ace Skins)
-- [ ] Add sound effects for achievements
-- [ ] Add reward animations
+### Phase 3: Advanced Features (May - August 2026)
+- [ ] **Adaptive Difficulty Tuning**: ML-based question selection
+- [ ] **Social Features**: Friend challenges, team competitions
+- [ ] **Content Expansion**: 300+ questions, new subjects
+- [ ] **Offline Mode**: Full app functionality without internet
+- [ ] **Analytics Dashboard**: Detailed performance insights for parents
 
-**Files:**
-- `Test App/src/engine/progressStore.js`
-- `Test App/src/pages/achievements.js`
-
----
-
-#### 9. Offline Mode Improvements
-**Status:** Not Started  
-**Priority:** P2 - Reliability  
-**Description:** Enhance offline functionality
-
-**Tasks:**
-- [ ] Test offline mode thoroughly
-- [ ] Add offline indicator in UI
-- [ ] Queue sync operations when offline
-- [ ] Add conflict resolution for sync
-- [ ] Cache all question images
-- [ ] Add offline-first data strategy
-- [ ] Test on airplane mode
-
-**Files:**
-- `Test App/public/sw.js`
-- `Test App/src/engine/cloudSync.js`
+### Phase 4: Pre-Exam Optimization (September 2026)
+- [ ] **Exam Simulation Refinement**: Exact GL Assessment format
+- [ ] **Performance Optimization**: Sub-2s load times
+- [ ] **Stress Testing**: 10,000+ concurrent users
+- [ ] **Final Content Review**: Expert validation of all questions
 
 ---
 
-### 🔵 Low Priority (Nice to Have)
-
-#### 10. Multi-Language Support
-**Status:** Not Started  
-**Priority:** P3 - Future enhancement  
-**Description:** Add support for multiple languages
-
-**Tasks:**
-- [ ] Set up i18n framework
-- [ ] Extract all UI strings
-- [ ] Add language selector
-- [ ] Translate to Urdu (primary target)
-- [ ] Translate to Arabic (secondary)
-- [ ] Test RTL layout support
-
----
-
-#### 11. Social Features
-**Status:** Not Started  
-**Priority:** P3 - Future enhancement  
-**Description:** Add social learning features
-
-**Tasks:**
-- [ ] Add ability to share achievements
-- [ ] Add study groups
-- [ ] Add peer comparison (opt-in)
-- [ ] Add discussion forum
-- [ ] Add tutor chat support
-
----
-
-#### 12. Advanced Analytics
-**Status:** Not Started  
-**Priority:** P3 - Future enhancement  
-**Description:** ML-powered insights
-
-**Tasks:**
-- [ ] Predict exam readiness using ML
-- [ ] Recommend personalized study plans
-- [ ] Identify learning patterns
-- [ ] Suggest optimal study times
-- [ ] Predict weak topics before they become problems
-
----
-
-## Automation Opportunities
-
-### ✅ Already Automated
-- Deployment to GitHub Pages on push to main
-- Daily parent email reports (8 PM UTC)
-- Test execution on PRs
-- Coverage reporting
-- Dependency updates (Dependabot)
-
-### 🔄 Automation To Add
-
-#### A. Pre-commit Hooks
-```bash
-# Install husky for git hooks
-npm install --save-dev husky lint-staged
-
-# Add pre-commit hook to run tests
-npx husky add .husky/pre-commit "cd 'Test App' && npm test"
-```
-
-#### B. Automated Lighthouse Audits
-Create `.github/workflows/lighthouse.yml` to run performance audits on every deployment
-
-#### C. Automated Screenshot Testing
-Use Playwright to capture screenshots and detect visual regressions
-
-#### D. Automated Backup
-Schedule Firebase database backups weekly
-
-#### E. Automated Release Notes
-Generate release notes from commit messages using conventional commits
-
----
-
-## Technical Debt
-
-### Code Quality
-- [ ] Remove console.log statements from production code
-- [ ] Add JSDoc comments to all public functions
-- [ ] Refactor large functions (>50 lines)
-- [ ] Extract magic numbers to constants
-- [ ] Add input validation to all user inputs
-
-### Testing
-- [ ] Increase test coverage to >90%
-- [ ] Add integration tests for critical flows
-- [ ] Add visual regression tests
-- [ ] Add performance tests
-- [ ] Add security tests
-
-### Documentation
-- [ ] Add inline code comments
-- [ ] Create API documentation
-- [ ] Add architecture diagrams
-- [ ] Create user guide
-- [ ] Create troubleshooting guide
-
----
-
-## Security Considerations
-
-### Current Security Measures
-- Firebase Authentication
-- Environment variables for secrets
-- HTTPS only
-- Content Security Policy (via GitHub Pages)
-
-### Security Improvements Needed
-- [ ] Add rate limiting for API calls
-- [ ] Add input sanitization
-- [ ] Add CSRF protection
-- [ ] Regular security audits (npm audit)
-- [ ] Add security headers
-- [ ] Implement proper error handling (no stack traces in production)
-- [ ] Add logging and monitoring
-
----
-
-## Deployment Checklist
-
-### Before Each Release
-- [ ] Run all tests (`npm run test:all`)
-- [ ] Check test coverage (`npm run test:coverage`)
-- [ ] Run Lighthouse audit
-- [ ] Test on mobile devices
-- [ ] Test offline mode
-- [ ] Verify Firebase connection
-- [ ] Check for console errors
-- [ ] Update version in package.json
-- [ ] Update CHANGELOG.md
-- [ ] Create git tag for release
-
-### After Deployment
-- [ ] Verify deployed site loads
-- [ ] Test authentication flow
-- [ ] Complete a quiz end-to-end
-- [ ] Check parent portal
-- [ ] Verify PWA installation
-- [ ] Monitor error logs
-- [ ] Check analytics
-
----
-
-## Success Metrics
-
-### User Engagement
-- Daily active users
-- Average session duration
-- Quiz completion rate
-- Return user rate
-- PWA installation rate
-
-### Learning Outcomes
-- Average score improvement over time
-- Weak topic identification accuracy
-- Exam readiness score correlation with actual results
-
-### Technical Metrics
-- Page load time <2s
-- Test coverage >90%
-- Zero critical bugs
-- 99.9% uptime
-- Lighthouse score >90
-
----
-
-## Resources
-
-### Documentation
-- [Deployment Checklist](Test App/DEPLOYMENT_CHECKLIST.md)
-- [Firebase Setup](Test App/FIREBASE_SETUP.md)
-- [Verification Guide](Test App/VERIFICATION_GUIDE.md)
-- [VS Code Setup](VSCODE_SETUP.md)
-
-### External Links
-- [GitHub Repository](https://github.com/mohsinh-lab/zm-exam-prep-11)
-- [Deployed Site](https://mohsinh-lab.github.io/zm-exam-prep-11/)
-- [GitHub Actions](https://github.com/mohsinh-lab/zm-exam-prep-11/actions)
-
-### Quick Commands
-```bash
-# Development
-make dev              # Start dev server
-make test             # Run tests
-make build            # Build for production
-
-# Deployment
-make deploy           # Commit and push
-make status           # Check deployment status
-
-# See all commands
-make help
-```
-
----
-
-## Timeline
-
-### March 2026 (Current Month)
-- Week 1: Fix deployment issue, fix failing tests
-- Week 2: Content enhancement (add questions)
-- Week 3: Performance optimization
-- Week 4: Accessibility improvements
-
-### April 2026
-- Analytics integration
-- Enhanced parent portal
-- Gamification enhancements
-
-### May-August 2026
-- Continuous content updates
-- User feedback incorporation
-- Performance monitoring
-- Bug fixes and improvements
-
-### September 2026
-- Final testing and optimization
-- Exam preparation mode
-- Post-exam feedback collection
-
----
-
-**Note:** This roadmap is a living document. Update it regularly as priorities change and new requirements emerge.
+**Next Steps:**
+1. Merge `feat/mvp-completion-v1` to `main`
+2. Create `feat/anti-gravity-v1` branch for Phase 2 kickoff
+3. Begin Anti-Gravity Physics Engine implementation
+4. Schedule daily standups for Phase 2 coordination

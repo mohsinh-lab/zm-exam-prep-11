@@ -1,6 +1,7 @@
 // src/engine/cloudSync.js
 // Handles real-time synchronization using Zayyan's email as the unique identifier.
 import { database, ref, set, get, onValue } from '../config/firebase.js';
+import { reportToLeaderboard } from './leaderboard.js';
 
 let STUDENT_EMAIL = 'zayyanmohsin16@gmail.com';
 let SYNC_ID = STUDENT_EMAIL.replace(/[@.]/g, '_'); // zayyanmohsin16_gmail_com
@@ -29,6 +30,7 @@ export async function syncProgressToCloud(progress) {
     try {
         const dbRef = ref(database, 'students/' + SYNC_ID);
         await set(dbRef, progress);
+        await reportToLeaderboard();
         console.log('✅ Progress synced to cloud for:', STUDENT_EMAIL);
     } catch (err) {
         console.warn('❌ Cloud sync failed:', err);

@@ -93,15 +93,15 @@ export function generateActionPlan(progress) {
         plan.narrative = `${progress.studentName} is performing at an elite level, exceeding benchmarks for ${topSchool.name}.`;
         plan.steps = [
             "Maintain streak with daily 10-minute sessions.",
-            "Focus on 'Time Pressure' drills to build exam-day stamina.",
-            "Review 'Topic Master' badges to ensure 100% curriculum coverage."
+            "Attempt a 'Full Mock Simulation' once every two weeks.",
+            "Focus on 'Time Pressure' drills to build exam-day stamina."
         ];
     } else if (readiness >= 65) {
         plan.narrative = `${progress.studentName} is showing steady progress towards ${topSchool.name}. We are refining accuracy in key areas.`;
         plan.steps = [
             "Complete 2 Booster Missions this week in weak topics.",
-            "Review the 'Log Book' for any recurring errors in English.",
-            "Log in during the weekend for Islamic Wisdom & Focus quotes."
+            "Try a 'Mock Exam' to identify areas of time management.",
+            "Review the 'Log Book' for any recurring errors in English."
         ];
     } else {
         plan.narrative = `We are currently building the foundation needed for ${topSchool.name}. A focused sprint will accelerate growth.`;

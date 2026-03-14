@@ -1,9 +1,11 @@
-import { getProgress, getDailyChallenge } from '../../engine/progressStore.js';
+
+import { getProgress, getDailyChallenge, claimParentGoalReward } from '../../engine/progressStore.js';
 import { getSubjectMastery, getCurrentLevel, getWeakTopics, checkBoosterRequired, isWeekend, getRankInfo } from '../../engine/adaptiveEngine.js';
 import { SUBJECTS, SUBJECT_LABELS, SUBJECT_COLORS, SUBJECT_ICONS } from '../../engine/questionBank.js';
 import { getRandomWeekendQuote, getMinuteAwareQuote } from '../../engine/quoteBank.js';
 import { calculateReadiness } from '../../engine/readinessEngine.js';
 import { getReadinessNudge } from '../../engine/notificationEngine.js';
+import { getTranslation } from '../../core/i18n.js';
 
 export function renderStudentHome() {
   const progress = getProgress();
@@ -105,11 +107,17 @@ export function renderStudentHome() {
     </div>
     
     <!-- Character Companion -->
-    <img src="ace-mascot.png" alt="Ace Mascot" class="desktop-only" 
-         style="position: absolute; right: 0; bottom: -20px; width: 340px; z-index: 1; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35)); transition: transform 0.3s ease-out;"
-         onmouseover="this.style.transform='scale(1.05) rotate(2deg)'" 
-         onmouseout="this.style.transform='scale(1) rotate(0deg)'"
-         loading="eager">
+    <div class="mascot-container desktop-only" style="position: absolute; right: 0; bottom: -20px; z-index: 1;">
+        <img src="ace-mascot.png" alt="Ace Mascot" 
+            style="width: 340px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35)); transition: transform 0.3s ease-out;"
+            onmouseover="this.style.transform='scale(1.05) rotate(2deg)'" 
+            onmouseout="this.style.transform='scale(1) rotate(0deg)'"
+            loading="eager">
+        ${progress.activeSkin !== 'default' ? `
+        <div style="position:absolute; top:40px; left:60px; font-size:64px; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.2));" class="pulse-glow">
+            ${{ knight: '⚔️', spaceman: '🧑‍🚀', ninja: '🥷', legend: '👑' }[progress.activeSkin]}
+        </div>` : ''}
+    </div>
     
     <div class="hero-right" style="position: relative; z-index: 2;">
        <div class="profile-main glass" style="border-radius: var(--r-md); padding: 12px 20px;">
@@ -119,7 +127,18 @@ export function renderStudentHome() {
             <div class="profile-level" style="color: var(--c-accent); font-weight: 900; font-size: 12px; letter-spacing: 1px;">${rank.label.toUpperCase()}</div>
           </div>
        </div>
-       <div class="streak-display hover-lift" style="background: white; border: none; padding: 12px 20px; border-radius: var(--r-md); box-shadow: var(--shadow-md); margin-top: 16px;" aria-label="Current streak: ${streak} days">
+       <button class="streak-display hover-lift" 
+               style="background: white; border: none; padding: 12px 20px; border-radius: var(--r-md); box-shadow: var(--shadow-md); margin-top: 16px; width:100%; text-align:left;" 
+               onclick="window.router.navigate('#/student/skins')">
+         <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 24px;" aria-hidden="true">👕</span>
+            <div>
+               <div style="font-weight: 800; font-size: 14px; color: var(--c-text);">Customize</div>
+               <div style="font-weight: 700; font-size: 10px; color: var(--c-text-muted); text-transform: uppercase;">Ace Skins</div>
+            </div>
+         </div>
+       </button>
+       <div class="streak-display hover-lift" style="background: white; border: none; padding: 12px 20px; border-radius: var(--r-md); box-shadow: var(--shadow-md); margin-top: 12px;" aria-label="Current streak: ${streak} days">
          <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 24px;" aria-hidden="true">🔥</span>
             <div>
@@ -137,7 +156,7 @@ export function renderStudentHome() {
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
               <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 18px;">🛰️</span>
-                  <span style="font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 0.1em;">MISSION CONTROL</span>
+                  <span style="font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 0.1em;">${getTranslation('mission_control')}</span>
               </div>
               <div style="text-align: right;">
                 <div style="font-size: 14px; font-weight: 900; color: var(--c-text);">PREDICTED READINESS: <span style="color: var(--c-primary);">${readiness}%</span></div>
@@ -177,8 +196,6 @@ export function renderStudentHome() {
           </div>
       </div>
   </div>
-      </div>
-  </div>
 
   <div style="margin-top: 48px;">
     <!-- Target banner -->
@@ -190,25 +207,65 @@ export function renderStudentHome() {
         </div>
         <div class="target-desc" style="color: var(--c-text-muted); font-size: 13px; font-weight: 600; padding-left: 34px;">MASTERING MATHS, ENGLISH, VR & NVR</div>
       </div>
-      <div class="target-countdown" id="exam-countdown" style="background: var(--c-text); color: white; padding: 14px 24px; border-radius: var(--r-md); font-weight: 900; font-size: 16px; letter-spacing: 0.5px;"></div>
+      <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-end;">
+          <div class="target-countdown" id="exam-countdown" style="background: var(--c-text); color: white; padding: 14px 24px; border-radius: var(--r-md); font-weight: 900; font-size: 16px; letter-spacing: 0.5px;"></div>
+          <button class="btn btn-primary btn-sm pulse-glow" style="border-radius:12px; font-weight:900;" onclick="window.router.navigate('#/student/exam')">
+              📝 SIMULATE 11+ MOCK
+          </button>
+      </div>
     </div>
   </div>
 
+  <!-- Parent's Special Challenge -->
+  ${progress.parentGoal ? `
+  <div style="margin-top: 32px;">
+    <div class="card glass" style="border: 2px solid ${progress.parentGoal.completed ? 'var(--c-success)' : 'var(--c-primary)'}; padding: 20px; border-radius: var(--r-lg); background: ${progress.parentGoal.completed ? 'rgba(var(--rgb-success), 0.05)' : 'white'};">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px;">🛡️</span>
+          <span style="font-weight: 900; font-size: 14px; color: var(--c-primary); letter-spacing: 0.5px;">PARENT'S SPECIAL CHALLENGE</span>
+        </div>
+        ${progress.parentGoal.completed ? '<span style="background: var(--c-success); color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 900;">GOAL REACHED!</span>' : ''}
+      </div>
+      
+      <div style="display: flex; gap: 24px; align-items: center;">
+        <div style="flex: 1;">
+          <p style="font-weight: 800; font-size: 16px; color: var(--c-text); margin-bottom: 8px;">
+            ${progress.parentGoal.type === 'sessions' ? `Complete ${progress.parentGoal.target} practice sessions` : 
+               progress.parentGoal.type === 'xp' ? `Earn ${progress.parentGoal.target} total XP` : 
+               `Get a score of ${progress.parentGoal.target}% or higher`}
+          </p>
+          <div style="height: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden; margin-bottom: 4px;">
+            <div style="width: ${Math.min(100, (progress.parentGoal.progress / progress.parentGoal.target) * 100)}%; height: 100%; background: var(--c-primary-grad); border-radius: 5px; transition: width 1s ease-out;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--c-text-muted);">
+            <span>PROGESS: ${progress.parentGoal.progress} / ${progress.parentGoal.target}</span>
+            <span style="color: var(--c-accent);">REWARD: 💎 ${progress.parentGoal.reward} GEMS</span>
+          </div>
+        </div>
+        ${progress.parentGoal.completed ? `
+          <button onclick="window._claimParentGoal()" class="btn pulse-glow" style="background: var(--c-success); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 900; cursor: pointer;">CLAIM REWARD</button>
+        ` : ''}
+      </div>
+    </div>
+  </div>
+  ` : ''}
+
   <!-- Stats Grid -->
   <div class="stats-row stagger-in" style="margin-top: 32px;">
-    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-vr); bo-shadow: var(--shadow-sm);">
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-vr); bo-shadow: var(--shadow-sm);" aria-label="${todaySessions} sessions today">
       <div class="stat-value" style="color: var(--c-vr)">${todaySessions}</div>
       <div class="stat-label">TODAY</div>
     </div>
-    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-accent); bo-shadow: var(--shadow-sm);">
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-accent); bo-shadow: var(--shadow-sm);" aria-label="${progress.gems || 0} gems collected">
       <div class="stat-value" style="color: #d97706">${progress.gems || 0}</div>
       <div class="stat-label">GEMS <span aria-hidden="true">💎</span></div>
     </div>
-    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-nvr); bo-shadow: var(--shadow-sm);">
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-nvr); bo-shadow: var(--shadow-sm);" aria-label="${progress.badges?.length || 0} badges earned">
       <div class="stat-value" style="color: var(--c-nvr)">${progress.badges?.length || 0}</div>
       <div class="stat-label">BADGES</div>
     </div>
-    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-maths); bo-shadow: var(--shadow-sm);">
+    <div class="stat-card hover-lift" style="background: white; border-bottom: 6px solid var(--c-maths); bo-shadow: var(--shadow-sm);" aria-label="${progress.sessions.length} total sessions completed">
       <div class="stat-value" style="color: var(--c-maths)">${progress.sessions.length}</div>
       <div class="stat-label">SESSIONS</div>
     </div>
@@ -222,7 +279,7 @@ export function renderStudentHome() {
   ${renderWeekendWisdom()}
 
   <!-- Subject grid -->
-  <h2 class="section-title" style="margin-top: 64px; font-size: 24px;">Daily Training</h2>
+  <h2 class="section-title" style="margin-top: 64px; font-size: 24px;">${getTranslation('daily_training')}</h2>
   <div class="subject-grid stagger-in">
     ${subjects.map(sub => {
     const mastery = getSubjectMastery(sub);
@@ -275,7 +332,7 @@ export function renderStudentHome() {
 function renderRecentActivity(progress) {
   const recent = [...progress.sessions].reverse().slice(0, 5);
   if (!recent.length) {
-    return '<div class="section-title" style="margin-top:32px;color:var(--c-text-muted)">No sessions yet — pick a subject above to start! 🚀</div>';
+    return `<div class="section-title" style="margin-top:32px;color:var(--c-text-muted)">No sessions yet — pick a subject above to start! 🚀</div>`;
   }
   const subColors = { vr: 'var(--c-vr)', nvr: 'var(--c-nvr)', en: 'var(--c-en)', maths: 'var(--c-maths)' };
 
@@ -386,6 +443,21 @@ export function mountStudentHome() {
     } else {
       localStorage.removeItem('aceprep_user');
       window.location.reload();
+    }
+  };
+
+  window._startDaily = () => {
+    const daily = getDailyChallenge();
+    window.router.setDailyMode(true);
+    window.router.navigate('#/student/quiz/' + daily.subject + '?daily=true');
+  };
+
+  window._claimParentGoal = () => {
+    const reward = claimParentGoalReward();
+    if (reward > 0) {
+      alert(`🎉 MISSION COMPLETE!\n\nYou've earned ${reward} Gems from your parent!`);
+      // Re-render
+      if (window.router) window.router.handleRoute();
     }
   };
 }
