@@ -1986,3 +1986,477 @@ a {
   font-size: 12px;
   color: var(--c-text-dim);
 }
+
+
+/* ── Voice Tutor Component ── */
+.voice-tutor-container {
+  background: var(--c-card);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.voice-controls {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.voice-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: var(--r-full);
+  font-size: 14px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6C63FF, #a78bfa);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  min-height: 44px;
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+}
+
+.voice-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+}
+
+.voice-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.voice-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.voice-button.playing {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.voice-button.paused {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.voice-speed-control {
+  margin-bottom: var(--space-md);
+}
+
+.voice-speed-control fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.voice-speed-control legend {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.speed-options {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.speed-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.speed-radio {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--c-primary);
+}
+
+.speed-label-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  transition: color var(--duration-fast);
+}
+
+.speed-radio:checked + .speed-label-text {
+  color: var(--c-primary);
+  font-weight: 700;
+}
+
+.voice-character-control {
+  margin-bottom: var(--space-md);
+}
+
+.voice-character-control fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.voice-character-control legend {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.character-options {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.character-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.character-radio {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--c-primary);
+}
+
+.character-label-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  transition: color var(--duration-fast);
+}
+
+.character-radio:checked + .character-label-text {
+  color: var(--c-primary);
+  font-weight: 700;
+}
+
+.voice-status {
+  padding: 12px 16px;
+  background: rgba(108, 99, 255, 0.08);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  color: var(--c-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.status-text {
+  font-weight: 600;
+}
+
+.voice-error {
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--r-md);
+  color: var(--c-danger);
+  font-size: 14px;
+  animation: slideDown 0.3s var(--ease-out) both;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-text {
+  font-weight: 600;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Voice highlight in passage */
+.voice-highlight {
+  background: linear-gradient(120deg, rgba(108, 99, 255, 0.3), rgba(167, 139, 250, 0.2));
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 100ms ease-out;
+}
+
+/* Passage text styling for voice tutor */
+.passage-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--c-text);
+  word-spacing: 0.1em;
+}
+
+.passage-text .word {
+  display: inline;
+  transition: all 100ms ease-out;
+}
+
+/* ── Accessibility Enhancements for Voice Tutor ── */
+
+/* Focus indicators for keyboard navigation */
+.voice-button:focus-visible {
+  outline: 3px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+.speed-radio:focus-visible + .speed-label-text {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Enhanced contrast for voice tutor status */
+.voice-status {
+  padding: 12px 16px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  color: #1e40af;
+  margin-bottom: var(--space-sm);
+}
+
+.status-text {
+  font-weight: 700;
+  color: #1e40af;
+}
+
+/* Enhanced contrast for error messages */
+.voice-error {
+  padding: 12px 16px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 2px solid rgba(220, 38, 38, 0.4);
+  border-radius: var(--r-md);
+  color: #7f1d1d;
+  font-size: 14px;
+  animation: slideDown 0.3s var(--ease-out) both;
+}
+
+.error-text {
+  font-weight: 700;
+  color: #7f1d1d;
+}
+
+/* Improved button contrast */
+.voice-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: var(--r-full);
+  font-size: 14px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  min-height: 44px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.voice-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.voice-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.voice-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.voice-button.playing {
+  background: linear-gradient(135deg, #059669, #10b981);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.voice-button.paused {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+/* Speed control with improved contrast */
+.speed-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 150ms ease-out;
+}
+
+.speed-label:hover {
+  background-color: rgba(59, 130, 246, 0.08);
+}
+
+.speed-radio {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.speed-label-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  transition: color var(--duration-fast);
+}
+
+.speed-radio:checked + .speed-label-text {
+  color: #1e40af;
+  font-weight: 700;
+}
+
+/* Keyboard navigation hint */
+.voice-tutor-container[data-keyboard-hint]::after {
+  content: attr(data-keyboard-hint);
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .voice-button {
+    border: 2px solid currentColor;
+  }
+
+  .voice-status {
+    border-width: 2px;
+  }
+
+  .voice-error {
+    border-width: 2px;
+  }
+
+  .speed-radio {
+    border: 2px solid #1e40af;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .voice-button,
+  .speed-label-text,
+  .voice-status,
+  .voice-error {
+    transition: none;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* Error retry button */
+.error-retry-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.error-retry-btn:hover {
+  background: #991b1b;
+  transform: translateY(-1px);
+}
+
+.error-retry-btn:focus-visible {
+  outline: 2px solid #fca5a5;
+  outline-offset: 2px;
+}
+
+/* ── Passage Text Accessibility During Voice Tutor Playback ── */
+
+/* Ensure passage text remains readable during highlighting */
+.passage-text {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.passage-text .word {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Voice highlight should not interfere with text readability */
+.voice-highlight {
+  background: linear-gradient(120deg, rgba(108, 99, 255, 0.25), rgba(167, 139, 250, 0.15));
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 100ms ease-out;
+  /* Ensure text remains selectable */
+  pointer-events: none;
+}
+
+/* Maintain text contrast during highlighting */
+.passage-text {
+  color: #0f172a;
+}
+
+.voice-highlight {
+  color: inherit;
+}
+
+/* Ensure passage remains accessible when voice tutor is active */
+.voice-tutor-active .passage-text {
+  opacity: 1;
+  pointer-events: auto;
+}
