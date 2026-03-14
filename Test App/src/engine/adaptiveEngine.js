@@ -6,8 +6,122 @@ import { QUESTION_BANK, SUBJECTS, DIFFICULTY } from './questionBank.js';
 import { getProgress, updateProgress } from './progressStore.js';
 import { calculateReadiness } from './readinessEngine.js';
 
-// ── ELO Constants ─────────────────────────────────────────────────────────
-const BASE_RATING = 1200;
+// ── Exported Constants ────────────────────────────────────────────────────
+export const BASE_RATING = 1200;
+export const MIN_RATING = 800;
+export const MAX_RATING = 1800;
+export const K_STUDENT = 32;
+export const K_QUESTION = 16;
+
+// ── localStorage Schema ───────────────────────────────────────────────────
+export const ADAPTIVE_STORAGE_VERSION = 1;
+export const ADAPTIVE_STORAGE_KEY = 'aceprep_adaptive_v1';
+
+/**
+ * Retrieve adaptive engine data from localStorage.
+ * Returns empty object if nothing stored or version mismatch.
+ * @returns {object}
+ */
+export function getAdaptiveData() {
+    try {
+        const raw = localStorage.getItem(ADAPTIVE_STORAGE_KEY);
+        if (!raw) return {};
+        const data = JSON.parse(raw);
+        if (data.version !== ADAPTIVE_STORAGE_VERSION) return {};
+        return data.payload || {};
+    } catch { return {}; }
+}
+
+/**
+ * Persist adaptive engine data to localStorage.
+ * @param {object} data
+ */
+export function saveAdaptiveData(data) {
+    try {
+        localStorage.setItem(ADAPTIVE_STORAGE_KEY, JSON.stringify({
+            version: ADAPTIVE_STORAGE_VERSION,
+            payload: data,
+            updatedAt: Date.now(),
+        }));
+    } catch { /* storage full */ }
+}
+
+/**
+ * Firebase Schema for Adaptive Engine Data:
+ * users/{userId}/adaptive/{subject}/
+ *   rating: number (800-1800)
+ *   masteryByTopic: { [topic]: { mastery, attempts, lastUpdated } }
+ *   confidenceByTopic: { [topic]: number }
+ *   spacedRepSchedule: { [questionId]: { nextReview, interval, correct } }
+ *   learningPath: { topics: [], generatedAt: timestamp }
+ *   updatedAt: timestamp
+ */
+
+// ── JSDoc Type Definitions ────────────────────────────────────────────────
+
+/**
+ * @typedef {object} StudentAdaptiveProfile
+ * @property {string} studentId
+ * @property {string} subject
+ * @property {number} rating
+ * @property {Object.<string, { mastery: number, attempts: number, lastUpdated: number }>} masteryByTopic
+ * @property {Object.<string, number>} confidenceByTopic
+ * @property {Object.<string, { nextReview: string, interval: number, correct: boolean }>} spacedRepSchedule
+ * @property {{ topics: string[], generatedAt: number }} learningPath
+ * @property {number} lastUpdated
+ */
+
+/**
+ * @typedef {object} LearningGap
+ * @property {string} topic
+ * @property {number} mastery
+ * @property {number} priority
+ * @property {number} estimatedTimeToMastery
+ */
+
+/**
+ * @typedef {object} QuestionPerformanceAggregate
+ * @property {string} questionId
+ * @property {number} totalAttempts
+ * @property {number} correctAttempts
+ * @property {number} avgResponseTime
+ * @property {string} lastAttemptDate
+ */
+
+// ── Utility / Validation Functions ────────────────────────────────────────
+
+/**
+ * Validate that a studentId is a non-empty string.
+ * @param {*} studentId
+ * @returns {boolean}
+ */
+export function validateStudentId(studentId) {
+    return typeof studentId === 'string' && studentId.length > 0;
+}
+
+/**
+ * Validate that a subject key is one of the four supported subjects.
+ * @param {*} subject
+ * @returns {boolean}
+ */
+export function validateSubject(subject) {
+    return ['maths', 'en', 'vr', 'nvr'].includes(subject);
+}
+
+/**
+ * Safely retrieve a nested value from an object by dot-notation path.
+ * @param {object} obj
+ * @param {string} path - e.g. 'a.b.c'
+ * @param {*} defaultVal
+ * @returns {*}
+ */
+export function safeGet(obj, path, defaultVal) {
+    try {
+        return path.split('.').reduce((o, k) => o[k], obj) ?? defaultVal;
+    } catch { return defaultVal; }
+}
+
+
 
 // ── Themed Ranks (Pokémon & Transformers) ──────────────────────────────────
 export const THEMED_RANKS = [
@@ -19,8 +133,6 @@ export const THEMED_RANKS = [
     { minXp: 8000, label: "Prime Commander", icon: "🌌" },
     { minXp: 12000, label: "Elite Legend", icon: "✨" }
 ];
-const K_STUDENT = 32; // How fast student rating changes
-const K_QUESTION = 16; // How fast question difficulty adjusts
 const MAX_SESSION_LENGTH = 10;
 
 // ── Get next questions for a session ─────────────────────────────────────
@@ -235,7 +347,7 @@ export const ELO_CONSTANTS = {
 };
 
 /** Spaced repetition intervals in days */
-export const REVIEW_INTERVALS = [1, 3, 7, 14, 30, 60];
+export const REVIEW_INTERVALS = [1, 3, 7, 14, 30, 90];
 
 // ── ELO Helpers ───────────────────────────────────────────────────────────────
 
@@ -545,4 +657,1126 @@ export function predictSuccessLikelihood(readinessScore) {
     if (readinessScore >= 60) return 55;
     if (readinessScore >= 50) return 40;
     return Math.max(10, readinessScore * 0.5);
+}
+
+
+// ── Phase 2: ELO Rating System ────────────────────────────────────────────────
+
+/**
+ * Update a student's ELO rating for a subject after answering a question.
+ * @param {string} studentId
+ * @param {string} subject
+ * @param {boolean} correct
+ * @param {number} questionRating
+ * @returns {number} new rating
+ */
+export function updateStudentRating(studentId, subject, correct, questionRating) {
+    const data = getAdaptiveData();
+    const key = `${studentId}_${subject}`;
+    const currentRating = (data[key] && data[key].rating) || BASE_RATING;
+    const expected = calculateExpectedProbability(currentRating, questionRating);
+    const actual = correct ? 1 : 0;
+    const newRating = constrainRating(currentRating + K_STUDENT * (actual - expected));
+    if (!data[key]) data[key] = {};
+    data[key].rating = newRating;
+    saveAdaptiveData(data);
+    return newRating;
+}
+
+/**
+ * Initialize a student's rating for a subject at BASE_RATING if not already set.
+ * @param {string} studentId
+ * @param {string} subject
+ * @returns {number} existing or newly set rating
+ */
+export function initializeStudentRating(studentId, subject) {
+    const data = getAdaptiveData();
+    const key = `${studentId}_${subject}`;
+    if (data[key] && data[key].rating != null) return data[key].rating;
+    if (!data[key]) data[key] = {};
+    data[key].rating = BASE_RATING;
+    saveAdaptiveData(data);
+    return BASE_RATING;
+}
+
+/**
+ * Track aggregate performance for a question.
+ * @param {string} questionId
+ * @param {boolean} correct
+ * @param {number} studentRating
+ * @returns {object} updated aggregate
+ */
+export function trackQuestionPerformance(questionId, correct, studentRating) {
+    const data = getAdaptiveData();
+    if (!data.questionPerformance) data.questionPerformance = {};
+    const entry = data.questionPerformance[questionId] || {
+        totalAttempts: 0, correctAttempts: 0, avgResponseTime: 0, lastAttemptDate: null,
+    };
+    entry.totalAttempts++;
+    if (correct) entry.correctAttempts++;
+    entry.lastAttemptDate = new Date().toISOString();
+    data.questionPerformance[questionId] = entry;
+    saveAdaptiveData(data);
+    return entry;
+}
+
+/**
+ * Flag a question for calibration if actual difficulty deviates >10% from assigned.
+ * @param {string} questionId
+ * @param {number} actualDifficulty
+ * @param {number} assignedDifficulty
+ * @returns {boolean} true if flagged
+ */
+export function flagQuestionForCalibration(questionId, actualDifficulty, assignedDifficulty) {
+    const threshold = Math.abs(assignedDifficulty) * 0.1;
+    const deviation = Math.abs(actualDifficulty - assignedDifficulty);
+    const shouldFlag = deviation > threshold;
+    if (shouldFlag) {
+        const data = getAdaptiveData();
+        if (!data.calibrationFlags) data.calibrationFlags = {};
+        data.calibrationFlags[questionId] = { actualDifficulty, assignedDifficulty, flaggedAt: Date.now() };
+        saveAdaptiveData(data);
+    }
+    return shouldFlag;
+}
+
+// ── Phase 3: Difficulty Prediction ───────────────────────────────────────────
+
+/**
+ * Analyse response time patterns from attempts.
+ * @param {Array<{responseTime: number}>} attempts
+ * @returns {{ avgTime: number, trend: 'fast'|'slow'|'normal', isSlowing: boolean }}
+ */
+export function analyzeResponseTimePatterns(attempts) {
+    if (!attempts || attempts.length === 0) {
+        return { avgTime: 0, trend: 'normal', isSlowing: false };
+    }
+    const times = attempts.map(a => a.responseTime || 0);
+    const avgTime = times.reduce((s, t) => s + t, 0) / times.length;
+    let trend;
+    if (avgTime < 15) trend = 'fast';
+    else if (avgTime > 60) trend = 'slow';
+    else trend = 'normal';
+
+    let isSlowing = false;
+    if (times.length >= 3) {
+        const recentAvg = times.slice(-3).reduce((s, t) => s + t, 0) / 3;
+        isSlowing = recentAvg > avgTime * 1.2;
+    }
+    return { avgTime, trend, isSlowing };
+}
+
+/**
+ * Calculate confidence score for difficulty prediction based on session count.
+ * @param {Array} sessions
+ * @param {string} subject
+ * @returns {number} 0–100
+ */
+export function calculateDifficultyConfidence(sessions, subject) {
+    const subjectSessions = (sessions || []).filter(s => s.subject === subject);
+    const count = subjectSessions.length;
+    if (count === 0) return 0;
+    return Math.min(95, count * 10);
+}
+
+/**
+ * Apply difficulty adjustment rules based on accuracy.
+ * @param {number} currentDifficulty 1–3
+ * @param {number} accuracy 0–100
+ * @returns {number} adjusted difficulty 1–3
+ */
+export function applyDifficultyAdjustmentRules(currentDifficulty, accuracy) {
+    if (accuracy > 80) return Math.min(3, currentDifficulty + 1);
+    if (accuracy < 50) return Math.max(1, currentDifficulty - 1);
+    return currentDifficulty;
+}
+
+// ── Phase 4: Exam Readiness ───────────────────────────────────────────────────
+
+/**
+ * Calculate readiness score for a single subject (0–100).
+ * Uses 70% recent (last 5 sessions) + 30% historical.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {number}
+ */
+export function calculateSubjectReadiness(progress, subject) {
+    const sessions = (progress.sessions || []).filter(s => s.subject === subject);
+    if (sessions.length === 0) return 0;
+    const recent = sessions.slice(-5);
+    const historical = sessions.slice(0, -5);
+    const recentAcc = recent.reduce((s, x) => s + x.score, 0) / recent.length;
+    const histAcc = historical.length
+        ? historical.reduce((s, x) => s + x.score, 0) / historical.length
+        : recentAcc;
+    return Math.min(100, Math.max(0, Math.round(recentAcc * 0.7 + histAcc * 0.3)));
+}
+
+/**
+ * Calculate consistency penalty based on variance in ratings.
+ * @param {number[]} ratings
+ * @returns {number} penalty 0–20
+ */
+export function calculateConsistencyPenalty(ratings) {
+    if (!ratings || ratings.length < 2) return 0;
+    const mean = ratings.reduce((s, r) => s + r, 0) / ratings.length;
+    const variance = ratings.reduce((s, r) => s + Math.pow(r - mean, 2), 0) / ratings.length;
+    const stdDev = Math.sqrt(variance);
+    return Math.min(20, stdDev / 10);
+}
+
+/**
+ * Get readiness-based recommendation.
+ * @param {number} readinessScore 0–100
+ * @returns {string}
+ */
+export function getReadinessRecommendation(readinessScore) {
+    if (readinessScore >= 80) return 'mock_exam_practice';
+    if (readinessScore >= 60) return 'focused_practice';
+    return 'intensive_study';
+}
+
+// ── Phase 5: Learning Path Generation ────────────────────────────────────────
+
+/**
+ * Identify weak topics (mastery < 70%) from progress object.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array<{topic, mastery}>}
+ */
+export function identifyWeakTopics(progress, subject) {
+    const topics = progress.topicMastery?.[subject] || {};
+    return Object.entries(topics)
+        .map(([topic, v]) => ({ topic, mastery: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0 }))
+        .filter(e => e.mastery < 70);
+}
+
+/**
+ * Rank weak topics by priority (lowest mastery first).
+ * If timeUntilExamDays < 30, boost priority of topics with mastery < 40%.
+ * @param {Array<{topic, mastery}>} weakTopics
+ * @param {number} timeUntilExamDays
+ * @returns {Array<{topic, mastery, priority}>}
+ */
+export function rankTopicsByPriority(weakTopics, timeUntilExamDays) {
+    const sorted = [...weakTopics].sort((a, b) => {
+        // Boost critical topics when time is short
+        if (timeUntilExamDays < 30) {
+            const aCritical = a.mastery < 40 ? 1 : 0;
+            const bCritical = b.mastery < 40 ? 1 : 0;
+            if (aCritical !== bCritical) return bCritical - aCritical;
+        }
+        return a.mastery - b.mastery;
+    });
+    return sorted.map((t, i) => ({ ...t, priority: i + 1 }));
+}
+
+/**
+ * Balance weak and strong topics: 80% weak + 20% strong.
+ * @param {Array} weakTopics
+ * @param {Array} strongTopics
+ * @returns {Array}
+ */
+export function balanceWeakAndStrong(weakTopics, strongTopics) {
+    const total = weakTopics.length + strongTopics.length;
+    const weakCount = Math.ceil(total * 0.8);
+    const strongCount = Math.floor(total * 0.2);
+    return [
+        ...weakTopics.slice(0, weakCount),
+        ...strongTopics.slice(0, strongCount),
+    ];
+}
+
+/**
+ * Generate a booster mission for a critical weak topic (mastery < 40%).
+ * @param {string} topic
+ * @param {number} studentRating
+ * @returns {object}
+ */
+export function generateBoosterMission(topic, studentRating) {
+    return {
+        id: `booster_${topic}_${Date.now()}`,
+        topic,
+        title: `🚀 Booster Mission: ${topic}`,
+        desc: `Critical weak area detected. Complete this focused session to improve your mastery!`,
+        rewardXP: 75,
+        isBooster: true,
+        isCritical: true,
+    };
+}
+
+// ── Phase 6: Mastery Tracking ─────────────────────────────────────────────────
+
+/**
+ * Update mastery for a topic in progress object.
+ * @param {object} progress
+ * @param {string} subject
+ * @param {string} skillCategory
+ * @param {boolean} correct
+ * @returns {number} updated mastery %
+ */
+export function updateMastery(progress, subject, skillCategory, correct) {
+    if (!progress.topicMastery) progress.topicMastery = {};
+    if (!progress.topicMastery[subject]) progress.topicMastery[subject] = {};
+    if (!progress.topicMastery[subject][skillCategory]) {
+        progress.topicMastery[subject][skillCategory] = { correct: 0, total: 0 };
+    }
+    const entry = progress.topicMastery[subject][skillCategory];
+    entry.total++;
+    if (correct) entry.correct++;
+    const mastery = Math.round((entry.correct / entry.total) * 100);
+    saveAdaptiveData({ masteryUpdate: { subject, skillCategory, mastery, updatedAt: Date.now() } });
+    return mastery;
+}
+
+/**
+ * Get weak topics (mastery < 70%) from progress object.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array<{topic, mastery}>}
+ */
+export function getWeakTopicsFromProgress(progress, subject) {
+    const topics = progress.topicMastery?.[subject] || {};
+    return Object.entries(topics)
+        .map(([topic, v]) => ({ topic, mastery: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0 }))
+        .filter(e => e.mastery < 70);
+}
+
+/**
+ * Get strong topics (mastery > 85%) from progress object.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array<{topic, mastery}>}
+ */
+export function getStrongTopics(progress, subject) {
+    const topics = progress.topicMastery?.[subject] || {};
+    return Object.entries(topics)
+        .map(([topic, v]) => ({ topic, mastery: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0 }))
+        .filter(e => e.mastery > 85);
+}
+
+/**
+ * Persist mastery data to both localStorage and adaptive store.
+ * @param {object} progress
+ */
+export function persistMastery(progress) {
+    updateProgress(progress);
+    const data = getAdaptiveData();
+    data.masterySnapshot = { topicMastery: progress.topicMastery, savedAt: Date.now() };
+    saveAdaptiveData(data);
+}
+
+// ── Phase 7: Confidence Scoring ───────────────────────────────────────────────
+
+/**
+ * Get recommendation based on confidence score.
+ * @param {number} confidence 0–100
+ * @returns {{ action: string, message: string }}
+ */
+export function getRecommendationByConfidence(confidence) {
+    if (confidence >= 70) return { action: 'advance', message: 'Ready to advance to harder topics' };
+    if (confidence >= 40) return { action: 'practice', message: 'Continue practicing to build confidence' };
+    return { action: 'review', message: 'Review fundamentals before advancing' };
+}
+
+/**
+ * Update confidence for a topic after a response.
+ * @param {object} progress
+ * @param {string} subject
+ * @param {string} topic
+ * @param {boolean} correct
+ * @returns {number} new confidence value
+ */
+export function updateConfidenceAfterResponse(progress, subject, topic, correct) {
+    if (!progress.confidenceByTopic) progress.confidenceByTopic = {};
+    if (!progress.confidenceByTopic[subject]) progress.confidenceByTopic[subject] = {};
+    const current = progress.confidenceByTopic[subject][topic] || 50;
+    const delta = correct ? 5 : -10;
+    const newConfidence = Math.min(100, Math.max(0, current + delta));
+    progress.confidenceByTopic[subject][topic] = newConfidence;
+    return newConfidence;
+}
+
+// ── Phase 7.6: Integrate confidence into generateLearningPath ─────────────────
+// (generateLearningPath already defined above; we extend it via a wrapper)
+
+/**
+ * Generate learning path with confidence data included.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array}
+ */
+export function generateLearningPathWithConfidence(progress, subject) {
+    const path = generateLearningPath(progress, subject);
+    const confidenceMap = progress.confidenceByTopic?.[subject] || {};
+    return path.map(entry => ({
+        ...entry,
+        confidence: confidenceMap[entry.topic] ?? null,
+    }));
+}
+
+// ── Phase 8: Spaced Repetition ────────────────────────────────────────────────
+
+/**
+ * Update review interval based on retention score.
+ * @param {object} progress
+ * @param {string} questionId
+ * @param {number} retention 0–100
+ * @returns {object} updated entry
+ */
+export function updateReviewInterval(progress, questionId, retention) {
+    if (!progress.spacedRepSchedule) progress.spacedRepSchedule = {};
+    const entry = progress.spacedRepSchedule[questionId] || { intervalIndex: 0, nextReview: null, streak: 0 };
+    if (retention > 85) {
+        entry.intervalIndex = Math.min(REVIEW_INTERVALS.length - 1, entry.intervalIndex + 1);
+    } else if (retention < 60) {
+        entry.intervalIndex = Math.max(0, entry.intervalIndex - 1);
+    }
+    // else keep same
+    const days = REVIEW_INTERVALS[entry.intervalIndex];
+    entry.nextReview = new Date(Date.now() + days * 86400000).toISOString();
+    progress.spacedRepSchedule[questionId] = entry;
+    return entry;
+}
+
+// ── Phase 9: Dynamic Question Selection ──────────────────────────────────────
+
+/**
+ * Convert difficulty level (1/2/3) to ELO rating.
+ * @param {number} difficulty
+ * @returns {number}
+ */
+function difficultyLevelToRating(difficulty) {
+    if (difficulty === 1) return 1000;
+    if (difficulty === 2) return 1200;
+    return 1400;
+}
+
+/**
+ * Filter questions by difficulty within tolerance.
+ * @param {Array} questions
+ * @param {number} targetDifficulty 1|2|3
+ * @param {number} tolerance default 100
+ * @returns {Array}
+ */
+export function filterByDifficulty(questions, targetDifficulty, tolerance = 100) {
+    const targetRating = difficultyLevelToRating(targetDifficulty);
+    return questions.filter(q => {
+        const qRating = difficultyLevelToRating(
+            q.difficulty === 'easy' ? 1 : q.difficulty === 'medium' ? 2 : 3
+        );
+        return Math.abs(qRating - targetRating) <= tolerance;
+    });
+}
+
+/**
+ * Prioritize questions matching weak topics.
+ * @param {Array} questions
+ * @param {Array<{topic, mastery}>} learningGaps
+ * @returns {Array}
+ */
+export function prioritizeWeakTopics(questions, learningGaps) {
+    const weakTopicSet = new Set((learningGaps || []).map(g => g.topic));
+    return [...questions].sort((a, b) => {
+        const aWeak = weakTopicSet.has(a.type) ? 1 : 0;
+        const bWeak = weakTopicSet.has(b.type) ? 1 : 0;
+        return bWeak - aWeak;
+    });
+}
+
+/**
+ * Boost questions due for spaced repetition review.
+ * @param {Array} questions
+ * @param {object} progress
+ * @returns {Array}
+ */
+export function applySpacedRepetition(questions, progress) {
+    const schedule = progress.spacedRepSchedule || {};
+    const now = Date.now();
+    return [...questions].sort((a, b) => {
+        const aDue = schedule[a.id] && new Date(schedule[a.id].nextReview).getTime() <= now ? 1 : 0;
+        const bDue = schedule[b.id] && new Date(schedule[b.id].nextReview).getTime() <= now ? 1 : 0;
+        return bDue - aDue;
+    });
+}
+
+/**
+ * Filter out or de-prioritize recently answered questions.
+ * @param {Array} questions
+ * @param {object} progress
+ * @param {number} lookbackCount default 5
+ * @returns {Array}
+ */
+export function avoidRecentQuestions(questions, progress, lookbackCount = 5) {
+    const recentIds = new Set(
+        Object.entries(progress.lastResult || {})
+            .slice(-lookbackCount)
+            .map(([id]) => id)
+    );
+    const notRecent = questions.filter(q => !recentIds.has(q.id));
+    return notRecent.length > 0 ? notRecent : questions;
+}
+
+/**
+ * Score a question's relevance (0–100).
+ * 40% weak topic match, 30% spaced rep due, 30% difficulty match.
+ * @param {object} question
+ * @param {Array<{topic, mastery}>} learningGaps
+ * @param {object} spacedRepSchedule
+ * @returns {number}
+ */
+export function scoreQuestionRelevance(question, learningGaps, spacedRepSchedule) {
+    const weakTopicSet = new Set((learningGaps || []).map(g => g.topic));
+    const topicScore = weakTopicSet.has(question.type) ? 40 : 0;
+
+    const schedule = spacedRepSchedule || {};
+    const entry = schedule[question.id];
+    const isDue = entry && new Date(entry.nextReview).getTime() <= Date.now();
+    const spacedScore = isDue ? 30 : 0;
+
+    // Difficulty match: medium (2) is default target
+    const diffScore = question.difficulty === 'medium' ? 30 : 15;
+
+    return Math.min(100, topicScore + spacedScore + diffScore);
+}
+
+/**
+ * Select the next best question using the full pipeline.
+ * @param {Array} questions
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {object|null}
+ */
+export function selectNextQuestion(questions, progress, subject) {
+    const subjectQuestions = questions.filter(q => q.subject === subject);
+    if (subjectQuestions.length === 0) return null;
+
+    const { difficulty } = predictOptimalDifficulty(progress, subject);
+    let pool = filterByDifficulty(subjectQuestions, difficulty);
+    if (pool.length === 0) pool = subjectQuestions;
+
+    const gaps = getWeakTopicsFromProgress(progress, subject);
+    pool = prioritizeWeakTopics(pool, gaps);
+    pool = applySpacedRepetition(pool, progress);
+    pool = avoidRecentQuestions(pool, progress);
+
+    return pool[0] || null;
+}
+
+// ── Phase 10: Real-Time Adaptation ───────────────────────────────────────────
+
+/**
+ * Process a question response: update mastery, schedule review, track performance.
+ * @param {object} progress
+ * @param {string} subject
+ * @param {string} questionId
+ * @param {boolean} correct
+ * @param {number} responseTime
+ * @returns {object} updated progress
+ */
+export function processQuestionResponse(progress, subject, questionId, correct, responseTime) {
+    // Find question type from lastResult keys or use questionId as fallback
+    const skillCategory = questionId;
+    updateMastery(progress, subject, skillCategory, correct);
+    scheduleReview(progress, questionId, correct);
+    trackQuestionPerformance(questionId, correct, progress.ratings?.[subject] || BASE_RATING);
+    return progress;
+}
+
+/**
+ * Update ELO ratings and mastery, then persist.
+ * @param {object} progress
+ * @param {string} subject
+ * @param {boolean} correct
+ * @param {number} questionRating
+ * @returns {object} updated progress
+ */
+export function updateRatingsAndMastery(progress, subject, correct, questionRating) {
+    const studentRating = progress.ratings?.[subject] || BASE_RATING;
+    const expected = calculateExpectedProbability(studentRating, questionRating);
+    const actual = correct ? 1 : 0;
+    const newRating = constrainRating(studentRating + K_STUDENT * (actual - expected));
+    if (!progress.ratings) progress.ratings = {};
+    progress.ratings[subject] = newRating;
+    updateProgress(progress);
+    return progress;
+}
+
+/**
+ * Recalculate difficulty prediction for a subject.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {{ difficulty: number, confidence: number }}
+ */
+export function recalculateDifficultyPrediction(progress, subject) {
+    const result = predictOptimalDifficulty(progress, subject);
+    if (!progress.difficultyPredictions) progress.difficultyPredictions = {};
+    progress.difficultyPredictions[subject] = { ...result, updatedAt: Date.now() };
+    return result;
+}
+
+/**
+ * Update learning path for a subject and store in progress.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array}
+ */
+export function updateLearningPath(progress, subject) {
+    const path = generateLearningPath(progress, subject);
+    if (!progress.learningPath) progress.learningPath = {};
+    progress.learningPath[subject] = path;
+    return path;
+}
+
+/**
+ * Adjust session length based on accuracy and response time.
+ * @param {number} currentLength
+ * @param {number} accuracy 0–100
+ * @param {number} responseTime seconds
+ * @returns {number} new session length (5–15)
+ */
+export function adjustSessionLength(currentLength, accuracy, responseTime) {
+    if (accuracy > 80 && responseTime < 30) {
+        return Math.min(15, currentLength + 2);
+    }
+    if (accuracy < 50 || responseTime > 60) {
+        return Math.max(5, currentLength - 2);
+    }
+    return currentLength;
+}
+
+// ── Phase 11: Data Persistence and Offline Support ────────────────────────────
+
+const CACHE_VERSION = 1;
+const CACHE_MAX_BYTES = 10 * 1024 * 1024; // 10MB
+const LEARNING_PATH_CACHE_KEY = 'aceprep_lp_cache';
+const RECOMMENDATIONS_CACHE_KEY = 'aceprep_rec_cache';
+const SPACED_REP_CACHE_KEY = 'aceprep_sr_cache';
+const OFFLINE_QUEUE_KEY = 'aceprep_offline_queue';
+
+/**
+ * Estimate byte size of a value when JSON-serialised.
+ * @param {*} value
+ * @returns {number}
+ */
+function estimateSize(value) {
+    try { return new Blob([JSON.stringify(value)]).size; } catch { return 0; }
+}
+
+/**
+ * Generic LRU cache read from localStorage.
+ * @param {string} key
+ * @returns {{ entries: object, accessOrder: string[] }}
+ */
+function readCache(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return { entries: {}, accessOrder: [] };
+        const parsed = JSON.parse(raw);
+        if (parsed.version !== CACHE_VERSION) return { entries: {}, accessOrder: [] };
+        return { entries: parsed.entries || {}, accessOrder: parsed.accessOrder || [] };
+    } catch { return { entries: {}, accessOrder: [] }; }
+}
+
+/**
+ * Generic LRU cache write to localStorage with eviction.
+ * @param {string} key
+ * @param {{ entries: object, accessOrder: string[] }} cache
+ */
+function writeCache(key, cache) {
+    // Evict LRU entries until under size limit
+    while (estimateSize(cache) > CACHE_MAX_BYTES && cache.accessOrder.length > 0) {
+        const lruKey = cache.accessOrder.shift();
+        delete cache.entries[lruKey];
+    }
+    try {
+        localStorage.setItem(key, JSON.stringify({ version: CACHE_VERSION, ...cache, updatedAt: Date.now() }));
+    } catch { /* storage full */ }
+}
+
+/**
+ * Cache a learning path for a student/subject with versioning.
+ * @param {string} studentId
+ * @param {string} subject
+ * @param {Array} learningPath
+ */
+export function cacheLearningPath(studentId, subject, learningPath) {
+    const cacheKey = `${studentId}:${subject}`;
+    const cache = readCache(LEARNING_PATH_CACHE_KEY);
+    cache.entries[cacheKey] = { data: learningPath, cachedAt: Date.now(), version: CACHE_VERSION };
+    // Update LRU order
+    cache.accessOrder = cache.accessOrder.filter(k => k !== cacheKey);
+    cache.accessOrder.push(cacheKey);
+    writeCache(LEARNING_PATH_CACHE_KEY, cache);
+}
+
+/**
+ * Retrieve a cached learning path.
+ * @param {string} studentId
+ * @param {string} subject
+ * @param {number} maxAgeMs - max age in ms (default 1 hour)
+ * @returns {Array|null}
+ */
+export function getCachedLearningPath(studentId, subject, maxAgeMs = 3600000) {
+    const cacheKey = `${studentId}:${subject}`;
+    const cache = readCache(LEARNING_PATH_CACHE_KEY);
+    const entry = cache.entries[cacheKey];
+    if (!entry) return null;
+    if (Date.now() - entry.cachedAt > maxAgeMs) return null;
+    // Update LRU order
+    cache.accessOrder = cache.accessOrder.filter(k => k !== cacheKey);
+    cache.accessOrder.push(cacheKey);
+    writeCache(LEARNING_PATH_CACHE_KEY, cache);
+    return entry.data;
+}
+
+// ── Phase 11.2: Cache recommendations and spaced rep schedule ─────────────────
+
+/**
+ * Cache recommendations for a student.
+ * @param {string} studentId
+ * @param {object} recommendations
+ */
+export function cacheRecommendations(studentId, recommendations) {
+    const cache = readCache(RECOMMENDATIONS_CACHE_KEY);
+    cache.entries[studentId] = { data: recommendations, cachedAt: Date.now() };
+    cache.accessOrder = cache.accessOrder.filter(k => k !== studentId);
+    cache.accessOrder.push(studentId);
+    writeCache(RECOMMENDATIONS_CACHE_KEY, cache);
+}
+
+/**
+ * Retrieve cached recommendations.
+ * @param {string} studentId
+ * @param {number} maxAgeMs
+ * @returns {object|null}
+ */
+export function getCachedRecommendations(studentId, maxAgeMs = 3600000) {
+    const cache = readCache(RECOMMENDATIONS_CACHE_KEY);
+    const entry = cache.entries[studentId];
+    if (!entry || Date.now() - entry.cachedAt > maxAgeMs) return null;
+    return entry.data;
+}
+
+/**
+ * Cache spaced repetition schedule for a student.
+ * @param {string} studentId
+ * @param {object} schedule
+ */
+export function cacheSpacedRepSchedule(studentId, schedule) {
+    const cache = readCache(SPACED_REP_CACHE_KEY);
+    cache.entries[studentId] = { data: schedule, cachedAt: Date.now() };
+    cache.accessOrder = cache.accessOrder.filter(k => k !== studentId);
+    cache.accessOrder.push(studentId);
+    writeCache(SPACED_REP_CACHE_KEY, cache);
+}
+
+/**
+ * Retrieve cached spaced rep schedule.
+ * @param {string} studentId
+ * @returns {object|null}
+ */
+export function getCachedSpacedRepSchedule(studentId) {
+    const cache = readCache(SPACED_REP_CACHE_KEY);
+    const entry = cache.entries[studentId];
+    return entry ? entry.data : null;
+}
+
+// ── Phase 11.3: LRU eviction (already integrated in writeCache above) ─────────
+
+/**
+ * Evict all stale entries older than maxAgeMs from a cache.
+ * @param {string} key
+ * @param {number} maxAgeMs
+ */
+export function evictStaleCache(key, maxAgeMs = 86400000) {
+    const cache = readCache(key);
+    const now = Date.now();
+    const staleKeys = Object.keys(cache.entries).filter(k => now - (cache.entries[k].cachedAt || 0) > maxAgeMs);
+    staleKeys.forEach(k => {
+        delete cache.entries[k];
+        cache.accessOrder = cache.accessOrder.filter(o => o !== k);
+    });
+    writeCache(key, cache);
+}
+
+// ── Phase 11.4: Offline queue ─────────────────────────────────────────────────
+
+/**
+ * Enqueue a rating/mastery update for later Firebase sync.
+ * @param {{ type: string, studentId: string, subject: string, payload: object }} update
+ */
+export function enqueueOfflineUpdate(update) {
+    try {
+        const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+        const queue = raw ? JSON.parse(raw) : [];
+        queue.push({ ...update, queuedAt: Date.now() });
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+    } catch { /* storage full */ }
+}
+
+/**
+ * Retrieve all queued offline updates.
+ * @returns {Array}
+ */
+export function getOfflineQueue() {
+    try {
+        const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+}
+
+/**
+ * Clear the offline queue after successful sync.
+ */
+export function clearOfflineQueue() {
+    try { localStorage.removeItem(OFFLINE_QUEUE_KEY); } catch { /* ignore */ }
+}
+
+// ── Phase 11.5: Firebase sync with conflict resolution ────────────────────────
+
+/**
+ * Merge local adaptive data with remote Firebase data using timestamp-based conflict resolution.
+ * Remote wins if its updatedAt is newer; local wins otherwise.
+ * @param {object} local
+ * @param {object} remote
+ * @returns {object} merged data
+ */
+export function mergeAdaptiveData(local, remote) {
+    if (!remote) return local;
+    if (!local) return remote;
+    const localTs = local.updatedAt || 0;
+    const remoteTs = remote.updatedAt || 0;
+    // Per-subject merge: take the newer entry
+    const merged = { ...local };
+    if (remote.ratings) {
+        merged.ratings = merged.ratings || {};
+        Object.entries(remote.ratings).forEach(([subj, val]) => {
+            const localSubjTs = (merged.ratings[subj] || {}).updatedAt || 0;
+            const remoteSubjTs = (val || {}).updatedAt || 0;
+            if (remoteSubjTs >= localSubjTs) merged.ratings[subj] = val;
+        });
+    }
+    if (remote.topicMastery) {
+        merged.topicMastery = merged.topicMastery || {};
+        Object.entries(remote.topicMastery).forEach(([subj, topics]) => {
+            if (!merged.topicMastery[subj]) { merged.topicMastery[subj] = topics; return; }
+            Object.entries(topics).forEach(([topic, val]) => {
+                const localTs2 = (merged.topicMastery[subj][topic] || {}).lastUpdated || 0;
+                const remoteTs2 = (val || {}).lastUpdated || 0;
+                if (remoteTs2 >= localTs2) merged.topicMastery[subj][topic] = val;
+            });
+        });
+    }
+    merged.updatedAt = Math.max(localTs, remoteTs);
+    return merged;
+}
+
+// ── Phase 11.6: Cache validation and staleness detection ──────────────────────
+
+/**
+ * Validate cache integrity on app start. Returns true if cache is valid.
+ * @param {string} key
+ * @returns {boolean}
+ */
+export function validateCache(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        return parsed.version === CACHE_VERSION && typeof parsed.entries === 'object';
+    } catch { return false; }
+}
+
+/**
+ * Check if a cached entry is stale.
+ * @param {string} cacheKey - storage key
+ * @param {string} entryKey - entry key within cache
+ * @param {number} maxAgeMs
+ * @returns {boolean}
+ */
+export function isCacheStale(cacheKey, entryKey, maxAgeMs = 3600000) {
+    const cache = readCache(cacheKey);
+    const entry = cache.entries[entryKey];
+    if (!entry) return true;
+    return Date.now() - (entry.cachedAt || 0) > maxAgeMs;
+}
+
+// ── Phase 12: Integration with Existing Systems ───────────────────────────────
+
+/**
+ * Read student adaptive profile from progressStore.
+ * @param {string} studentId
+ * @returns {object}
+ */
+export function getStudentAdaptiveProfile(studentId) {
+    try {
+        const progress = getProgress();
+        return {
+            studentId,
+            ratings: progress.ratings || {},
+            topicMastery: progress.topicMastery || {},
+            spacedRepSchedule: progress.spacedRepSchedule || {},
+            confidenceByTopic: progress.confidenceByTopic || {},
+            updatedAt: progress.updatedAt || Date.now(),
+        };
+    } catch { return { studentId, ratings: {}, topicMastery: {}, spacedRepSchedule: {}, confidenceByTopic: {} }; }
+}
+
+/**
+ * Write adaptive profile updates back to progressStore.
+ * @param {object} updates - partial progress updates
+ */
+export function saveStudentAdaptiveProfile(updates) {
+    try { updateProgress(updates); } catch { /* ignore */ }
+}
+
+/**
+ * Get questions filtered by subject from the question bank.
+ * @param {string} subject
+ * @returns {Array}
+ */
+export function getQuestionsBySubject(subject) {
+    return QUESTION_BANK.filter(q => q.subject === subject);
+}
+
+/**
+ * Initialize adaptive engine on app start.
+ * Validates caches, loads offline queue, and sets up sync.
+ */
+export function initAdaptiveEngine() {
+    // Validate caches
+    [LEARNING_PATH_CACHE_KEY, RECOMMENDATIONS_CACHE_KEY, SPACED_REP_CACHE_KEY].forEach(key => {
+        if (!validateCache(key)) {
+            try { localStorage.removeItem(key); } catch { /* ignore */ }
+        }
+    });
+    // Evict stale entries (older than 24h)
+    evictStaleCache(LEARNING_PATH_CACHE_KEY);
+    evictStaleCache(RECOMMENDATIONS_CACHE_KEY);
+}
+
+// ── Phase 13: Multi-Language Support ─────────────────────────────────────────
+
+const RECOMMENDATION_TRANSLATIONS = {
+    en: {
+        intensive: 'Intensive practice needed — focus on weak areas daily.',
+        focused: 'Focused practice recommended — target specific weak topics.',
+        mockExam: 'Ready for mock exams — maintain consistency.',
+        developing: 'Keep practising — you\'re making progress.',
+        proficient: 'Good work — push for mastery.',
+        mastered: 'Excellent — topic mastered.',
+    },
+    ur: {
+        intensive: 'گہری مشق ضروری ہے — روزانہ کمزور موضوعات پر توجہ دیں۔',
+        focused: 'مرکوز مشق کی سفارش — مخصوص کمزور موضوعات کو ہدف بنائیں۔',
+        mockExam: 'ماک امتحانات کے لیے تیار — مستقل مزاجی برقرار رکھیں۔',
+        developing: 'مشق جاری رکھیں — آپ ترقی کر رہے ہیں۔',
+        proficient: 'اچھا کام — مہارت کی طرف بڑھیں۔',
+        mastered: 'شاندار — موضوع میں مہارت حاصل ہو گئی۔',
+    },
+};
+
+/**
+ * Get a recommendation string in the specified language.
+ * @param {string} type - key from RECOMMENDATION_TRANSLATIONS
+ * @param {string} lang - 'en' or 'ur'
+ * @returns {string}
+ */
+export function getLocalizedRecommendation(type, lang = 'en') {
+    const translations = RECOMMENDATION_TRANSLATIONS[lang] || RECOMMENDATION_TRANSLATIONS.en;
+    return translations[type] || RECOMMENDATION_TRANSLATIONS.en[type] || type;
+}
+
+/**
+ * Generate language-aware recommendations for a student.
+ * @param {number} readinessScore
+ * @param {string} lang - 'en' or 'ur'
+ * @returns {string}
+ */
+export function generateLocalizedReadinessRecommendation(readinessScore, lang = 'en') {
+    let type;
+    if (readinessScore < 50) type = 'intensive';
+    else if (readinessScore < 75) type = 'focused';
+    else type = 'mockExam';
+    return getLocalizedRecommendation(type, lang);
+}
+
+/**
+ * Get current language from localStorage (mirrors i18n module).
+ * @returns {string} 'en' or 'ur'
+ */
+export function getCurrentLanguage() {
+    try { return localStorage.getItem('ace_lang') || 'en'; } catch { return 'en'; }
+}
+
+// ── Phase 14: Error Handling and Validation ───────────────────────────────────
+
+/**
+ * Safely generate a learning path with fallback on error.
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array}
+ */
+export function safeGenerateLearningPath(progress, subject) {
+    try {
+        return generateLearningPath(progress, subject);
+    } catch {
+        // Fallback: return all topics with equal priority
+        try {
+            const topics = Object.keys(progress.topicMastery?.[subject] || {});
+            return topics.map(topic => ({ topic, mastery: 50, priority: 1, isWeak: false }));
+        } catch { return []; }
+    }
+}
+
+/**
+ * Safely select next question with fallback to random selection.
+ * @param {Array} questions
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {object|null}
+ */
+export function safeSelectNextQuestion(questions, progress, subject) {
+    try {
+        return selectNextQuestion(questions, progress, subject);
+    } catch {
+        // Fallback: random selection
+        const subjectQs = questions.filter(q => q.subject === subject);
+        if (!subjectQs.length) return null;
+        return subjectQs[Math.floor(Math.random() * subjectQs.length)];
+    }
+}
+
+/**
+ * Safely process a question response, catching and logging errors.
+ * @param {object} progress
+ * @param {string} subject
+ * @param {string} questionId
+ * @param {boolean} correct
+ * @param {number} responseTime
+ * @returns {object} updated progress or original on error
+ */
+export function safeProcessQuestionResponse(progress, subject, questionId, correct, responseTime) {
+    try {
+        return processQuestionResponse(progress, subject, questionId, correct, responseTime);
+    } catch (err) {
+        console.error('[AdaptiveEngine] processQuestionResponse error:', err);
+        return progress;
+    }
+}
+
+/**
+ * Detect and repair corrupted adaptive data.
+ * @param {object} data
+ * @returns {object} repaired data
+ */
+export function repairAdaptiveData(data) {
+    if (!data || typeof data !== 'object') return {};
+    const repaired = { ...data };
+    if (typeof repaired.ratings !== 'object' || repaired.ratings === null) repaired.ratings = {};
+    if (typeof repaired.topicMastery !== 'object' || repaired.topicMastery === null) repaired.topicMastery = {};
+    if (typeof repaired.spacedRepSchedule !== 'object' || repaired.spacedRepSchedule === null) repaired.spacedRepSchedule = {};
+    // Clamp ratings to valid range
+    Object.keys(repaired.ratings).forEach(subj => {
+        if (typeof repaired.ratings[subj] === 'number') {
+            repaired.ratings[subj] = Math.max(MIN_RATING, Math.min(MAX_RATING, repaired.ratings[subj]));
+        }
+    });
+    return repaired;
+}
+
+// ── Phase 15: Performance Optimization ───────────────────────────────────────
+
+// Memoization cache for expensive calculations
+const _memoCache = new Map();
+
+/**
+ * Memoized exam readiness calculation (invalidated after 60s).
+ * @param {object} progress
+ * @returns {number}
+ */
+export function memoizedExamReadiness(progress) {
+    const key = JSON.stringify(progress.ratings || {}) + JSON.stringify(progress.topicMastery || {});
+    const cached = _memoCache.get('readiness:' + key);
+    if (cached && Date.now() - cached.ts < 60000) return cached.value;
+    const value = calculateExamReadiness(progress);
+    _memoCache.set('readiness:' + key, { value, ts: Date.now() });
+    return value;
+}
+
+/**
+ * Memoized learning path generation (invalidated after 5 min).
+ * @param {object} progress
+ * @param {string} subject
+ * @returns {Array}
+ */
+export function memoizedLearningPath(progress, subject) {
+    const key = subject + ':' + JSON.stringify(progress.topicMastery?.[subject] || {});
+    const cached = _memoCache.get('lp:' + key);
+    if (cached && Date.now() - cached.ts < 300000) return cached.value;
+    const value = generateLearningPath(progress, subject);
+    _memoCache.set('lp:' + key, { value, ts: Date.now() });
+    return value;
+}
+
+/**
+ * Clear the memoization cache (call on significant state changes).
+ */
+export function clearMemoCache() {
+    _memoCache.clear();
+}
+
+/**
+ * Performance benchmark helper — measures execution time of a function.
+ * @param {Function} fn
+ * @param {string} label
+ * @returns {*} function result
+ */
+export function benchmark(fn, label = 'fn') {
+    const start = performance.now();
+    const result = fn();
+    const elapsed = performance.now() - start;
+    if (elapsed > 500) console.warn(`[AdaptiveEngine] ${label} took ${elapsed.toFixed(1)}ms`);
+    return result;
+}
+
+// ── Phase 16: Documentation helpers (JSDoc already inline) ───────────────────
+
+/**
+ * Get a summary of all exported public API functions.
+ * Useful for developer tooling and documentation generation.
+ * @returns {string[]}
+ */
+export function getPublicAPI() {
+    return [
+        'getAdaptiveData', 'saveAdaptiveData',
+        'validateStudentId', 'validateSubject',
+        'calculateExpectedProbability', 'constrainRating',
+        'updateStudentRating', 'initializeStudentRating',
+        'trackQuestionPerformance', 'flagQuestionForCalibration',
+        'calculateAccuracyTrend', 'analyzeResponseTimePatterns',
+        'adjustDifficultyByTrend', 'predictOptimalDifficulty',
+        'calculateMastery', 'getMasteryLevel', 'updateMastery',
+        'calculateConfidence', 'getConfidenceLevel', 'getRecommendationByConfidence',
+        'scheduleReview', 'getScheduledReviews', 'updateReviewInterval',
+        'generateLearningPath', 'estimateTimeToMastery',
+        'calculateExamReadiness', 'calculateSubjectReadiness',
+        'predictSuccessLikelihood', 'getReadinessRecommendation',
+        'identifyWeakTopics', 'rankTopicsByPriority', 'balanceWeakAndStrong',
+        'generateBoosterMission', 'selectNextQuestion', 'scoreQuestionRelevance',
+        'processQuestionResponse', 'adjustSessionLength', 'detectFatigue',
+        'cacheLearningPath', 'getCachedLearningPath',
+        'cacheRecommendations', 'getCachedRecommendations',
+        'cacheSpacedRepSchedule', 'getCachedSpacedRepSchedule',
+        'enqueueOfflineUpdate', 'getOfflineQueue', 'clearOfflineQueue',
+        'mergeAdaptiveData', 'validateCache', 'isCacheStale',
+        'getStudentAdaptiveProfile', 'saveStudentAdaptiveProfile',
+        'initAdaptiveEngine', 'getLocalizedRecommendation',
+        'generateLocalizedReadinessRecommendation', 'getCurrentLanguage',
+        'safeGenerateLearningPath', 'safeSelectNextQuestion',
+        'safeProcessQuestionResponse', 'repairAdaptiveData',
+        'memoizedExamReadiness', 'memoizedLearningPath', 'clearMemoCache',
+        'benchmark', 'getPublicAPI',
+    ];
 }

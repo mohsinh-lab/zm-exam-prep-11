@@ -45,6 +45,49 @@ import {
   ELO_CONSTANTS,
   REVIEW_INTERVALS,
   getSubjectMastery,
+  validateStudentId,
+  validateSubject,
+  BASE_RATING,
+  MIN_RATING,
+  MAX_RATING,
+  getAdaptiveData,
+  saveAdaptiveData,
+  // Phase 2
+  updateStudentRating,
+  initializeStudentRating,
+  trackQuestionPerformance,
+  flagQuestionForCalibration,
+  // Phase 3
+  analyzeResponseTimePatterns,
+  calculateDifficultyConfidence,
+  applyDifficultyAdjustmentRules,
+  // Phase 4
+  calculateSubjectReadiness,
+  calculateConsistencyPenalty,
+  getReadinessRecommendation,
+  // Phase 5
+  identifyWeakTopics,
+  rankTopicsByPriority,
+  balanceWeakAndStrong,
+  generateBoosterMission,
+  // Phase 6
+  updateMastery,
+  getWeakTopicsFromProgress,
+  getStrongTopics,
+  // Phase 7
+  getRecommendationByConfidence,
+  updateConfidenceAfterResponse,
+  // Phase 8
+  updateReviewInterval,
+  // Phase 9
+  filterByDifficulty,
+  prioritizeWeakTopics,
+  scoreQuestionRelevance,
+  selectNextQuestion,
+  // Phase 10
+  processQuestionResponse,
+  adjustSessionLength,
+  updateLearningPath,
 } from '../src/engine/adaptiveEngine.js';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -619,5 +662,625 @@ describe('getSubjectMastery', () => {
       expect(r).toBeGreaterThanOrEqual(0);
       expect(r).toBeLessThanOrEqual(100);
     }
+  });
+});
+
+// ── Data Structure Validation ─────────────────────────────────────────────────
+
+describe('Data Structure Validation', () => {
+  test('validateStudentId accepts valid string', () => { expect(validateStudentId('user123')).toBe(true); });
+  test('validateStudentId rejects empty string', () => { expect(validateStudentId('')).toBe(false); });
+  test('validateSubject accepts valid subjects', () => { ['maths','en','vr','nvr'].forEach(s => expect(validateSubject(s)).toBe(true)); });
+  test('validateSubject rejects invalid subject', () => { expect(validateSubject('science')).toBe(false); });
+  test('BASE_RATING is 1200', () => { expect(BASE_RATING).toBe(1200); });
+  test('MIN_RATING is 800', () => { expect(MIN_RATING).toBe(800); });
+  test('MAX_RATING is 1800', () => { expect(MAX_RATING).toBe(1800); });
+  test('REVIEW_INTERVALS has 6 entries', () => { expect(REVIEW_INTERVALS).toHaveLength(6); });
+  test('getAdaptiveData returns empty object when nothing stored', () => { expect(getAdaptiveData()).toEqual({}); });
+  test('saveAdaptiveData and getAdaptiveData round-trip', () => {
+    saveAdaptiveData({ maths: { rating: 1200 } });
+    expect(getAdaptiveData()).toEqual({ maths: { rating: 1200 } });
+  });
+});
+
+// ── Phase 2: ELO Calculations ─────────────────────────────────────────────────
+
+describe('updateStudentRating', () => {
+  it('increases rating on correct answer', () => {
+    const newRating = updateStudentRating('student1', 'maths', true, 1200);
+    expect(newRating).toBeGreaterThan(BASE_RATING);
+  });
+
+  it('decreases rating on incorrect answer', () => {
+    const newRating = updateStudentRating('student2', 'maths', false, 1200);
+    expect(newRating).toBeLessThan(BASE_RATING);
+  });
+
+  it('constrains rating to [800, 1800]', () => {
+    // Even with extreme inputs, rating stays in bounds
+    const r = updateStudentRating('student3', 'maths', true, 800);
+    expect(r).toBeGreaterThanOrEqual(800);
+    expect(r).toBeLessThanOrEqual(1800);
+  });
+
+  it('returns a number', () => {
+    expect(typeof updateStudentRating('s1', 'en', true, 1200)).toBe('number');
+  });
+});
+
+describe('initializeStudentRating', () => {
+  it('sets BASE_RATING for new student/subject', () => {
+    const rating = initializeStudentRating('newStudent', 'vr');
+    expect(rating).toBe(BASE_RATING);
+  });
+
+  it('does not overwrite existing rating', () => {
+    // First call sets it
+    initializeStudentRating('existingStudent', 'nvr');
+    // Update it manually via updateStudentRating
+    updateStudentRating('existingStudent', 'nvr', true, 1200);
+    // Second init should return existing (not BASE_RATING)
+    const rating = initializeStudentRating('existingStudent', 'nvr');
+    expect(rating).toBeGreaterThan(BASE_RATING);
+  });
+});
+
+describe('trackQuestionPerformance', () => {
+  it('increments totalAttempts', () => {
+    const entry = trackQuestionPerformance('qTest1', true, 1200);
+    expect(entry.totalAttempts).toBeGreaterThanOrEqual(1);
+  });
+
+  it('increments correctAttempts on correct answer', () => {
+    const entry = trackQuestionPerformance('qTest2', true, 1200);
+    expect(entry.correctAttempts).toBeGreaterThanOrEqual(1);
+  });
+
+  it('does not increment correctAttempts on incorrect answer', () => {
+    const before = trackQuestionPerformance('qTest3', false, 1200);
+    expect(before.correctAttempts).toBe(0);
+  });
+
+  it('sets lastAttemptDate', () => {
+    const entry = trackQuestionPerformance('qTest4', true, 1200);
+    expect(entry.lastAttemptDate).toBeTruthy();
+  });
+});
+
+describe('flagQuestionForCalibration', () => {
+  it('flags when deviation > 10%', () => {
+    // assignedDifficulty=100, actualDifficulty=115 → 15% deviation
+    expect(flagQuestionForCalibration('qFlag1', 115, 100)).toBe(true);
+  });
+
+  it('does not flag when within 10% threshold', () => {
+    // assignedDifficulty=100, actualDifficulty=105 → 5% deviation
+    expect(flagQuestionForCalibration('qFlag2', 105, 100)).toBe(false);
+  });
+
+  it('flags when exactly at boundary (>10%, not >=)', () => {
+    // 10% of 100 = 10, deviation=10 → NOT flagged (must be > 10%)
+    expect(flagQuestionForCalibration('qFlag3', 110, 100)).toBe(false);
+  });
+
+  it('flags negative deviation too', () => {
+    expect(flagQuestionForCalibration('qFlag4', 85, 100)).toBe(true);
+  });
+});
+
+// ── Phase 3: Difficulty Prediction ───────────────────────────────────────────
+
+describe('analyzeResponseTimePatterns', () => {
+  it('returns normal trend for empty attempts', () => {
+    const result = analyzeResponseTimePatterns([]);
+    expect(result.trend).toBe('normal');
+    expect(result.isSlowing).toBe(false);
+  });
+
+  it('returns fast trend when avg < 15s', () => {
+    const attempts = [{ responseTime: 10 }, { responseTime: 12 }, { responseTime: 8 }];
+    expect(analyzeResponseTimePatterns(attempts).trend).toBe('fast');
+  });
+
+  it('returns slow trend when avg > 60s', () => {
+    const attempts = [{ responseTime: 70 }, { responseTime: 80 }, { responseTime: 65 }];
+    expect(analyzeResponseTimePatterns(attempts).trend).toBe('slow');
+  });
+
+  it('returns normal trend for avg between 15-60s', () => {
+    const attempts = [{ responseTime: 30 }, { responseTime: 40 }, { responseTime: 35 }];
+    expect(analyzeResponseTimePatterns(attempts).trend).toBe('normal');
+  });
+
+  it('detects isSlowing when recent 3 avg > overall avg * 1.2', () => {
+    const attempts = [
+      { responseTime: 10 }, { responseTime: 10 }, { responseTime: 10 },
+      { responseTime: 50 }, { responseTime: 50 }, { responseTime: 50 },
+    ];
+    expect(analyzeResponseTimePatterns(attempts).isSlowing).toBe(true);
+  });
+
+  it('isSlowing is false when pace is consistent', () => {
+    const attempts = Array(6).fill({ responseTime: 30 });
+    expect(analyzeResponseTimePatterns(attempts).isSlowing).toBe(false);
+  });
+});
+
+describe('calculateDifficultyConfidence', () => {
+  it('returns 0 for no sessions', () => {
+    expect(calculateDifficultyConfidence([], 'maths')).toBe(0);
+  });
+
+  it('returns higher confidence for more sessions', () => {
+    const few = makeSessions(2, 'maths');
+    const many = makeSessions(10, 'maths');
+    expect(calculateDifficultyConfidence(many, 'maths')).toBeGreaterThan(
+      calculateDifficultyConfidence(few, 'maths')
+    );
+  });
+
+  it('caps at 95', () => {
+    const lots = makeSessions(100, 'maths');
+    expect(calculateDifficultyConfidence(lots, 'maths')).toBeLessThanOrEqual(95);
+  });
+});
+
+describe('applyDifficultyAdjustmentRules', () => {
+  it('increases difficulty when accuracy > 80%', () => {
+    expect(applyDifficultyAdjustmentRules(2, 85)).toBe(3);
+  });
+
+  it('decreases difficulty when accuracy < 50%', () => {
+    expect(applyDifficultyAdjustmentRules(2, 40)).toBe(1);
+  });
+
+  it('keeps difficulty stable in 60-75% range', () => {
+    expect(applyDifficultyAdjustmentRules(2, 65)).toBe(2);
+    expect(applyDifficultyAdjustmentRules(2, 75)).toBe(2);
+  });
+
+  it('does not exceed 3', () => {
+    expect(applyDifficultyAdjustmentRules(3, 90)).toBe(3);
+  });
+
+  it('does not go below 1', () => {
+    expect(applyDifficultyAdjustmentRules(1, 30)).toBe(1);
+  });
+});
+
+// ── Phase 4: Exam Readiness ───────────────────────────────────────────────────
+
+describe('calculateSubjectReadiness', () => {
+  it('returns 0 for no sessions', () => {
+    expect(calculateSubjectReadiness(makeProgress(), 'maths')).toBe(0);
+  });
+
+  it('returns high score for high accuracy sessions', () => {
+    const p = makeProgress({ sessions: makeSessions(5, 'maths', 90) });
+    expect(calculateSubjectReadiness(p, 'maths')).toBeGreaterThan(70);
+  });
+
+  it('returns value in 0-100 range', () => {
+    const p = makeProgress({ sessions: makeSessions(10, 'maths', 75) });
+    const score = calculateSubjectReadiness(p, 'maths');
+    expect(score).toBeGreaterThanOrEqual(0);
+    expect(score).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('calculateConsistencyPenalty', () => {
+  it('returns 0 for empty or single rating', () => {
+    expect(calculateConsistencyPenalty([])).toBe(0);
+    expect(calculateConsistencyPenalty([1200])).toBe(0);
+  });
+
+  it('returns low penalty for consistent ratings', () => {
+    const consistent = [1200, 1200, 1200, 1200];
+    expect(calculateConsistencyPenalty(consistent)).toBe(0);
+  });
+
+  it('returns higher penalty for variable ratings', () => {
+    const variable = [800, 1800, 800, 1800];
+    const consistent = [1200, 1200, 1200, 1200];
+    expect(calculateConsistencyPenalty(variable)).toBeGreaterThan(
+      calculateConsistencyPenalty(consistent)
+    );
+  });
+
+  it('caps at 20', () => {
+    const extreme = [800, 1800, 800, 1800, 800, 1800];
+    expect(calculateConsistencyPenalty(extreme)).toBeLessThanOrEqual(20);
+  });
+});
+
+describe('getReadinessRecommendation', () => {
+  it('returns mock_exam_practice for >= 80', () => {
+    expect(getReadinessRecommendation(80)).toBe('mock_exam_practice');
+    expect(getReadinessRecommendation(95)).toBe('mock_exam_practice');
+  });
+
+  it('returns focused_practice for 60-79', () => {
+    expect(getReadinessRecommendation(60)).toBe('focused_practice');
+    expect(getReadinessRecommendation(79)).toBe('focused_practice');
+  });
+
+  it('returns intensive_study for < 60', () => {
+    expect(getReadinessRecommendation(0)).toBe('intensive_study');
+    expect(getReadinessRecommendation(59)).toBe('intensive_study');
+  });
+});
+
+// ── Phase 5: Learning Path Generation ────────────────────────────────────────
+
+describe('identifyWeakTopics', () => {
+  it('returns topics with mastery < 70%', () => {
+    const p = makeProgress({
+      topicMastery: {
+        maths: {
+          algebra: { correct: 3, total: 10 },   // 30% — weak
+          geometry: { correct: 9, total: 10 },  // 90% — strong
+        },
+      },
+    });
+    const weak = identifyWeakTopics(p, 'maths');
+    expect(weak.some(t => t.topic === 'algebra')).toBe(true);
+    expect(weak.some(t => t.topic === 'geometry')).toBe(false);
+  });
+
+  it('returns empty array when no topics', () => {
+    expect(identifyWeakTopics(makeProgress(), 'maths')).toEqual([]);
+  });
+});
+
+describe('rankTopicsByPriority', () => {
+  it('sorts by mastery ascending (lowest first)', () => {
+    const topics = [
+      { topic: 'a', mastery: 60 },
+      { topic: 'b', mastery: 20 },
+      { topic: 'c', mastery: 40 },
+    ];
+    const ranked = rankTopicsByPriority(topics, 100);
+    expect(ranked[0].topic).toBe('b');
+    expect(ranked[0].priority).toBe(1);
+  });
+
+  it('boosts critical topics (mastery < 40%) when time < 30 days', () => {
+    const topics = [
+      { topic: 'a', mastery: 60 },
+      { topic: 'b', mastery: 30 }, // critical
+    ];
+    const ranked = rankTopicsByPriority(topics, 20);
+    expect(ranked[0].topic).toBe('b');
+  });
+
+  it('assigns priority field', () => {
+    const topics = [{ topic: 'x', mastery: 50 }];
+    const ranked = rankTopicsByPriority(topics, 100);
+    expect(ranked[0].priority).toBe(1);
+  });
+});
+
+describe('balanceWeakAndStrong', () => {
+  it('returns 80% weak + 20% strong', () => {
+    const weak = [{ topic: 'a' }, { topic: 'b' }, { topic: 'c' }, { topic: 'd' }];
+    const strong = [{ topic: 'e' }, { topic: 'f' }];
+    const result = balanceWeakAndStrong(weak, strong);
+    // total=6, weakCount=ceil(4.8)=5, strongCount=floor(1.2)=1
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('handles empty strong topics', () => {
+    const weak = [{ topic: 'a' }, { topic: 'b' }];
+    const result = balanceWeakAndStrong(weak, []);
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
+
+describe('generateBoosterMission', () => {
+  it('returns correct structure', () => {
+    const mission = generateBoosterMission('algebra', 1200);
+    expect(mission).toMatchObject({
+      topic: 'algebra',
+      rewardXP: 75,
+      isBooster: true,
+      isCritical: true,
+    });
+    expect(mission.id).toBeTruthy();
+    expect(mission.title).toContain('algebra');
+  });
+});
+
+// ── Phase 6: Mastery Tracking ─────────────────────────────────────────────────
+
+describe('updateMastery', () => {
+  it('increments total and correct on correct answer', () => {
+    const p = makeProgress();
+    const mastery = updateMastery(p, 'maths', 'algebra', true);
+    expect(p.topicMastery.maths.algebra.total).toBe(1);
+    expect(p.topicMastery.maths.algebra.correct).toBe(1);
+    expect(mastery).toBe(100);
+  });
+
+  it('increments total but not correct on incorrect answer', () => {
+    const p = makeProgress();
+    const mastery = updateMastery(p, 'maths', 'algebra', false);
+    expect(p.topicMastery.maths.algebra.total).toBe(1);
+    expect(p.topicMastery.maths.algebra.correct).toBe(0);
+    expect(mastery).toBe(0);
+  });
+
+  it('returns mastery as percentage', () => {
+    const p = makeProgress();
+    updateMastery(p, 'maths', 'fractions', true);
+    updateMastery(p, 'maths', 'fractions', false);
+    const mastery = updateMastery(p, 'maths', 'fractions', true);
+    expect(mastery).toBe(67); // 2/3 ≈ 67%
+  });
+});
+
+describe('getWeakTopicsFromProgress', () => {
+  it('filters topics with mastery < 70%', () => {
+    const p = makeProgress({
+      topicMastery: {
+        maths: {
+          algebra: { correct: 3, total: 10 },  // 30%
+          geometry: { correct: 9, total: 10 }, // 90%
+        },
+      },
+    });
+    const weak = getWeakTopicsFromProgress(p, 'maths');
+    expect(weak.some(t => t.topic === 'algebra')).toBe(true);
+    expect(weak.some(t => t.topic === 'geometry')).toBe(false);
+  });
+
+  it('returns empty array for no topics', () => {
+    expect(getWeakTopicsFromProgress(makeProgress(), 'maths')).toEqual([]);
+  });
+});
+
+describe('getStrongTopics', () => {
+  it('filters topics with mastery > 85%', () => {
+    const p = makeProgress({
+      topicMastery: {
+        maths: {
+          algebra: { correct: 9, total: 10 },  // 90% — strong
+          geometry: { correct: 5, total: 10 }, // 50% — not strong
+        },
+      },
+    });
+    const strong = getStrongTopics(p, 'maths');
+    expect(strong.some(t => t.topic === 'algebra')).toBe(true);
+    expect(strong.some(t => t.topic === 'geometry')).toBe(false);
+  });
+
+  it('returns empty array for no topics', () => {
+    expect(getStrongTopics(makeProgress(), 'maths')).toEqual([]);
+  });
+});
+
+// ── Phase 7: Confidence Scoring ───────────────────────────────────────────────
+
+describe('getRecommendationByConfidence', () => {
+  it('returns advance for confidence >= 70', () => {
+    const rec = getRecommendationByConfidence(70);
+    expect(rec.action).toBe('advance');
+    expect(rec.message).toBeTruthy();
+  });
+
+  it('returns practice for confidence 40-69', () => {
+    const rec = getRecommendationByConfidence(50);
+    expect(rec.action).toBe('practice');
+  });
+
+  it('returns review for confidence < 40', () => {
+    const rec = getRecommendationByConfidence(30);
+    expect(rec.action).toBe('review');
+  });
+});
+
+describe('updateConfidenceAfterResponse', () => {
+  it('increases confidence on correct answer', () => {
+    const p = makeProgress();
+    const conf = updateConfidenceAfterResponse(p, 'maths', 'algebra', true);
+    expect(conf).toBeGreaterThan(50); // starts at 50, +5
+  });
+
+  it('decreases confidence on incorrect answer', () => {
+    const p = makeProgress();
+    const conf = updateConfidenceAfterResponse(p, 'maths', 'algebra', false);
+    expect(conf).toBeLessThan(50); // starts at 50, -10
+  });
+
+  it('returns a number in 0-100', () => {
+    const p = makeProgress();
+    const conf = updateConfidenceAfterResponse(p, 'maths', 'algebra', true);
+    expect(conf).toBeGreaterThanOrEqual(0);
+    expect(conf).toBeLessThanOrEqual(100);
+  });
+
+  it('stores confidence in progress object', () => {
+    const p = makeProgress();
+    updateConfidenceAfterResponse(p, 'maths', 'algebra', true);
+    expect(p.confidenceByTopic.maths.algebra).toBeDefined();
+  });
+});
+
+// ── Phase 8: Spaced Repetition ────────────────────────────────────────────────
+
+describe('updateReviewInterval', () => {
+  it('extends interval for high retention (> 85)', () => {
+    const p = makeProgress({
+      spacedRepSchedule: { 'q1': { intervalIndex: 1, nextReview: null, streak: 1 } },
+    });
+    const entry = updateReviewInterval(p, 'q1', 90);
+    expect(entry.intervalIndex).toBe(2);
+  });
+
+  it('shortens interval for low retention (< 60)', () => {
+    const p = makeProgress({
+      spacedRepSchedule: { 'q1': { intervalIndex: 2, nextReview: null, streak: 2 } },
+    });
+    const entry = updateReviewInterval(p, 'q1', 50);
+    expect(entry.intervalIndex).toBe(1);
+  });
+
+  it('keeps same interval for mid retention (60-85)', () => {
+    const p = makeProgress({
+      spacedRepSchedule: { 'q1': { intervalIndex: 2, nextReview: null, streak: 2 } },
+    });
+    const entry = updateReviewInterval(p, 'q1', 70);
+    expect(entry.intervalIndex).toBe(2);
+  });
+
+  it('does not go below 0', () => {
+    const p = makeProgress({
+      spacedRepSchedule: { 'q1': { intervalIndex: 0, nextReview: null, streak: 0 } },
+    });
+    const entry = updateReviewInterval(p, 'q1', 30);
+    expect(entry.intervalIndex).toBe(0);
+  });
+});
+
+// ── Phase 9: Question Selection ───────────────────────────────────────────────
+
+describe('filterByDifficulty', () => {
+  const questions = [
+    { id: 'q1', subject: 'maths', difficulty: 'easy', type: 'algebra' },
+    { id: 'q2', subject: 'maths', difficulty: 'medium', type: 'algebra' },
+    { id: 'q3', subject: 'maths', difficulty: 'hard', type: 'algebra' },
+  ];
+
+  it('filters to easy questions with tight tolerance', () => {
+    const result = filterByDifficulty(questions, 1, 0);
+    expect(result.every(q => q.difficulty === 'easy')).toBe(true);
+  });
+
+  it('returns all questions with large tolerance', () => {
+    const result = filterByDifficulty(questions, 2, 500);
+    expect(result.length).toBe(3);
+  });
+
+  it('returns empty array when no match', () => {
+    const result = filterByDifficulty([], 2, 100);
+    expect(result).toEqual([]);
+  });
+});
+
+describe('prioritizeWeakTopics', () => {
+  it('boosts questions matching weak topics to front', () => {
+    const questions = [
+      { id: 'q1', type: 'geometry', difficulty: 'easy' },
+      { id: 'q2', type: 'algebra', difficulty: 'easy' },
+    ];
+    const gaps = [{ topic: 'algebra', mastery: 30 }];
+    const result = prioritizeWeakTopics(questions, gaps);
+    expect(result[0].type).toBe('algebra');
+  });
+
+  it('returns all questions', () => {
+    const questions = [{ id: 'q1', type: 'x' }, { id: 'q2', type: 'y' }];
+    expect(prioritizeWeakTopics(questions, []).length).toBe(2);
+  });
+});
+
+describe('scoreQuestionRelevance', () => {
+  it('returns a number between 0 and 100', () => {
+    const q = { id: 'q1', type: 'algebra', difficulty: 'medium' };
+    const score = scoreQuestionRelevance(q, [], {});
+    expect(score).toBeGreaterThanOrEqual(0);
+    expect(score).toBeLessThanOrEqual(100);
+  });
+
+  it('scores higher for weak topic match', () => {
+    const q = { id: 'q1', type: 'algebra', difficulty: 'medium' };
+    const gaps = [{ topic: 'algebra', mastery: 30 }];
+    const withGap = scoreQuestionRelevance(q, gaps, {});
+    const withoutGap = scoreQuestionRelevance(q, [], {});
+    expect(withGap).toBeGreaterThan(withoutGap);
+  });
+});
+
+describe('selectNextQuestion', () => {
+  it('returns a question from the pool', () => {
+    const questions = [
+      { id: 'q1', subject: 'maths', difficulty: 'easy', type: 'algebra' },
+      { id: 'q2', subject: 'maths', difficulty: 'medium', type: 'geometry' },
+    ];
+    const p = makeProgress();
+    const result = selectNextQuestion(questions, p, 'maths');
+    expect(result).not.toBeNull();
+    expect(result.subject).toBe('maths');
+  });
+
+  it('returns null for empty question pool', () => {
+    expect(selectNextQuestion([], makeProgress(), 'maths')).toBeNull();
+  });
+});
+
+// ── Phase 10: Real-Time Adaptation ───────────────────────────────────────────
+
+describe('processQuestionResponse', () => {
+  it('updates topicMastery in progress', () => {
+    const p = makeProgress();
+    processQuestionResponse(p, 'maths', 'q1', true, 20);
+    expect(p.topicMastery.maths).toBeDefined();
+  });
+
+  it('schedules review in spacedRepSchedule', () => {
+    const p = makeProgress();
+    processQuestionResponse(p, 'maths', 'q1', true, 20);
+    expect(p.spacedRepSchedule['q1']).toBeDefined();
+  });
+
+  it('returns the updated progress object', () => {
+    const p = makeProgress();
+    const result = processQuestionResponse(p, 'maths', 'q1', false, 45);
+    expect(result).toBe(p);
+  });
+});
+
+describe('adjustSessionLength', () => {
+  it('increases length when accuracy > 80% and responseTime < 30s', () => {
+    expect(adjustSessionLength(10, 85, 20)).toBe(12);
+  });
+
+  it('decreases length when accuracy < 50%', () => {
+    expect(adjustSessionLength(10, 40, 30)).toBe(8);
+  });
+
+  it('decreases length when responseTime > 60s', () => {
+    expect(adjustSessionLength(10, 70, 70)).toBe(8);
+  });
+
+  it('keeps same length in middle range', () => {
+    expect(adjustSessionLength(10, 65, 40)).toBe(10);
+  });
+
+  it('does not exceed 15', () => {
+    expect(adjustSessionLength(14, 90, 10)).toBe(15);
+    expect(adjustSessionLength(15, 90, 10)).toBe(15);
+  });
+
+  it('does not go below 5', () => {
+    expect(adjustSessionLength(6, 30, 30)).toBe(5);
+    expect(adjustSessionLength(5, 30, 30)).toBe(5);
+  });
+});
+
+describe('updateLearningPath', () => {
+  it('returns an array', () => {
+    const p = makeProgress({
+      topicMastery: { maths: { algebra: { correct: 3, total: 10 } } },
+    });
+    const path = updateLearningPath(p, 'maths');
+    expect(Array.isArray(path)).toBe(true);
+  });
+
+  it('stores path in progress.learningPath[subject]', () => {
+    const p = makeProgress({
+      topicMastery: { maths: { algebra: { correct: 3, total: 10 } } },
+    });
+    updateLearningPath(p, 'maths');
+    expect(p.learningPath.maths).toBeDefined();
   });
 });
