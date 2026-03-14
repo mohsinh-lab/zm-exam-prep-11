@@ -24,21 +24,24 @@ Test App/
 src/
 ├── components/          # Reusable UI components (e.g., confetti.js)
 ├── config/             # Configuration files (firebase.js)
-├── core/               # Core framework code (router.js)
+├── core/               # Core framework code
+│   ├── router.js       # Hash-based routing system
+│   └── i18n.js         # Multi-language support (English, Urdu)
 ├── engine/             # Business logic engines
 │   ├── adaptiveEngine.js      # ELO-based difficulty adaptation
 │   ├── audioEngine.js         # Sound effects
 │   ├── cloudSync.js           # Firebase sync logic
+│   ├── leaderboard.js         # Global leaderboard management
 │   ├── notificationEngine.js  # Push notification logic
 │   ├── progressStore.js       # State management (localStorage + cloud)
-│   ├── questionBank.js        # Question data and subject definitions
+│   ├── questionBank.js        # Question data and subject definitions (210+ questions)
 │   ├── quoteBank.js          # Motivational quotes
 │   └── readinessEngine.js    # Exam readiness calculations
 ├── features/           # Feature modules organized by user role
 │   ├── auth/          # Login, Onboarding
-│   ├── parent/        # Parent Dashboard
-│   └── student/       # Student Home, Quiz, Results
-├── pages/             # Standalone pages (achievements, actionplan, setup)
+│   ├── parent/        # Parent Dashboard with analytics and goal setting
+│   └── student/       # Student Home, Quiz, Results, ExamMode, Leaderboard
+├── pages/             # Standalone pages (achievements, actionplan, setup, skins)
 └── shared/            # Shared utilities
     └── utils/         # Helper utilities (Timer.js)
 ```
@@ -82,3 +85,33 @@ tests/
 - Components: PascalCase for feature modules (e.g., `Home.js`, `Quiz.js`)
 - Functions: camelCase with descriptive prefixes (`render*`, `mount*`, `get*`, `calculate*`)
 - Constants: UPPER_SNAKE_CASE (e.g., `SUBJECTS`, `STORAGE_KEY`)
+
+## MVP Features (feat/mvp-completion-v1)
+
+### Multi-Language Support (i18n)
+- Implemented in `src/core/i18n.js`
+- Supports English and Urdu with RTL layout switching
+- Language preference stored in localStorage (`ace_lang`)
+- Translations available for all UI labels and navigation
+
+### Ace Skins Customization
+- Implemented in `src/pages/skins.js`
+- Unlockable avatar suits: Knight, Spaceman, Ninja, Legend
+- Integrated with progress store for persistence
+
+### Global Leaderboard
+- Implemented in `src/engine/leaderboard.js`
+- Real-time ranking with Firebase synchronization
+- Secure Firebase rules to prevent data tampering
+- Student leaderboard view in `src/features/student/Leaderboard.js`
+
+### 11+ Mock Exam Mode
+- Implemented in `src/features/student/ExamMode.js`
+- Full Paper simulation (55 mins) for GL Assessment practice
+- Silent feedback mode for maximum learning
+
+### Enhanced Parent Portal
+- Advanced analytics with radar charts for skill analysis
+- Goal setting and special missions management
+- PDF export capability for monthly tracking
+- Integrated with `src/engine/leaderboard.js` for student rankings

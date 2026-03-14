@@ -23,6 +23,9 @@
 - **Component pattern**: Render functions return HTML strings, optional mount functions for interactivity
 - **State management**: localStorage-backed with Firebase cloud sync
 - **PWA**: Service Worker for offline support and installability
+- **Multi-language support**: i18n module with language switching and RTL support
+- **Leaderboard system**: Real-time Firebase synchronization with secure rules
+- **Exam simulation**: Mock exam mode with timed sessions and review functionality
 
 ## Common Commands
 
