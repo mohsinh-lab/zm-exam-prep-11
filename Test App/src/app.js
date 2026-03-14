@@ -60,6 +60,23 @@ function boot() {
 
     const authInfo = getAuth();
 
+    const hashBase = window.location.hash.split('?')[0];
+    const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
+
+    if (!authInfo.currentUser && !isAuthOrOnboarding) {
+      window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
+    } else if (!progress.setupDone && hashBase !== '#/setup') {
+      window.router.navigate('#/setup');
+    }
+
+    renderNav(window.location.hash);
+
+    // Mark app as booted immediately (don't wait for Firebase)
+    window.__APP_BOOTED__ = true;
+    console.log('✅ AcePrep Boot Successful');
+    if (window.__BOOT_TIMEOUT__) clearTimeout(window.__BOOT_TIMEOUT__);
+
+    // Initialize Firebase auth in background (non-blocking)
     import('./config/firebase.js').then(({ auth, onAuthStateChanged }) => {
       onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -84,22 +101,7 @@ function boot() {
           }
         }
       });
-    });
-
-    const hashBase = window.location.hash.split('?')[0];
-    const isAuthOrOnboarding = hashBase === '#/login' || hashBase === '#/onboarding';
-
-    if (!authInfo.currentUser && !isAuthOrOnboarding) {
-      window.router.navigate('#/login' + (window.location.hash.includes('?') ? '?' + window.location.hash.split('?')[1] : ''));
-    } else if (!progress.setupDone && hashBase !== '#/setup') {
-      window.router.navigate('#/setup');
-    }
-
-    renderNav(window.location.hash);
-
-    window.__APP_BOOTED__ = true;
-    console.log('✅ AcePrep Boot Successful');
-    if (window.__BOOT_TIMEOUT__) clearTimeout(window.__BOOT_TIMEOUT__);
+    }).catch(err => console.error('Firebase init error:', err));
 
     window.addEventListener('hashchange', () => {
       const auth = getAuth();
