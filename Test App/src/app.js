@@ -74,7 +74,10 @@ function boot() {
     // Mark app as booted immediately (don't wait for Firebase)
     window.__APP_BOOTED__ = true;
     console.log('✅ AcePrep Boot Successful');
-    if (window.__BOOT_TIMEOUT__) clearTimeout(window.__BOOT_TIMEOUT__);
+    if (window.__BOOT_TIMEOUT__) {
+      clearTimeout(window.__BOOT_TIMEOUT__);
+      window.__BOOT_TIMEOUT__ = null;
+    }
 
     // Initialize Firebase auth in background (non-blocking)
     import('./config/firebase.js').then(({ auth, onAuthStateChanged }) => {
