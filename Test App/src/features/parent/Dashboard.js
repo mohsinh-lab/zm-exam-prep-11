@@ -33,6 +33,7 @@ export function renderParentDashboard() {
     </div>
     <div style="display:flex; gap:12px; align-items:center">
       <button onclick="window.print()" class="btn btn-outline btn-sm" style="border-radius: 12px; border: 2px solid #ddd;">📄 PDF REPORT</button>
+      <button onclick="window.router.navigate('#/parent/analytics')" class="btn btn-outline btn-sm" style="border-radius: 12px; border: 2px solid var(--c-primary); color: var(--c-primary);">📊 ANALYTICS</button>
       <button onclick="window._syncCloud()" class="btn btn-primary btn-sm pulse-glow" style="border-radius: 12px;" aria-label="Refresh Data">🔄 LIVE SYNC</button>
       <img src="ace-mascot.png" alt="Mission Control" class="desktop-only" style="width: 100px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));" loading="lazy">
     </div>

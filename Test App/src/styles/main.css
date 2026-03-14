@@ -2644,3 +2644,11 @@ a {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+/* ── Analytics Dashboard ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .analytics-charts-row,
+  .analytics-bottom-row {
+    grid-template-columns: 1fr !important;
+  }
+}

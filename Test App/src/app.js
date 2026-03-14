@@ -4,6 +4,7 @@ import { Router } from './core/router.js';
 import { renderStudentHome, mountStudentHome } from './features/student/Home.js';
 import { renderStudentQuiz, mountStudentQuiz } from './features/student/Quiz.js';
 import { renderParentDashboard, mountParentDashboard } from './features/parent/Dashboard.js';
+import { renderAnalyticsDashboard, mountAnalyticsDashboard } from './features/parent/AnalyticsDashboard.js';
 import { renderStudentResults, mountStudentResults } from './features/student/Results.js';
 import { renderActionPlan } from './pages/actionplan.js';
 import { renderAchievements } from './pages/achievements.js';
@@ -32,6 +33,8 @@ const routes = [
   { path: '#/student/reading/:id', render: renderReadingComprehension, mount: mountReadingComprehension, title: 'Reading Comprehension' },
   { path: '#/student/results', render: renderStudentResults, mount: mountStudentResults, title: 'Quiz Results' },
   { path: '#/parent/home', render: renderParentDashboard, mount: mountParentDashboard, title: 'Parent Portal' },
+  { path: '#/parent/analytics', render: renderAnalyticsDashboard, mount: mountAnalyticsDashboard, title: 'Analytics Dashboard' },
+  { path: '#/parent/analytics/subject/:subject', render: renderAnalyticsDashboard, mount: mountAnalyticsDashboard, title: 'Subject Analytics' },
 ];
 
 function boot() {
