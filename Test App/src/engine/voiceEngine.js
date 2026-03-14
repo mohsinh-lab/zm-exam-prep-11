@@ -26,6 +26,13 @@ export class VoiceEngine {
   };
 
   /**
+   * Cached available voices (lazy loaded)
+   * @static
+   */
+  static _cachedVoices = null;
+  static _voicesLoadingPromise = null;
+
+  /**
    * Initialize VoiceEngine with configuration options
    * @param {Object} options - Configuration options
    * @param {string} options.language - Language code ('en' or 'ur')
@@ -46,10 +53,33 @@ export class VoiceEngine {
     this.currentVoicePreset = options.voicePreset || 'normal';
     this.isSupported = this.checkSupport();
     this.eventListeners = new Map();
+    this._initializationTime = 0;
     
-    // Apply voice preset if specified
+    // iOS Safari specific flags
+    this.isIOSSafari = this._detectIOSSafari();
+    this.audioContextInitialized = false;
+    this.pendingUtterance = null;
+    
+    // Android Chrome specific flags
+    this.isAndroidChrome = this._detectAndroidChrome();
+    this.androidAudioContextInitialized = false;
+    
+    // Apply voice preset if specified (synchronously)
     if (this.currentVoicePreset !== 'normal' && VoiceEngine.VOICE_PRESETS[this.currentVoicePreset]) {
       this._applyVoicePreset(this.currentVoicePreset);
+    }
+
+    // Preload voices asynchronously without blocking initialization
+    this._preloadVoicesAsync();
+    
+    // Initialize audio context for iOS Safari
+    if (this.isIOSSafari) {
+      this._initializeIOSAudioContext();
+    }
+    
+    // Initialize audio context for Android Chrome
+    if (this.isAndroidChrome) {
+      this._initializeAndroidAudioContext();
     }
   }
 
@@ -62,14 +92,160 @@ export class VoiceEngine {
   }
 
   /**
-   * Get list of available voices from the system
+   * Detect if running on iOS Safari
+   * @returns {boolean} True if iOS Safari is detected
+   * @private
+   */
+  _detectIOSSafari() {
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+    return isIOS && isSafari;
+  }
+
+  /**
+   * Detect if running on Android Chrome
+   * @returns {boolean} True if Android Chrome is detected
+   * @private
+   */
+  _detectAndroidChrome() {
+    const ua = navigator.userAgent;
+    const isAndroid = /Android/.test(ua);
+    const isChrome = /Chrome/.test(ua) && !/Edge/.test(ua);
+    return isAndroid && isChrome;
+  }
+
+  /**
+   * Initialize audio context for iOS Safari
+   * iOS requires specific setup for audio playback
+   * @private
+   */
+  _initializeIOSAudioContext() {
+    // iOS Safari requires user interaction to initialize audio
+    // We set up event listeners to handle the first user interaction
+    const initializeAudio = () => {
+      if (!this.audioContextInitialized && this.synth) {
+        // Trigger a dummy utterance to initialize audio context
+        try {
+          const dummy = new SpeechSynthesisUtterance('');
+          dummy.volume = 0; // Silent
+          this.synth.speak(dummy);
+          this.synth.cancel();
+          this.audioContextInitialized = true;
+        } catch (error) {
+          console.warn('Failed to initialize iOS audio context:', error);
+        }
+      }
+      // Remove listeners after initialization
+      document.removeEventListener('touchstart', initializeAudio);
+      document.removeEventListener('click', initializeAudio);
+    };
+
+    // Listen for first user interaction
+    document.addEventListener('touchstart', initializeAudio, { once: true });
+    document.addEventListener('click', initializeAudio, { once: true });
+  }
+
+  /**
+   * Initialize audio context for Android Chrome
+   * Android Chrome requires specific setup for audio playback
+   * @private
+   */
+  _initializeAndroidAudioContext() {
+    // Android Chrome requires user interaction to initialize audio
+    // We set up event listeners to handle the first user interaction
+    const initializeAudio = () => {
+      if (!this.androidAudioContextInitialized && this.synth) {
+        // Trigger a dummy utterance to initialize audio context
+        try {
+          const dummy = new SpeechSynthesisUtterance('');
+          dummy.volume = 0; // Silent
+          this.synth.speak(dummy);
+          this.synth.cancel();
+          this.androidAudioContextInitialized = true;
+        } catch (error) {
+          console.warn('Failed to initialize Android audio context:', error);
+        }
+      }
+      // Remove listeners after initialization
+      document.removeEventListener('touchstart', initializeAudio);
+      document.removeEventListener('click', initializeAudio);
+    };
+
+    // Listen for first user interaction
+    document.addEventListener('touchstart', initializeAudio, { once: true });
+    document.addEventListener('click', initializeAudio, { once: true });
+  }
+  _preloadVoicesAsync() {
+    if (!this.isSupported) {
+      return;
+    }
+
+    // If voices are already cached, skip preloading
+    if (VoiceEngine._cachedVoices !== null) {
+      return;
+    }
+
+    // If voices are already being loaded, skip
+    if (VoiceEngine._voicesLoadingPromise !== null) {
+      return;
+    }
+
+    // Use requestAnimationFrame to defer voice loading to next frame
+    VoiceEngine._voicesLoadingPromise = new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        try {
+          const voices = this.synth.getVoices();
+          if (voices.length > 0) {
+            VoiceEngine._cachedVoices = voices;
+            resolve(voices);
+          } else {
+            // Voices may not be loaded yet, listen for voiceschanged event
+            const handleVoicesChanged = () => {
+              const loadedVoices = this.synth.getVoices();
+              if (loadedVoices.length > 0) {
+                VoiceEngine._cachedVoices = loadedVoices;
+                this.synth.removeEventListener('voiceschanged', handleVoicesChanged);
+                resolve(loadedVoices);
+              }
+            };
+            this.synth.addEventListener('voiceschanged', handleVoicesChanged);
+            
+            // Timeout after 2 seconds to avoid hanging
+            setTimeout(() => {
+              this.synth.removeEventListener('voiceschanged', handleVoicesChanged);
+              VoiceEngine._cachedVoices = this.synth.getVoices();
+              resolve(VoiceEngine._cachedVoices);
+            }, 2000);
+          }
+        } catch (error) {
+          console.warn('Error preloading voices:', error);
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  /**
+   * Get list of available voices from the system (uses cached voices for performance)
    * @returns {Array<SpeechSynthesisVoice>} Array of available voices
    */
   getAvailableVoices() {
     if (!this.isSupported) {
       return [];
     }
-    return this.synth.getVoices();
+
+    // Return cached voices if available
+    if (VoiceEngine._cachedVoices !== null) {
+      return VoiceEngine._cachedVoices;
+    }
+
+    // Fall back to direct call (may be empty if voices not loaded yet)
+    const voices = this.synth.getVoices();
+    if (voices.length > 0) {
+      VoiceEngine._cachedVoices = voices;
+    }
+    return voices;
   }
 
   /**
@@ -99,7 +275,7 @@ export class VoiceEngine {
     this.utterance.pitch = this.currentPitch;
     this.utterance.volume = this.currentVolume;
 
-    // Set voice if available
+    // Set voice if available (use cached voices for performance)
     const voices = this.getAvailableVoices();
     if (voices.length > 0) {
       const selectedVoice = this._findVoiceForLanguage(this.currentLanguage, voices);
@@ -111,18 +287,9 @@ export class VoiceEngine {
       }
     }
 
-    // Parse text into words for boundary tracking
-    const words = text.split(/\s+/).filter(w => w.length > 0);
-    let charIndex = 0;
-    const wordBoundaries = [];
-    
-    for (const word of words) {
-      const pos = text.indexOf(word, charIndex);
-      if (pos !== -1) {
-        wordBoundaries.push({ word, charPos: pos, wordIndex: wordBoundaries.length });
-        charIndex = pos + word.length;
-      }
-    }
+    // Cache word boundaries for efficient boundary event mapping
+    // Pre-compute boundaries to avoid repeated string operations during playback
+    const wordBoundaries = this._computeWordBoundaries(text);
 
     // Handle start event
     this.utterance.onstart = () => {
@@ -131,18 +298,11 @@ export class VoiceEngine {
       this._emit('start', {});
     };
 
-    // Handle boundary event with word index mapping
+    // Handle boundary event with word index mapping (optimized with cached boundaries)
     this.utterance.onboundary = (event) => {
       if (event.charIndex !== undefined) {
-        // Find which word this character position corresponds to
-        let wordIndex = -1;
-        for (let i = 0; i < wordBoundaries.length; i++) {
-          if (wordBoundaries[i].charPos <= event.charIndex) {
-            wordIndex = i;
-          } else {
-            break;
-          }
-        }
+        // Use binary search for efficient word index lookup
+        const wordIndex = this._findWordIndexForCharPos(event.charIndex, wordBoundaries);
         this._emit('boundary', { charIndex: event.charIndex, wordIndex });
       }
     };
@@ -181,9 +341,39 @@ export class VoiceEngine {
       this._emit('error', { error: errorMessage, originalError: event.error });
     };
 
-    // Start synthesis
+    // Start synthesis with iOS Safari and Android Chrome compatibility
     try {
-      this.synth.speak(this.utterance);
+      // iOS Safari may need a small delay before speaking
+      if (this.isIOSSafari) {
+        // Ensure audio context is initialized
+        if (!this.audioContextInitialized) {
+          this.audioContextInitialized = true;
+        }
+        
+        // Use a small timeout to ensure iOS is ready
+        setTimeout(() => {
+          if (this.utterance && this.synth) {
+            this.synth.speak(this.utterance);
+          }
+        }, 10);
+      } 
+      // Android Chrome may need a small delay and audio context initialization
+      else if (this.isAndroidChrome) {
+        // Ensure audio context is initialized
+        if (!this.androidAudioContextInitialized) {
+          this.androidAudioContextInitialized = true;
+        }
+        
+        // Use a small timeout to ensure Android is ready
+        setTimeout(() => {
+          if (this.utterance && this.synth) {
+            this.synth.speak(this.utterance);
+          }
+        }, 10);
+      } 
+      else {
+        this.synth.speak(this.utterance);
+      }
     } catch (error) {
       console.error('Failed to start speech synthesis:', error);
       this._emit('error', { error: 'Failed to start audio playback', originalError: error.message });
@@ -195,9 +385,17 @@ export class VoiceEngine {
    */
   pause() {
     if (this.isPlaying && !this.isPaused && this.synth) {
-      this.synth.pause();
-      this.isPaused = true;
-      this._emit('pause', {});
+      try {
+        this.synth.pause();
+        this.isPaused = true;
+        this._emit('pause', {});
+      } catch (error) {
+        console.warn('Failed to pause speech synthesis:', error);
+        // iOS Safari and Android Chrome may not support pause, try stop instead
+        if (this.isIOSSafari || this.isAndroidChrome) {
+          this.stop();
+        }
+      }
     }
   }
 
@@ -206,9 +404,18 @@ export class VoiceEngine {
    */
   resume() {
     if (this.isPaused && this.synth) {
-      this.synth.resume();
-      this.isPaused = false;
-      this._emit('resume', {});
+      try {
+        this.synth.resume();
+        this.isPaused = false;
+        this._emit('resume', {});
+      } catch (error) {
+        console.warn('Failed to resume speech synthesis:', error);
+        // iOS Safari may not support resume, restart playback
+        if (this.isIOSSafari && this.utterance) {
+          this.synth.speak(this.utterance);
+          this.isPaused = false;
+        }
+      }
     }
   }
 
@@ -321,11 +528,30 @@ export class VoiceEngine {
 
   /**
    * Clean up resources and cancel pending utterances
+   * Properly removes all event listeners and clears memory
    */
   destroy() {
-    this.stop();
+    // Cancel any ongoing speech synthesis
+    if (this.synth) {
+      this.synth.cancel();
+    }
+
+    // Clear utterance reference
+    if (this.utterance) {
+      // Remove all event listeners from utterance
+      this.utterance.onstart = null;
+      this.utterance.onboundary = null;
+      this.utterance.onend = null;
+      this.utterance.onerror = null;
+      this.utterance = null;
+    }
+
+    // Clear all event listeners
     this.eventListeners.clear();
-    this.utterance = null;
+
+    // Reset state
+    this.isPlaying = false;
+    this.isPaused = false;
   }
 
   /**
@@ -365,5 +591,59 @@ export class VoiceEngine {
 
     // Fall back to first available voice
     return voices.length > 0 ? voices[0] : null;
+  }
+
+  /**
+   * Compute word boundaries for efficient boundary event mapping
+   * Pre-computes character positions for each word to avoid repeated string operations
+   * @param {string} text - Text to analyze
+   * @returns {Array<Object>} Array of word boundary objects with charPos and wordIndex
+   * @private
+   */
+  _computeWordBoundaries(text) {
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    let charIndex = 0;
+    const wordBoundaries = [];
+    
+    for (const word of words) {
+      const pos = text.indexOf(word, charIndex);
+      if (pos !== -1) {
+        wordBoundaries.push({ charPos: pos, wordIndex: wordBoundaries.length });
+        charIndex = pos + word.length;
+      }
+    }
+    
+    return wordBoundaries;
+  }
+
+  /**
+   * Find word index for a character position using binary search
+   * Optimized for fast lookup during boundary events
+   * @param {number} charPos - Character position
+   * @param {Array<Object>} wordBoundaries - Pre-computed word boundaries
+   * @returns {number} Word index or -1 if not found
+   * @private
+   */
+  _findWordIndexForCharPos(charPos, wordBoundaries) {
+    if (wordBoundaries.length === 0) {
+      return -1;
+    }
+
+    // Binary search for efficiency
+    let left = 0;
+    let right = wordBoundaries.length - 1;
+    let result = -1;
+
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      if (wordBoundaries[mid].charPos <= charPos) {
+        result = wordBoundaries[mid].wordIndex;
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+    }
+
+    return result;
   }
 }

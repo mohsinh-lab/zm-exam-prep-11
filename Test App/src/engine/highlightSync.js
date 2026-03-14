@@ -9,14 +9,19 @@ export class HighlightSync {
   /**
    * Initialize HighlightSync with a passage element
    * @param {HTMLElement} passageElement - DOM element containing the passage text
+   * @param {Object} options - Configuration options
+   * @param {number} options.debounceDelay - Debounce delay in ms (default: 0)
    */
-  constructor(passageElement) {
+  constructor(passageElement, options = {}) {
     this.passageElement = passageElement;
     this.words = [];
     this.wordElements = [];
     this.currentWordIndex = -1;
     this.wordBoundaries = [];
     this.highlightClass = 'voice-highlight';
+    this.debounceDelay = options.debounceDelay || 0;
+    this.pendingHighlightUpdate = null;
+    this.lastHighlightTime = 0;
   }
 
   /**
@@ -83,6 +88,7 @@ export class HighlightSync {
   /**
    * Update highlight to the specified word index
    * Removes previous highlight and adds new highlight with <50ms latency
+   * Uses debouncing to batch rapid updates if needed
    * @param {number} wordIndex - Index of the word to highlight
    */
   updateHighlight(wordIndex) {
@@ -91,14 +97,45 @@ export class HighlightSync {
       return;
     }
 
-    // Remove previous highlight
+    // If debouncing is enabled, defer the update
+    if (this.debounceDelay > 0) {
+      // Clear pending update if exists
+      if (this.pendingHighlightUpdate !== null) {
+        clearTimeout(this.pendingHighlightUpdate);
+      }
+
+      // Schedule new update
+      this.pendingHighlightUpdate = setTimeout(() => {
+        this._applyHighlight(wordIndex);
+        this.pendingHighlightUpdate = null;
+      }, this.debounceDelay);
+    } else {
+      // Apply immediately for best performance
+      this._applyHighlight(wordIndex);
+    }
+  }
+
+  /**
+   * Internal method to apply highlight to a word
+   * Uses CSS classes for efficient DOM updates
+   * @param {number} wordIndex - Index of the word to highlight
+   * @private
+   */
+  _applyHighlight(wordIndex) {
+    const startTime = performance.now();
+
+    // Remove previous highlight using classList for efficiency
     if (this.currentWordIndex >= 0 && this.currentWordIndex < this.wordElements.length) {
       this.wordElements[this.currentWordIndex].classList.remove(this.highlightClass);
     }
 
-    // Add new highlight
+    // Add new highlight using classList for efficiency
     this.wordElements[wordIndex].classList.add(this.highlightClass);
     this.currentWordIndex = wordIndex;
+
+    // Track performance
+    const endTime = performance.now();
+    this.lastHighlightTime = endTime - startTime;
   }
 
   /**
@@ -128,10 +165,26 @@ export class HighlightSync {
   }
 
   /**
+   * Get the last highlight update time in milliseconds
+   * Used for performance monitoring
+   * @returns {number} Time in milliseconds
+   */
+  getLastHighlightTime() {
+    return this.lastHighlightTime;
+  }
+
+  /**
    * Clean up DOM modifications and remove event listeners
    */
   destroy() {
     this.clearHighlight();
+    
+    // Clear pending debounced update
+    if (this.pendingHighlightUpdate !== null) {
+      clearTimeout(this.pendingHighlightUpdate);
+      this.pendingHighlightUpdate = null;
+    }
+
     this.passageElement.innerHTML = '';
     this.words = [];
     this.wordElements = [];

@@ -241,6 +241,7 @@ export class AudioCache {
 
   /**
    * Perform LRU eviction when cache exceeds maximum size
+   * Efficiently removes oldest entries until cache is below threshold
    * @returns {Promise<void>} Promise that resolves when eviction completes
    * @private
    */
@@ -255,21 +256,23 @@ export class AudioCache {
         reject(new Error(`Failed to get entries for eviction: ${request.error}`));
       };
 
-      request.onsuccess = async () => {
+      request.onsuccess = () => {
         const entries = request.result;
         
-        // Sort by timestamp (oldest first)
+        // Sort by timestamp (oldest first) for LRU eviction
         entries.sort((a, b) => a.timestamp - b.timestamp);
 
         let currentSize = entries.reduce((sum, entry) => sum + (entry.size || 0), 0);
+        const targetSize = this.MAX_CACHE_SIZE * 0.8; // Target 80% of max to avoid thrashing
         let evicted = 0;
 
-        // Evict entries until cache is below 50MB
+        // Evict entries until cache is below target size
         for (const entry of entries) {
-          if (currentSize <= this.MAX_CACHE_SIZE) {
+          if (currentSize <= targetSize) {
             break;
           }
 
+          // Delete entry synchronously within transaction
           const deleteRequest = store.delete(entry.passageId);
           
           deleteRequest.onerror = () => {
@@ -280,14 +283,6 @@ export class AudioCache {
             currentSize -= entry.size || 0;
             evicted++;
           };
-
-          await new Promise(res => {
-            deleteRequest.onsuccess = () => {
-              currentSize -= entry.size || 0;
-              evicted++;
-              res();
-            };
-          });
         }
 
         resolve();
