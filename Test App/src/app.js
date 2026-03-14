@@ -125,29 +125,6 @@ function boot() {
   }
 }
 
-function mountStudentHome() {
-  const countdownEl = document.getElementById('exam-countdown');
-  if (countdownEl) {
-    const examDate = new Date('2026-09-15');
-    const daysLeft = Math.ceil((examDate - Date.now()) / 86400000);
-    const weeksLeft = Math.ceil(daysLeft / 7);
-    countdownEl.innerHTML = `
-          <div style="text-align:right">
-            <div style="font-family:var(--font-heading);font-size:28px;font-weight:900;line-height:1">${daysLeft}</div>
-            <div style="font-size:12px;color:var(--c-text-muted)">days · ${weeksLeft} weeks</div>
-          </div>`;
-  }
-
-  window._startDaily = () => {
-    const challenge = getDailyChallenge();
-    if (challenge && !challenge.isCompleted) {
-      window.router.navigate(`#/student/quiz/${challenge.subject}?daily=true`);
-    } else {
-      alert("Mission already complete! Check back tomorrow.");
-    }
-  };
-}
-
 function renderNav(hash) {
   const navAnchor = document.getElementById('navbar-anchor');
   const tabAnchor = document.getElementById('tabbar-anchor');

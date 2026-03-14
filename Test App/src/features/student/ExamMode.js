@@ -1,7 +1,7 @@
 
-import { getQuestionsForSubject } from '../../engine/questionBank.js';
+import { getSessionQuestions } from '../../engine/adaptiveEngine.js';
 import { recordSession } from '../../engine/progressStore.js';
-import { spawnConfetti } from '../../core/effects.js';
+import { spawnConfetti } from '../../components/confetti.js';
 
 export function renderExamMode() {
     return `
@@ -64,8 +64,8 @@ export function mountExamMode() {
     };
 
     window._startExam = () => {
-        const enQ = getQuestionsForSubject('en', 25);
-        const vrQ = getQuestionsForSubject('vr', 25);
+        const enQ = getSessionQuestions('en', 25);
+        const vrQ = getSessionQuestions('vr', 25);
         currentQuestions = [...enQ, ...vrQ];
         currentIndex = 0;
         answers = new Array(currentQuestions.length).fill(null);
