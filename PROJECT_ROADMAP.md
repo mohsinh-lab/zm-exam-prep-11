@@ -65,21 +65,8 @@ Enhance user engagement, expand content, and optimize performance for production
 
 ### Planned Features (Short-lived branches from main)
 
-#### 1. **Anti-Gravity Physics Engine** (feat/anti-gravity-v1)
-- **Timeline:** March 15-22, 2026 (1 week)
-- **Description:** Implement dynamic gravity-based animations for UI elements
-- **Scope:**
-  - Floating particle effects during quiz transitions
-  - Gravity-influenced gem collection animations
-  - Physics-based leaderboard rank animations
-- **Acceptance Criteria:**
-  - Smooth 60fps animations on mobile devices
-  - Configurable gravity strength per animation type
-  - Fallback for low-end devices (reduced motion support)
-- **Testing:** E2E tests for animation performance, unit tests for physics calculations
-
-#### 2. **AI Voice Tutor** (feat/ai-voice-tutor-v1)
-- **Timeline:** March 23 - April 5, 2026 (2 weeks)
+#### 1. **AI Voice Tutor** (feat/ai-voice-tutor-v1)
+- **Timeline:** March 15-29, 2026 (2 weeks)
 - **Description:** Real-time reading of reading comprehension passages
 - **Scope:**
   - Web Speech API integration for text-to-speech
@@ -92,8 +79,8 @@ Enhance user engagement, expand content, and optimize performance for production
   - Works on iOS Safari and Android Chrome
 - **Testing:** Cross-browser E2E tests, accessibility testing with screen readers
 
-#### 3. **Physical Flashcards** (feat/flashcards-export-v1)
-- **Timeline:** April 6-13, 2026 (1 week)
+#### 2. **Physical Flashcards** (feat/flashcards-export-v1)
+- **Timeline:** March 30 - April 6, 2026 (1 week)
 - **Description:** Printable PDF vocabulary cards based on student's weak words
 - **Scope:**
   - Generate PDF with vocabulary cards (front: word, back: definition)
@@ -106,8 +93,8 @@ Enhance user engagement, expand content, and optimize performance for production
   - Support for 50-500 cards per PDF
 - **Testing:** PDF generation tests, print preview validation
 
-#### 4. **Battle Mode** (feat/battle-mode-v1)
-- **Timeline:** April 14-30, 2026 (2 weeks)
+#### 3. **Battle Mode** (feat/battle-mode-v1)
+- **Timeline:** April 7-21, 2026 (2 weeks)
 - **Description:** Real-time 1v1 practice against friends or AI bots
 - **Scope:**
   - Real-time multiplayer via Firebase Realtime Database
@@ -119,6 +106,21 @@ Enhance user engagement, expand content, and optimize performance for production
   - AI responds within 3 seconds
   - Support for 100+ concurrent matches
 - **Testing:** Load testing, real-time sync validation, AI logic tests
+
+#### 4. **Content Expansion** (feat/content-expansion-v1)
+- **Timeline:** April 22-30, 2026 (1 week)
+- **Description:** Expand question bank and add new subjects
+- **Scope:**
+  - Add 100+ new questions across all subjects
+  - Introduce Science and Reasoning subjects
+  - Balance difficulty distribution
+  - Add advanced problem-solving questions
+- **Acceptance Criteria:**
+  - 300+ total questions in question bank
+  - Even distribution across difficulty levels
+  - All questions reviewed for accuracy
+  - New subjects integrated into adaptive engine
+- **Testing:** Question validation tests, adaptive engine tests
 
 ---
 
@@ -170,6 +172,6 @@ Enhance user engagement, expand content, and optimize performance for production
 
 **Next Steps:**
 1. Merge `feat/mvp-completion-v1` to `main`
-2. Create `feat/anti-gravity-v1` branch for Phase 2 kickoff
-3. Begin Anti-Gravity Physics Engine implementation
+2. Create `feat/ai-voice-tutor-v1` branch for Phase 2 kickoff
+3. Begin AI Voice Tutor implementation
 4. Schedule daily standups for Phase 2 coordination
