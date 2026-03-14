@@ -10,6 +10,7 @@ import { renderAchievements } from './pages/achievements.js';
 import { renderSkins, mountSkins } from './pages/skins.js';
 import { renderExamMode, mountExamMode } from './features/student/ExamMode.js';
 import { renderLeaderboard, mountLeaderboard } from './features/student/Leaderboard.js';
+import { renderReadingComprehension, mountReadingComprehension } from './features/student/ReadingComprehension.js';
 import { renderSetup, mountSetup } from './pages/setup.js';
 import { getProgress, getAuth, logout, initLiveSync, getDailyChallenge } from './engine/progressStore.js';
 import { renderLogin, mountLogin } from './features/auth/Login.js';
@@ -27,6 +28,8 @@ const routes = [
   { path: '#/student/leaderboard', render: renderLeaderboard, mount: mountLeaderboard, title: 'Leaderboard' },
   { path: '#/student/skins', render: renderSkins, mount: mountSkins, title: 'Ace Skins' },
   { path: '#/student/exam', render: renderExamMode, mount: mountExamMode, title: 'Mock Exam' },
+  { path: '#/student/reading', render: renderReadingComprehension, mount: mountReadingComprehension, title: 'Reading Comprehension' },
+  { path: '#/student/reading/:id', render: renderReadingComprehension, mount: mountReadingComprehension, title: 'Reading Comprehension' },
   { path: '#/student/results', render: renderStudentResults, mount: mountStudentResults, title: 'Quiz Results' },
   { path: '#/parent/home', render: renderParentDashboard, mount: mountParentDashboard, title: 'Parent Portal' },
 ];

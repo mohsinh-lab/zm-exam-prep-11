@@ -1254,3 +1254,163 @@ export const SUBJECT_COLORS = {
   [SUBJECTS.ENGLISH]: { start: '#f59e0b', end: '#fbbf24' },
   [SUBJECTS.MATHS]: { start: '#10b981', end: '#34d399' },
 };
+
+//  READING COMPREHENSION PASSAGES 
+
+export const READING_PASSAGES = [
+  {
+    id: 'passage_001',
+    title: 'The Honey Bee',
+    subject: 'en',
+    difficulty: 'easy',
+    language: 'en',
+    text: `Honey bees are remarkable insects that live in large colonies of up to 60,000 individuals. Each colony has a single queen, thousands of worker bees, and a smaller number of drones. The queen is the only bee that lays eggs, and she can lay up to 2,000 eggs per day during the summer months.
+
+Worker bees are all female and they perform many different jobs throughout their lives. Young workers clean the hive and feed the larvae. As they grow older, they begin to produce wax and build the honeycomb. Eventually, the most experienced workers become foragers, flying out to collect nectar and pollen from flowers.
+
+When a forager bee finds a good source of food, she returns to the hive and performs a special dance called the waggle dance. This remarkable behaviour communicates the direction and distance of the food source to other bees. The angle of the dance indicates the direction relative to the sun, while the duration of the waggle run shows how far away the food is.
+
+Honey is made from nectar that bees collect from flowers. The bees store the nectar in special cells in the honeycomb and fan it with their wings to evaporate the water. When the honey is ready, they seal the cells with wax. A single bee produces only about one twelfth of a teaspoon of honey in its entire lifetime, which is why honey is so precious.
+
+Bees are essential for pollinating many of the plants that humans rely on for food. Without bees, many fruits, vegetables, and nuts would not be produced. Scientists are concerned that bee populations are declining due to habitat loss, pesticides, and disease. Protecting bees is therefore vital for our food supply and the health of our natural environment.`,
+    wordCount: 270,
+    version: 1,
+    createdAt: 1710000000
+  },
+  {
+    id: 'passage_002',
+    title: 'The Great Fire of London',
+    subject: 'en',
+    difficulty: 'intermediate',
+    language: 'en',
+    text: `In the early hours of Sunday, 2nd September 1666, a fire broke out in a bakery on Pudding Lane in the City of London. The baker, Thomas Farriner, had failed to properly extinguish his ovens before going to bed. A spark ignited the straw on the floor, and within minutes the building was ablaze.
+
+London at that time was a city of narrow streets and closely packed timber-framed buildings. The summer of 1666 had been exceptionally dry, and a strong easterly wind was blowing. These conditions allowed the fire to spread with terrifying speed. By morning, it had consumed dozens of buildings and was advancing rapidly westward through the city.
+
+Samuel Pepys, a naval administrator who kept a famous diary, witnessed the fire and described the scene in vivid detail. He watched as people threw their belongings into the River Thames or buried them in their gardens to save them from the flames. He even buried his own wine and a Parmesan cheese in his garden.
+
+The Lord Mayor of London, Sir Thomas Bloodworth, was initially dismissive of the fire, reportedly saying that a woman could extinguish it. However, as the blaze grew, it became clear that drastic action was needed. King Charles II himself took charge of the firefighting efforts, ordering houses to be demolished to create firebreaks.
+
+The fire burned for four days, destroying around 13,200 houses, 87 churches, and most of the buildings of the City of London. Remarkably, the official death toll was only six people, though historians believe the true number may have been higher. The fire led to a complete rebuilding of the city, with new regulations requiring buildings to be constructed from brick and stone rather than timber.`,
+    wordCount: 280,
+    version: 1,
+    createdAt: 1710000000
+  },
+  {
+    id: 'passage_003',
+    title: 'Deep Ocean Mysteries',
+    subject: 'en',
+    difficulty: 'hard',
+    language: 'en',
+    text: `The deep ocean remains one of the least explored environments on Earth. Despite covering more than 60 percent of our planet's surface, the deep sea  defined as water below 200 metres  is largely unknown to science. The immense pressure, complete darkness, and near-freezing temperatures make exploration extraordinarily challenging and expensive.
+
+The deepest point in the ocean is the Challenger Deep in the Mariana Trench, located in the western Pacific Ocean. It reaches a depth of approximately 11,000 metres, which means that if Mount Everest were placed at the bottom, its peak would still be more than two kilometres below the surface. The pressure at this depth is about 1,000 times greater than at sea level.
+
+Despite these extreme conditions, life thrives in the deep ocean in forms that seem almost alien. Bioluminescent creatures produce their own light through chemical reactions, creating spectacular displays in the darkness. The anglerfish uses a glowing lure to attract prey, while the vampire squid, despite its fearsome name, feeds primarily on marine snow  the constant shower of organic particles that drifts down from the surface.
+
+Hydrothermal vents, discovered in 1977, revolutionised our understanding of life on Earth. These cracks in the ocean floor release superheated water rich in minerals, supporting entire ecosystems that derive energy not from sunlight but from chemical reactions. This discovery suggested that life might exist in similar environments elsewhere in the solar system, such as beneath the ice of Jupiter's moon Europa.
+
+Modern technology is gradually revealing the secrets of the deep. Remotely operated vehicles and autonomous underwater robots can now explore depths that would crush any human-occupied vessel. Each expedition brings new discoveries, reminding us that our own planet still holds profound mysteries waiting to be uncovered.`,
+    wordCount: 285,
+    version: 1,
+    createdAt: 1710000000
+  }
+];
+
+export const READING_QUESTIONS = [
+  // Passage 001 - The Honey Bee
+  { id: 'rq_001_1', passageId: 'passage_001', type: 'multiple_choice', order: 1,
+    text: 'How many eggs can a queen bee lay per day during summer?',
+    options: ['200', '2,000', '20,000', '60,000'],
+    correctAnswer: '2,000',
+    explanation: 'The passage states the queen can lay up to 2,000 eggs per day during summer months.',
+    hint: 'Look at the first paragraph for information about the queen bee.' },
+  { id: 'rq_001_2', passageId: 'passage_001', type: 'true_false', order: 2,
+    text: 'Worker bees are all female.',
+    options: ['True', 'False'],
+    correctAnswer: 'True',
+    explanation: 'The passage clearly states "Worker bees are all female."',
+    hint: 'Check the second paragraph.' },
+  { id: 'rq_001_3', passageId: 'passage_001', type: 'multiple_choice', order: 3,
+    text: 'What does the waggle dance communicate?',
+    options: ['The type of flower', 'The direction and distance of food', 'The weather conditions', 'The age of the bee'],
+    correctAnswer: 'The direction and distance of food',
+    explanation: 'The waggle dance communicates the direction and distance of the food source.',
+    hint: 'Read the third paragraph carefully.' },
+  { id: 'rq_001_4', passageId: 'passage_001', type: 'short_answer', order: 4,
+    text: 'How much honey does a single bee produce in its entire lifetime?',
+    expectedAnswers: ['one twelfth of a teaspoon', '1/12 teaspoon', 'a twelfth of a teaspoon'],
+    correctAnswer: 'one twelfth of a teaspoon',
+    explanation: 'The passage states a single bee produces only about one twelfth of a teaspoon of honey.',
+    hint: 'Look in the fourth paragraph.' },
+  { id: 'rq_001_5', passageId: 'passage_001', type: 'multiple_choice', order: 5,
+    text: 'Why are scientists concerned about bees?',
+    options: ['They produce too much honey', 'Their populations are declining', 'They sting too many people', 'They are spreading disease'],
+    correctAnswer: 'Their populations are declining',
+    explanation: 'Scientists are concerned that bee populations are declining due to habitat loss, pesticides, and disease.',
+    hint: 'Read the final paragraph.' },
+
+  // Passage 002 - The Great Fire of London
+  { id: 'rq_002_1', passageId: 'passage_002', type: 'multiple_choice', order: 1,
+    text: 'Where did the Great Fire of London start?',
+    options: ['Westminster', 'Pudding Lane', 'The River Thames', 'St Paul\'s Cathedral'],
+    correctAnswer: 'Pudding Lane',
+    explanation: 'The fire broke out in a bakery on Pudding Lane in the City of London.',
+    hint: 'Look at the first paragraph.' },
+  { id: 'rq_002_2', passageId: 'passage_002', type: 'true_false', order: 2,
+    text: 'The summer of 1666 had been exceptionally wet.',
+    options: ['True', 'False'],
+    correctAnswer: 'False',
+    explanation: 'The passage states the summer of 1666 had been exceptionally dry, not wet.',
+    hint: 'Check the second paragraph for weather conditions.' },
+  { id: 'rq_002_3', passageId: 'passage_002', type: 'multiple_choice', order: 3,
+    text: 'What did Samuel Pepys bury in his garden?',
+    options: ['Gold coins and jewels', 'Wine and a Parmesan cheese', 'Books and documents', 'Furniture and clothing'],
+    correctAnswer: 'Wine and a Parmesan cheese',
+    explanation: 'Pepys buried his own wine and a Parmesan cheese in his garden to save them from the flames.',
+    hint: 'Read the third paragraph about Samuel Pepys.' },
+  { id: 'rq_002_4', passageId: 'passage_002', type: 'multiple_choice', order: 4,
+    text: 'How many churches were destroyed in the fire?',
+    options: ['47', '67', '87', '107'],
+    correctAnswer: '87',
+    explanation: 'The fire destroyed around 13,200 houses, 87 churches, and most of the buildings of the City.',
+    hint: 'Look at the final paragraph for statistics.' },
+  { id: 'rq_002_5', passageId: 'passage_002', type: 'short_answer', order: 5,
+    text: 'What new building regulation was introduced after the fire?',
+    expectedAnswers: ['brick and stone', 'buildings from brick', 'stone not timber', 'brick not timber'],
+    correctAnswer: 'Buildings had to be constructed from brick and stone rather than timber',
+    explanation: 'New regulations required buildings to be constructed from brick and stone rather than timber.',
+    hint: 'Read the last sentence of the passage.' },
+
+  // Passage 003 - Deep Ocean Mysteries
+  { id: 'rq_003_1', passageId: 'passage_003', type: 'multiple_choice', order: 1,
+    text: 'What percentage of Earth\'s surface does the deep ocean cover?',
+    options: ['More than 40%', 'More than 50%', 'More than 60%', 'More than 70%'],
+    correctAnswer: 'More than 60%',
+    explanation: 'The passage states the deep sea covers more than 60 percent of our planet\'s surface.',
+    hint: 'Check the first paragraph.' },
+  { id: 'rq_003_2', passageId: 'passage_003', type: 'multiple_choice', order: 2,
+    text: 'What is the approximate depth of the Challenger Deep?',
+    options: ['8,000 metres', '9,500 metres', '11,000 metres', '13,000 metres'],
+    correctAnswer: '11,000 metres',
+    explanation: 'The Challenger Deep reaches a depth of approximately 11,000 metres.',
+    hint: 'Look at the second paragraph.' },
+  { id: 'rq_003_3', passageId: 'passage_003', type: 'true_false', order: 3,
+    text: 'The vampire squid feeds mainly on other fish.',
+    options: ['True', 'False'],
+    correctAnswer: 'False',
+    explanation: 'The vampire squid feeds primarily on marine snow, not other fish.',
+    hint: 'Read the third paragraph about deep sea creatures.' },
+  { id: 'rq_003_4', passageId: 'passage_003', type: 'multiple_choice', order: 4,
+    text: 'When were hydrothermal vents discovered?',
+    options: ['1957', '1967', '1977', '1987'],
+    correctAnswer: '1977',
+    explanation: 'Hydrothermal vents were discovered in 1977.',
+    hint: 'Look at the fourth paragraph.' },
+  { id: 'rq_003_5', passageId: 'passage_003', type: 'short_answer', order: 5,
+    text: 'Which moon of Jupiter might have similar conditions to hydrothermal vents?',
+    expectedAnswers: ['Europa', 'Jupiter\'s moon Europa'],
+    correctAnswer: 'Europa',
+    explanation: 'The passage mentions Jupiter\'s moon Europa as a place where similar life might exist.',
+    hint: 'Read the end of the fourth paragraph.' }
+];
