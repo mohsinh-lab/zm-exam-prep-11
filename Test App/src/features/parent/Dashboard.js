@@ -411,25 +411,29 @@ export function mountParentDashboard() {
     const role = document.getElementById('invite-role')?.value;
     if (!name || !email) return alert("Enter name and email for the new member.");
 
-    import('../../config/firebase.js').then(({ auth, database, ref, set }) => {
-      const user = auth.currentUser;
-      if (!user) return alert("Please login again to send invitations.");
-      const inviteId = btoa(email.toLowerCase()).replace(/=/g, '');
-      set(ref(database, 'invites/' + inviteId), {
-        from: user.uid,
-        fromEmail: user.email,
-        toName: name,
-        toEmail: email.toLowerCase(),
-        role: role,
-        timestamp: Date.now()
-      }).then(() => {
-        const baseUrl = window.location.href.split('#')[0];
-        const deepLink = `${baseUrl}#/login?invite=${user.uid}&role=${role}`;
-        alert("Invitation Mission Sent!\n\nLink for " + name + ":\n" + deepLink + "\n\n(Share this link with them)");
-        document.getElementById('invite-name').value = '';
-        document.getElementById('invite-email').value = '';
-      }).catch(err => {
-        alert("Failed to secure connection. Try again.");
+    import('../../config/firebase.js').then(({ awaitFirebase }) => {
+      awaitFirebase().then(fb => {
+        if (!fb) return alert("Firebase unavailable. Try again.");
+        const { auth, database, ref, set } = fb;
+        const user = auth.currentUser;
+        if (!user) return alert("Please login again to send invitations.");
+        const inviteId = btoa(email.toLowerCase()).replace(/=/g, '');
+        set(ref(database, 'invites/' + inviteId), {
+          from: user.uid,
+          fromEmail: user.email,
+          toName: name,
+          toEmail: email.toLowerCase(),
+          role: role,
+          timestamp: Date.now()
+        }).then(() => {
+          const baseUrl = window.location.href.split('#')[0];
+          const deepLink = `${baseUrl}#/login?invite=${user.uid}&role=${role}`;
+          alert("Invitation Mission Sent!\n\nLink for " + name + ":\n" + deepLink + "\n\n(Share this link with them)");
+          document.getElementById('invite-name').value = '';
+          document.getElementById('invite-email').value = '';
+        }).catch(() => {
+          alert("Failed to secure connection. Try again.");
+        });
       });
     });
   };

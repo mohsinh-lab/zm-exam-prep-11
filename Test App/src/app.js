@@ -86,13 +86,15 @@ function boot() {
     }
 
     // Initialize Firebase auth in background (non-blocking)
-    import('./config/firebase.js').then(({ auth, onAuthStateChanged }) => {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          const localUser = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
-          if (!localUser.uid || localUser.uid !== user.uid) {
-            import('./config/firebase.js').then(({ database, ref, get }) => {
-              get(ref(database, 'users/' + user.uid + '/role')).then(snap => {
+    import('./config/firebase.js').then(({ initFirebase, awaitFirebase }) => {
+      initFirebase();
+      awaitFirebase().then(fb => {
+        if (!fb) return;
+        fb.onAuthStateChanged(fb.auth, (user) => {
+          if (user) {
+            const localUser = JSON.parse(localStorage.getItem('aceprep_user') || '{}');
+            if (!localUser.uid || localUser.uid !== user.uid) {
+              fb.get(fb.ref(fb.database, 'users/' + user.uid + '/role')).then(snap => {
                 if (snap.exists()) {
                   localStorage.setItem('aceprep_user', JSON.stringify({
                     email: user.email,
@@ -104,11 +106,11 @@ function boot() {
                   if (window.location.hash === '#/login') window.router.handleRoute();
                 }
               });
-            });
-          } else {
-            initLiveSync();
+            } else {
+              initLiveSync();
+            }
           }
-        }
+        });
       });
     }).catch(err => console.error('Firebase init error:', err));
 

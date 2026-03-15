@@ -1,45 +1,53 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { syncProgressToCloud, loadProgressFromCloud } from '../src/engine/cloudSync.js';
-import * as firebase from '../src/config/firebase.js';
+
+// vi.hoisted ensures these are available when vi.mock factory runs
+const { mockSet, mockGet, mockOnValue, mockRef, mockFb } = vi.hoisted(() => {
+    const mockSet = vi.fn();
+    const mockGet = vi.fn();
+    const mockOnValue = vi.fn(() => () => {});
+    const mockRef = vi.fn((db, path) => path);
+    const mockFb = { database: {}, ref: mockRef, set: mockSet, get: mockGet, onValue: mockOnValue };
+    return { mockSet, mockGet, mockOnValue, mockRef, mockFb };
+});
 
 vi.mock('../src/config/firebase.js', () => ({
-    database: {},
-    ref: vi.fn((db, path) => path),
-    set: vi.fn(),
-    get: vi.fn(),
-    onValue: vi.fn()
+    initFirebase: vi.fn(),
+    getFirebase: vi.fn(() => mockFb),
+    awaitFirebase: vi.fn(() => Promise.resolve(mockFb)),
 }));
+
+import { syncProgressToCloud, loadProgressFromCloud } from '../src/engine/cloudSync.js';
 
 describe('Live Sync integration tests', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        mockSet.mockReset();
+        mockGet.mockReset();
+        mockOnValue.mockReset();
+        mockRef.mockReset();
+        mockRef.mockImplementation((db, path) => path);
     });
 
     it('should dispatch sync events when writing data', async () => {
+        mockSet.mockResolvedValueOnce();
         const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
-        firebase.set.mockResolvedValueOnce();
 
-        const promise = syncProgressToCloud({ xp: 100 });
+        await syncProgressToCloud({ xp: 100 });
 
-        // Before resolving, it should have dispatched an event
+        // After awaiting, sync_state_changed should have been dispatched
         expect(dispatchSpy).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'sync_state_changed' })
         );
-
-        await promise;
-
-        // After resolving, sync should be called
-        expect(firebase.set).toHaveBeenCalled();
+        expect(mockSet).toHaveBeenCalled();
         dispatchSpy.mockRestore();
     });
 
     it('should fetch progress correctly', async () => {
-        firebase.get.mockResolvedValueOnce({
+        mockGet.mockResolvedValueOnce({
             exists: () => true,
             val: () => ({ xp: 200 })
         });
         const data = await loadProgressFromCloud();
         expect(data.xp).toBe(200);
-        expect(firebase.get).toHaveBeenCalled();
+        expect(mockGet).toHaveBeenCalled();
     });
 });

@@ -1,12 +1,10 @@
 // src/engine/cloudSync.js
-// Handles real-time synchronization using Zayyan's email as the unique identifier.
-import { database, ref, set, get, onValue } from '../config/firebase.js';
-import { reportToLeaderboard } from './leaderboard.js';
+// Firebase is loaded lazily — app boots immediately, sync starts after Firebase loads.
+import { awaitFirebase } from '../config/firebase.js';
 
 let STUDENT_EMAIL = 'zayyanmohsin16@gmail.com';
-let SYNC_ID = STUDENT_EMAIL.replace(/[@.]/g, '_'); // zayyanmohsin16_gmail_com
+let SYNC_ID = STUDENT_EMAIL.replace(/[@.]/g, '_');
 
-// Allow dynamically changing the sync ID if other users log in
 export function setSyncEmail(email) {
     STUDENT_EMAIL = email;
     SYNC_ID = email.replace(/[@.]/g, '_');
@@ -15,21 +13,29 @@ export function setSyncEmail(email) {
 let isConnected = false;
 let pendingWrites = 0;
 
-// Listen for Firebase connection state
-try {
-    const connectedRef = ref(database, '.info/connected');
-    onValue(connectedRef, (snap) => {
-        isConnected = snap.val() === true;
-        window.dispatchEvent(new CustomEvent('sync_state_changed', { detail: { connected: isConnected, syncing: pendingWrites > 0 } }));
-    });
-} catch (e) { /* Ignore if firebase is mock/disabled */ }
+// Wire up the connection-state listener once Firebase is ready
+awaitFirebase().then(fb => {
+    if (!fb) return;
+    try {
+        const connectedRef = fb.ref(fb.database, '.info/connected');
+        fb.onValue(connectedRef, (snap) => {
+            isConnected = snap.val() === true;
+            window.dispatchEvent(new CustomEvent('sync_state_changed', {
+                detail: { connected: isConnected, syncing: pendingWrites > 0 }
+            }));
+        });
+    } catch (e) { /* ignore */ }
+});
 
 export async function syncProgressToCloud(progress) {
+    const fb = await awaitFirebase();
+    if (!fb) return;
     pendingWrites++;
     window.dispatchEvent(new CustomEvent('sync_state_changed', { detail: { connected: isConnected, syncing: true } }));
     try {
-        const dbRef = ref(database, 'students/' + SYNC_ID);
-        await set(dbRef, progress);
+        const dbRef = fb.ref(fb.database, 'students/' + SYNC_ID);
+        await fb.set(dbRef, progress);
+        const { reportToLeaderboard } = await import('./leaderboard.js');
         await reportToLeaderboard();
         console.log('✅ Progress synced to cloud for:', STUDENT_EMAIL);
     } catch (err) {
@@ -44,112 +50,90 @@ export async function syncProgressToCloud(progress) {
 }
 
 export async function loadProgressFromCloud() {
+    const fb = await awaitFirebase();
+    if (!fb) return null;
     try {
-        const dbRef = ref(database, 'students/' + SYNC_ID);
-        const snapshot = await get(dbRef);
+        const dbRef = fb.ref(fb.database, 'students/' + SYNC_ID);
+        const snapshot = await fb.get(dbRef);
         if (snapshot.exists()) {
             console.log('✅ Progress loaded from cloud for:', STUDENT_EMAIL);
             return snapshot.val();
-        } else {
-            return null;
         }
+        return null;
     } catch (err) {
         console.warn('❌ Cloud load failed:', err);
         return null;
     }
 }
 
-// Live Sync capabilities
 let unsubscribe = null;
-export function subscribeToProgress(onUpdateCallback) {
+export async function subscribeToProgress(onUpdateCallback) {
     if (unsubscribe) unsubscribe();
+    const fb = await awaitFirebase();
+    if (!fb) return () => {};
     try {
-        const dbRef = ref(database, 'students/' + SYNC_ID);
-        unsubscribe = onValue(dbRef, (snapshot) => {
-            if (snapshot.exists()) {
-                onUpdateCallback(snapshot.val());
-            } else {
-                onUpdateCallback(null);
-            }
+        const dbRef = fb.ref(fb.database, 'students/' + SYNC_ID);
+        unsubscribe = fb.onValue(dbRef, (snapshot) => {
+            onUpdateCallback(snapshot.exists() ? snapshot.val() : null);
         });
         return unsubscribe;
     } catch (err) {
         console.warn('Live sync subscribe failed', err);
-        return () => { }; // dummy unsubscribe
+        return () => {};
     }
 }
 
-// Parent Multi-Sync Capability
 let multiUnsubscribes = [];
 let parentStudentsMapUnsub = null;
 
-export function subscribeToLinkedStudents(parentUid, onUpdateCallback) {
-    // Clear old listeners
+export async function subscribeToLinkedStudents(parentUid, onUpdateCallback) {
     if (parentStudentsMapUnsub) parentStudentsMapUnsub();
     console.log(`[Audit] Parent ${parentUid} subscribing to linked students graph...`);
-    multiUnsubscribes.forEach(unsub => unsub());
+    multiUnsubscribes.forEach(u => u());
     multiUnsubscribes = [];
 
+    const fb = await awaitFirebase();
+    if (!fb) return () => {};
+
     let aggregatedData = {};
-
     try {
-        const linkedRef = ref(database, 'users/' + parentUid + '/linked_students');
-
-        // Listen for additions/removals to the linked students list
-        parentStudentsMapUnsub = onValue(linkedRef, (snapshot) => {
-            // Re-clear child listeners when graph changes
-            multiUnsubscribes.forEach(unsub => unsub());
+        const linkedRef = fb.ref(fb.database, 'users/' + parentUid + '/linked_students');
+        parentStudentsMapUnsub = fb.onValue(linkedRef, (snapshot) => {
+            multiUnsubscribes.forEach(u => u());
             multiUnsubscribes = [];
             aggregatedData = {};
 
-            if (!snapshot.exists()) {
-                onUpdateCallback({}); // No students linked yet
-                return;
-            }
+            if (!snapshot.exists()) { onUpdateCallback({}); return; }
+            const safeEmails = Object.keys(snapshot.val() || {});
+            if (safeEmails.length === 0) { onUpdateCallback({}); return; }
 
-            const linkedStudents = snapshot.val() || {};
-            const safeEmails = Object.keys(linkedStudents);
-
-            if (safeEmails.length === 0) {
-                onUpdateCallback({});
-                return;
-            }
-
-            // Set up a listener for each student's progress node
-            let fetchedCount = 0;
             safeEmails.forEach(safeEmail => {
-                const studentDbRef = ref(database, 'students/' + safeEmail);
-                const unsub = onValue(studentDbRef, (progSnap) => {
-                    if (progSnap.exists()) {
-                        aggregatedData[safeEmail] = progSnap.val();
-                    } else {
-                        aggregatedData[safeEmail] = null;
-                    }
-
-                    // Always callback so UI updates instantly
+                const studentRef = fb.ref(fb.database, 'students/' + safeEmail);
+                const unsub = fb.onValue(studentRef, (progSnap) => {
+                    aggregatedData[safeEmail] = progSnap.exists() ? progSnap.val() : null;
                     onUpdateCallback(aggregatedData);
                 });
                 multiUnsubscribes.push(unsub);
             });
         });
-
         return () => {
             if (parentStudentsMapUnsub) parentStudentsMapUnsub();
-            multiUnsubscribes.forEach(unsub => unsub());
+            multiUnsubscribes.forEach(u => u());
         };
     } catch (err) {
         console.warn('Parent Live sync subscribe failed', err);
-        return () => { };
+        return () => {};
     }
 }
 
 let studentParentLinkUnsub = null;
-export function subscribeToParentLink(studentUid, onLinkCallback) {
+export async function subscribeToParentLink(studentUid, onLinkCallback) {
     if (studentParentLinkUnsub) studentParentLinkUnsub();
-
+    const fb = await awaitFirebase();
+    if (!fb) return () => {};
     try {
-        const linkRef = ref(database, 'users/' + studentUid + '/linked_parents');
-        studentParentLinkUnsub = onValue(linkRef, (snapshot) => {
+        const linkRef = fb.ref(fb.database, 'users/' + studentUid + '/linked_parents');
+        studentParentLinkUnsub = fb.onValue(linkRef, (snapshot) => {
             const hasParent = snapshot.exists() && Object.keys(snapshot.val()).length > 0;
             console.log(`[Audit] Parent link status for ${studentUid}: ${hasParent ? 'VERIFIED' : 'PENDING'}`);
             onLinkCallback(hasParent);
@@ -157,6 +141,6 @@ export function subscribeToParentLink(studentUid, onLinkCallback) {
         return studentParentLinkUnsub;
     } catch (err) {
         console.warn('Subscription to parent link failed', err);
-        return () => { };
+        return () => {};
     }
 }

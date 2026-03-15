@@ -91,6 +91,9 @@ export function renderStudentHome() {
         <div class="nav-gems glass" style="border: 1px solid rgba(255,255,255,0.4) !important; color: var(--c-accent);">
           <span>💎</span> <strong>${progress.gems || 0}</strong>
         </div>
+        <div class="glass" style="padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.25) !important; color: rgba(255,255,255,0.6); font-size: 10px; font-weight: 800; letter-spacing: 0.05em;">
+          v1.0.0
+        </div>
       </div>
 
       <div class="xp-bar-wrap" style="max-width: 340px; margin-bottom: 24px;">

@@ -1,4 +1,5 @@
 import { audio } from '../../engine/audioEngine.js';
+import { awaitFirebase } from '../../config/firebase.js';
 
 export function renderOnboarding() {
     return `
@@ -46,7 +47,9 @@ export function mountOnboarding() {
 
         // Write the role to Firebase
         try {
-            const { database, ref, set } = await import('../../config/firebase.js');
+            const fb = await awaitFirebase();
+            if (!fb) throw new Error('Firebase unavailable');
+            const { database, ref, set } = fb;
             const roleRef = ref(database, 'users/' + userCache.uid + '/role');
             await set(roleRef, role);
             console.log(`[Audit] Role assigned during onboarding: ${role} for UID ${userCache.uid}`);

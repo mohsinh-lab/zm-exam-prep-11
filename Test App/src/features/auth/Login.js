@@ -1,4 +1,5 @@
 import { audio } from '../../engine/audioEngine.js';
+import { awaitFirebase } from '../../config/firebase.js';
 
 export function renderLogin() {
     return `
@@ -52,8 +53,9 @@ export function mountLogin() {
                     }
                 } catch (e) { }
 
-                // We use dynamic import for firebase to not break the fallback if firebase isn't configured
-                const { auth, googleProvider, signInWithPopup, database, ref, get, set, update } = await import('../../config/firebase.js');
+                const fb = await awaitFirebase();
+                if (!fb) throw new Error('Firebase unavailable');
+                const { auth, googleProvider, signInWithPopup, database, ref, get, set, update } = fb;
 
                 signInWithPopup(auth, googleProvider).then(async (result) => {
                     const user = result.user;
