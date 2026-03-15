@@ -136,6 +136,13 @@ function boot() {
     });
   } catch (error) {
     console.error('CRITICAL BOOT ERROR:', error);
+    // Surface the error so the boot-error UI shows immediately
+    const loader = document.getElementById('splash-loader');
+    const errorDiv = document.getElementById('boot-error');
+    const details = document.getElementById('error-details');
+    if (loader) loader.style.display = 'none';
+    if (errorDiv) errorDiv.style.display = 'block';
+    if (details) details.innerText = 'Error: ' + (error?.message || String(error));
   }
 }
 

@@ -57,7 +57,7 @@
     // --- Production Safety Net ---
     window.__BOOT_TIMEOUT__ = setTimeout(function () {
       if (!window.__APP_BOOTED__) {
-        console.error('App boot timed out after 10s');
+        console.error('App boot timed out after 15s');
         const loader = document.getElementById('splash-loader');
         const error = document.getElementById('boot-error');
         const details = document.getElementById('error-details');
@@ -65,7 +65,7 @@
         if (error) error.style.display = 'block';
         if (details) details.innerText = 'Timeout: Possible network or script error.';
       }
-    }, 10000);
+    }, 15000);
 
     window.onerror = function (msg, url, lineNo, columnNo, error) {
       if (!window.__APP_BOOTED__) {
